@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ams2CareerCompanion.Core\Ams2CareerCompanion.Core.csproj" />
+    <ProjectReference Include="..\Ams2CareerCompanion.Infrastructure\Ams2CareerCompanion.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\ams2-career.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\ams2-career.png" />
+    <Content Include="Assets\ams2-career.ico" />
+  </ItemGroup>
+
+</Project>

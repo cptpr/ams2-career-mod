@@ -1,0 +1,72 @@
+using Ams2CareerCompanion.Core.Models;
+
+namespace Ams2CareerCompanion.Core.Services;
+
+public sealed class CareerFactory
+{
+    public CareerState CreateNewCareer(string careerName, StarterCarDefinition starterCar, CareerPreset preset, CareerContentCatalog content)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(careerName);
+
+        var rookieLeague = content.Leagues.First();
+
+        var state = new CareerState
+        {
+            Name = careerName.Trim(),
+            CreatedUtc = DateTime.UtcNow,
+            Preset = preset,
+            ActiveLeagueId = rookieLeague.Id,
+            PlayerProfile = new PlayerProfile
+            {
+                StarterCarId = starterCar.Id,
+                StarterCarName = starterCar.Name,
+                StarterCarClass = starterCar.ClassName,
+                SelectedCarClass = starterCar.ClassName
+            },
+            Progression = new ProgressionState
+            {
+                Credits = preset switch
+                {
+                    CareerPreset.Casual => 5000,
+                    CareerPreset.Standard => 3000,
+                    CareerPreset.Hardcore => 1800,
+                    _ => 3000
+                },
+                DriverRating = 1000,
+                Reputation = 0,
+                Xp = 0,
+                Level = 1
+            },
+            UnlockedLeagueIds = [rookieLeague.Id],
+            UnlockedTitleIds = [content.Titles.First().Id]
+        };
+
+        state.Challenges.AddRange(content.ChallengeTemplates.Select(template => new ChallengeInstance
+        {
+            TemplateId = template.Id,
+            Name = template.Name,
+            Description = template.Description,
+            Cadence = template.Cadence,
+            Kind = template.Kind,
+            Target = template.Target,
+            BonusXp = template.BonusXp,
+            BonusCredits = template.BonusCredits
+        }));
+
+        foreach (var archetype in content.RivalArchetypes)
+        {
+            state.Rivals.Add(new RivalProfile
+            {
+                Name = archetype.Name,
+                Personality = archetype.Personality,
+                Specialty = archetype.Specialty,
+                CurrentLeagueId = rookieLeague.Id,
+                DriverRating = archetype.BaseRating,
+                Reputation = 0,
+                RivalryIntensity = 12
+            });
+        }
+
+        return state;
+    }
+}
