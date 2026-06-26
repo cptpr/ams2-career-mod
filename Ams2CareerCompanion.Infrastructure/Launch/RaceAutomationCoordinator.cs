@@ -71,6 +71,22 @@ public sealed class RaceAutomationCoordinator : IDisposable
             return (exportResult, new LaunchResult(false, false, exportResult.Message));
         }
 
+        if (exportResult.RequiresGameRestart && _launchService.IsGameRunning)
+        {
+            var blockedRun = _runContext.EnsureRun("restart-required-before-launch");
+            var blockedMessage = "AMS2 must be restarted before this prepared event can be launched safely. Close the current AMS2 session, then launch again.";
+            Publish(new RaceAutomationStatus
+            {
+                RunId = blockedRun.RunId,
+                Stage = RaceAutomationStage.RestartRequired,
+                Headline = "Restart AMS2 before launch.",
+                Detail = blockedMessage,
+                RequiresGameRestart = true
+            });
+
+            return (exportResult, new LaunchResult(false, false, blockedMessage));
+        }
+
         var launchResult = vr ? _launchService.LaunchVr() : _launchService.Launch();
         var run = _runContext.EnsureRun("launch-requested");
         Publish(launchResult.Success
