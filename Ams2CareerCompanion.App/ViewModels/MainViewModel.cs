@@ -17,6 +17,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly IMockRaceSimulator _mockRaceSimulator;
     private readonly Ams2LaunchService _launchService;
     private readonly Ams2SessionPresetService _sessionPresetService;
+    private readonly RaceAutomationCoordinator _raceAutomationCoordinator;
     private readonly ChampionshipEditorPresetExportAdapter _eventExportAdapter;
     private readonly CareerFactory _careerFactory;
     private readonly CareerEventPlanner _eventPlanner;
@@ -56,6 +57,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private string _nextEventHeadlineText = "No next event available.";
     private string _nextEventDetailsText = "Create or load a career to generate the next event plan.";
     private string _nextEventExportStatusText = "No export target selected yet.";
+    private string _automationHeadlineText = "No race automation active.";
+    private string _automationDetailText = "Generate or load a career event to prepare the next race.";
+    private string _automationTelemetryText = string.Empty;
     private bool _developerToolsEnabled;
 
     public MainViewModel(
@@ -65,6 +69,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         IMockRaceSimulator mockRaceSimulator,
         Ams2LaunchService launchService,
         Ams2SessionPresetService sessionPresetService,
+        RaceAutomationCoordinator raceAutomationCoordinator,
         ResultReconstructionService resultReconstructionService,
         CareerFactory careerFactory,
         CareerProgressionEngine progressionEngine)
@@ -75,6 +80,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _mockRaceSimulator = mockRaceSimulator;
         _launchService = launchService;
         _sessionPresetService = sessionPresetService;
+        _raceAutomationCoordinator = raceAutomationCoordinator;
         _eventExportAdapter = new ChampionshipEditorPresetExportAdapter(sessionPresetService);
         _careerFactory = careerFactory;
         _eventPlanner = new CareerEventPlanner();
@@ -107,6 +113,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
         telemetryFeed.SessionStatusChanged += OnSessionStatusChanged;
         resultReconstructionService.DraftCreated += OnDraftCreated;
+        raceAutomationCoordinator.StatusChanged += OnAutomationStatusChanged;
     }
 
     public ObservableCollection<StarterCarDefinition> StarterCars { get; }
@@ -280,6 +287,24 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         private set => SetProperty(ref _nextEventExportStatusText, value);
     }
 
+    public string AutomationHeadlineText
+    {
+        get => _automationHeadlineText;
+        private set => SetProperty(ref _automationHeadlineText, value);
+    }
+
+    public string AutomationDetailText
+    {
+        get => _automationDetailText;
+        private set => SetProperty(ref _automationDetailText, value);
+    }
+
+    public string AutomationTelemetryText
+    {
+        get => _automationTelemetryText;
+        private set => SetProperty(ref _automationTelemetryText, value);
+    }
+
     public bool DeveloperToolsEnabled
     {
         get => _developerToolsEnabled;
@@ -415,7 +440,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
     private async Task ApplyRecommendedEventAsync()
     {
-        var result = _eventExportAdapter.Apply(_nextEventPlan);
+        var result = _raceAutomationCoordinator.PrepareEvent(_nextEventPlan);
         NextEventExportStatusText = result.Message;
         StatusMessage = result.Message;
 
@@ -429,7 +454,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
     private async Task ApplyRecommendedEventAndLaunchAsync()
     {
-        var applyResult = _eventExportAdapter.Apply(_nextEventPlan);
+        var (applyResult, launchResult) = _raceAutomationCoordinator.PrepareAndLaunch(_nextEventPlan, vr: false);
         NextEventExportStatusText = applyResult.Message;
 
         if (!applyResult.Success)
@@ -443,14 +468,13 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             SelectedSessionPreset = SessionPresets.FirstOrDefault(x => x.Key == applyResult.Preset.Key) ?? applyResult.Preset;
         }
 
-        var launchResult = _launchService.Launch();
-        RefreshLauncherState();
         StatusMessage = launchResult.Success
             ? $"{applyResult.Message} AMS2 launch requested."
             : $"{applyResult.Message} {launchResult.Message}";
         SessionSummary = launchResult.Success
             ? NextEventDetailsText
             : "Event export succeeded, but AMS2 launch failed.";
+        RefreshLauncherState();
         await Task.CompletedTask;
     }
 
@@ -643,6 +667,21 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             PendingDraft = draft;
             StatusMessage = "Result confidence is below automatic commit threshold. Review and confirm the detected finish.";
             RaiseCommandStates();
+        });
+    }
+
+    private void OnAutomationStatusChanged(object? sender, RaceAutomationStatus status)
+    {
+        _ = Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            AutomationHeadlineText = status.Headline;
+            AutomationDetailText = status.Detail;
+            AutomationTelemetryText = status.TelemetryLine;
+
+            if (status.Stage == RaceAutomationStage.SessionFinished)
+            {
+                StatusMessage = status.Headline;
+            }
         });
     }
 
@@ -985,6 +1024,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        _raceAutomationCoordinator.Dispose();
         await _telemetryFeed.DisposeAsync();
     }
 

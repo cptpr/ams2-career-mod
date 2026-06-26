@@ -46,7 +46,9 @@ public partial class App : Application
             var telemetryFeed = new CompositeTelemetryFeed(liveTelemetryFeed, mockTelemetryFeed);
             var launchService = new Ams2LaunchService();
             var sessionPresetService = new Ams2SessionPresetService(dataDirectory);
+            var eventExportAdapter = new ChampionshipEditorPresetExportAdapter(sessionPresetService);
             var resultService = new ResultReconstructionService(telemetryFeed);
+            var raceAutomationCoordinator = new RaceAutomationCoordinator(telemetryFeed, launchService, eventExportAdapter);
             var careerFactory = new CareerFactory();
             var progressionEngine = new CareerProgressionEngine();
 
@@ -57,6 +59,7 @@ public partial class App : Application
                 telemetryFeed,
                 launchService,
                 sessionPresetService,
+                raceAutomationCoordinator,
                 resultService,
                 careerFactory,
                 progressionEngine);

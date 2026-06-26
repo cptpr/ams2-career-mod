@@ -167,6 +167,30 @@
                                     </StackPanel>
                                 </Border>
 
+                                <Border Margin="0,16,0,0"
+                                        Padding="14"
+                                        CornerRadius="12"
+                                        Background="#0F1630">
+                                    <StackPanel>
+                                        <TextBlock FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="#F3F6FF"
+                                                   Text="Automation Monitor" />
+                                        <TextBlock Margin="0,8,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#F3F6FF"
+                                                   Text="{Binding AutomationHeadlineText}" />
+                                        <TextBlock Margin="0,8,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#AFC0EA"
+                                                   Text="{Binding AutomationDetailText}" />
+                                        <TextBlock Margin="0,8,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#8BD9B6"
+                                                   Text="{Binding AutomationTelemetryText}" />
+                                    </StackPanel>
+                                </Border>
+
                                 <Button Margin="0,18,0,0"
                                         Padding="14"
                                         FontSize="16"
