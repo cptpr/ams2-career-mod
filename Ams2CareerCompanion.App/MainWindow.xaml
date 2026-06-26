@@ -1341,7 +1341,8 @@
                                              BorderBrush="#2A3946"
                                              BorderThickness="1"
                                              Foreground="{StaticResource TextMainBrush}"
-                                             Text="{Binding InstallPathText}" />
+                                             IsReadOnly="True"
+                                             Text="{Binding InstallPathText, Mode=OneWay}" />
                                     <TextBlock Margin="0,16,0,0" Style="{StaticResource CaptionTextStyle}" Text="AMS2 PROFILE PATH" />
                                     <TextBox Margin="0,8,0,0"
                                              Padding="12"
@@ -1349,7 +1350,8 @@
                                              BorderBrush="#2A3946"
                                              BorderThickness="1"
                                              Foreground="{StaticResource TextMainBrush}"
-                                             Text="{Binding RaceDesk.SessionPresetStatusText}" />
+                                             IsReadOnly="True"
+                                             Text="{Binding RaceDesk.SessionPresetStatusText, Mode=OneWay}" />
                                     <TextBlock Margin="0,18,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding LauncherStatusText}" />
                                     <Button Margin="0,22,0,0"
                                             Style="{StaticResource SecondaryButtonStyle}"
