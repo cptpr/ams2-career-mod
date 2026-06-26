@@ -232,7 +232,7 @@
 
     <Grid Background="{StaticResource BgRootBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="104" />
+            <RowDefinition Height="92" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -244,13 +244,13 @@
                 CornerRadius="20">
             <Grid Margin="18,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="360" />
-                    <ColumnDefinition Width="150" />
-                    <ColumnDefinition Width="180" />
-                    <ColumnDefinition Width="180" />
-                    <ColumnDefinition Width="180" />
-                    <ColumnDefinition Width="220" />
-                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="136" />
+                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="190" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0"
@@ -351,8 +351,8 @@
         <Grid Grid.Row="1"
               Margin="18,0,18,18">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="220" />
-                <ColumnDefinition Width="18" />
+                <ColumnDefinition Width="190" />
+                <ColumnDefinition Width="14" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -368,16 +368,16 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <StackPanel Margin="18,18,18,10">
+                    <StackPanel Margin="16,16,16,10">
                         <Image Source="Assets/ams2-career.png"
-                               Width="92"
-                               Height="92"
+                               Width="84"
+                               Height="84"
                                Stretch="Uniform"
                                HorizontalAlignment="Left" />
                     </StackPanel>
 
                     <StackPanel Grid.Row="1"
-                                Margin="14,6,14,12">
+                                Margin="12,6,12,12">
                         <Button Style="{StaticResource NavButtonStyle}"
                                 Command="{Binding ShowRaceDeskPageCommand}"
                                 Tag="{Binding IsRaceDeskPageSelected}">
@@ -481,32 +481,33 @@
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <Grid Margin="0">
+                    <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="18" />
+                            <RowDefinition Height="14" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="1.05*" />
+                            <ColumnDefinition Width="2.15*" />
+                            <ColumnDefinition Width="0.95*" />
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Row="0"
                                 Grid.Column="0"
+                                MinHeight="340"
                                 Style="{StaticResource CardBorderStyle}"
                                 Background="{StaticResource HeroGradientBrush}"
-                                Padding="26">
+                                Padding="24">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="1.2*" />
-                                    <ColumnDefinition Width="0.9*" />
+                                    <ColumnDefinition Width="1.1*" />
+                                    <ColumnDefinition Width="0.78*" />
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Style="{StaticResource CaptionTextStyle}" Text="NEXT EVENT" />
-                                    <TextBlock Margin="0,12,0,0"
-                                               FontSize="26"
+                                    <TextBlock Margin="0,10,0,0"
+                                               FontSize="24"
                                                FontWeight="Bold"
                                                Foreground="{StaticResource TextMainBrush}"
                                                TextWrapping="Wrap"
@@ -515,7 +516,7 @@
                                                Style="{StaticResource BodyTextStyle}"
                                                Text="{Binding NextEventDisplaySubtitle}" />
 
-                                    <Grid Margin="0,28,0,0">
+                                    <Grid Margin="0,24,0,0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="*" />
@@ -527,7 +528,7 @@
                                             <StackPanel>
                                                 <TextBlock Style="{StaticResource CaptionTextStyle}" Text="TRACK" />
                                                 <TextBlock Margin="0,8,0,0"
-                                                           FontSize="20"
+                                                           FontSize="18"
                                                            FontWeight="SemiBold"
                                                            Text="{Binding RaceDesk.EventPlan.Plan.TrackDisplayName}" />
                                                 <TextBlock Margin="0,6,0,0"
@@ -542,7 +543,7 @@
                                             <StackPanel>
                                                 <TextBlock Style="{StaticResource CaptionTextStyle}" Text="CAR / CLASS" />
                                                 <TextBlock Margin="0,8,0,0"
-                                                           FontSize="20"
+                                                           FontSize="18"
                                                            FontWeight="SemiBold"
                                                            Text="{Binding CurrentStarterCar}" />
                                                 <TextBlock Margin="0,6,0,0"
@@ -564,14 +565,14 @@
                                             <StackPanel Grid.Column="0">
                                                 <TextBlock Style="{StaticResource CaptionTextStyle}" Text="ROUND" />
                                                 <TextBlock Margin="0,8,0,0"
-                                                           FontSize="19"
+                                                           FontSize="18"
                                                            FontWeight="SemiBold"
                                                            Text="{Binding NextEventRoundDisplay}" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="1">
                                                 <TextBlock Style="{StaticResource CaptionTextStyle}" Text="SESSION" />
                                                 <TextBlock Margin="0,8,0,0"
-                                                           FontSize="19"
+                                                           FontSize="18"
                                                            FontWeight="SemiBold"
                                                            TextWrapping="Wrap"
                                                            Text="{Binding NextEventSessionDisplay}" />
@@ -579,7 +580,7 @@
                                             <StackPanel Grid.Column="2">
                                                 <TextBlock Style="{StaticResource CaptionTextStyle}" Text="REWARDS PREVIEW" />
                                                 <TextBlock Margin="0,8,0,0"
-                                                           FontSize="19"
+                                                           FontSize="18"
                                                            FontWeight="SemiBold"
                                                            Foreground="{StaticResource AccentAmberBrush}"
                                                            Text="{Binding NextEventRewardCreditsText}" />
@@ -593,7 +594,7 @@
                                 </StackPanel>
 
                                 <Border Grid.Column="1"
-                                        Margin="28,0,0,0"
+                                        Margin="22,0,0,0"
                                         CornerRadius="20"
                                         BorderBrush="#2A3642"
                                         BorderThickness="1">
@@ -605,6 +606,11 @@
                                                 <GradientStop Color="#0E141A" Offset="1" />
                                             </LinearGradientBrush>
                                         </Grid.Background>
+                                        <Rectangle Margin="18"
+                                                   RadiusX="16"
+                                                   RadiusY="16"
+                                                   Fill="#1E2933"
+                                                   Opacity="0.55" />
                                         <StackPanel VerticalAlignment="Bottom"
                                                     Margin="24">
                                             <TextBlock FontSize="22"
@@ -615,7 +621,7 @@
                                                        Text="{Binding NextEventHeroMetaText}" />
                                             <TextBlock Margin="0,12,0,0"
                                                        Style="{StaticResource BodyTextStyle}"
-                                                       Text="{Binding NextEventHeroNotesText}" />
+                                                       Text="{Binding NextEventOverlapGuidanceText}" />
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -624,7 +630,7 @@
 
                         <Border Grid.Row="0"
                                 Grid.Column="1"
-                                Margin="18,0,0,0"
+                                Margin="14,0,0,0"
                                 Style="{StaticResource CardBorderStyle}">
                             <DockPanel LastChildFill="True">
                                 <StackPanel DockPanel.Dock="Top">
@@ -712,10 +718,10 @@
                         <Grid Grid.Row="2"
                               Grid.ColumnSpan="2">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.05*" />
                                 <ColumnDefinition Width="1.15*" />
-                                <ColumnDefinition Width="1.15*" />
-                                <ColumnDefinition Width="1*" />
-                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="0.95*" />
+                                <ColumnDefinition Width="0.95*" />
                             </Grid.ColumnDefinitions>
 
                             <Border Grid.Column="0"
@@ -725,7 +731,7 @@
                                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="PRE-RACE CHECKLIST" />
                                     <TextBlock Margin="0,10,0,0"
                                                Style="{StaticResource BodyTextStyle}"
-                                               Text="AMS2 still requires confirmation in-game. Use this checklist as the guided handoff between the desk and the sim." />
+                                               Text="Confirm the prepared event in AMS2, then use this checklist as the handoff between the desk and the sim." />
                                     <ItemsControl Margin="0,18,0,0"
                                                   ItemsSource="{Binding RaceDesk.ReadinessChecklist}">
                                         <ItemsControl.ItemTemplate>
@@ -775,29 +781,55 @@
                                     Style="{StaticResource CardBorderStyle}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="RIVAL SPOTLIGHT" />
-                                    <Border Margin="0,16,0,0"
-                                            Height="120"
-                                            Background="#151D25"
-                                            BorderBrush="#253443"
-                                            BorderThickness="1"
-                                            CornerRadius="14" />
-                                    <TextBlock Margin="0,16,0,0"
-                                               FontSize="18"
-                                               FontWeight="SemiBold"
-                                               Text="{Binding FeaturedRivalText}" />
-                                    <TextBlock Margin="0,8,0,0"
+                                    <Grid Margin="0,16,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="110" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="96"
+                                                Height="116"
+                                                Background="#18212A"
+                                                BorderBrush="#2A3A48"
+                                                BorderThickness="1"
+                                                CornerRadius="16" />
+                                        <StackPanel Grid.Column="1"
+                                                    Margin="14,0,0,0">
+                                            <TextBlock FontSize="18"
+                                                       FontWeight="SemiBold"
+                                                       Text="{Binding FeaturedRivalName}" />
+                                            <TextBlock Margin="0,4,0,0"
+                                                       Foreground="{StaticResource AccentRedBrush}"
+                                                       FontWeight="SemiBold"
+                                                       Text="{Binding FeaturedRivalStatusText}" />
+                                            <TextBlock Margin="0,10,0,0"
+                                                       Style="{StaticResource CaptionTextStyle}"
+                                                       Text="{Binding FeaturedRivalMetaText}" />
+                                            <Grid Margin="0,16,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Style="{StaticResource CaptionTextStyle}" Text="RIVALRY HEAT" />
+                                                    <TextBlock Margin="0,6,0,0"
+                                                               FontSize="18"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource AccentAmberBrush}"
+                                                               Text="{Binding FeaturedRivalHeatText}" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Style="{StaticResource CaptionTextStyle}" Text="CAREER CONTEXT" />
+                                                    <TextBlock Margin="0,6,0,0"
+                                                               FontSize="16"
+                                                               FontWeight="SemiBold"
+                                                               Text="{Binding CurrentLeagueName}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Grid>
+                                    <TextBlock Margin="0,18,0,0"
                                                Style="{StaticResource BodyTextStyle}"
-                                               Text="Current rival prominence and overlap are driven by the career state. Deeper showdown and timeline systems can bind here later without changing the shell." />
-                                    <ItemsControl Margin="0,14,0,0"
-                                                  ItemsSource="{Binding Rivals}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Margin="0,0,0,6"
-                                                           Style="{StaticResource CaptionTextStyle}"
-                                                           Text="{Binding}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                               Text="{Binding FeaturedRivalDetailText}" />
                                 </StackPanel>
                             </Border>
 
@@ -806,19 +838,41 @@
                                     Style="{StaticResource CardBorderStyle}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="REWARDS PREVIEW" />
-                                    <TextBlock Margin="0,16,0,0"
-                                               FontSize="24"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource AccentAmberBrush}"
-                                               Text="{Binding NextEventRewardCreditsText}" />
-                                    <TextBlock Margin="0,4,0,0"
-                                               FontSize="16"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource AccentGreenBrush}"
-                                               Text="{Binding NextEventRewardXpText}" />
-                                    <TextBlock Margin="0,10,0,0"
-                                               Style="{StaticResource BodyTextStyle}"
-                                               Text="Rewards shown here are the current event baseline. Final credits, rating, and reputation update after result reconstruction and commit." />
+                                    <Grid Margin="0,18,0,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Row="0" Style="{StaticResource BodyTextStyle}" Text="Credits" />
+                                        <TextBlock Grid.Row="0"
+                                                   Grid.Column="1"
+                                                   FontSize="18"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource AccentAmberBrush}"
+                                                   Text="{Binding NextEventRewardCreditsText}" />
+                                        <TextBlock Grid.Row="1" Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="XP" />
+                                        <TextBlock Grid.Row="1"
+                                                   Grid.Column="1"
+                                                   Margin="0,14,0,0"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource AccentGreenBrush}"
+                                                   Text="{Binding NextEventRewardXpText}" />
+                                        <TextBlock Grid.Row="2" Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="Career Flow" />
+                                        <TextBlock Grid.Row="2"
+                                                   Grid.Column="1"
+                                                   Margin="0,14,0,0"
+                                                   Style="{StaticResource CaptionTextStyle}"
+                                                   Text="{Binding CurrentLeagueName}" />
+                                    </Grid>
+                                    <TextBlock Margin="0,18,0,0"
+                                               Style="{StaticResource CaptionTextStyle}"
+                                               Text="Values shown here are the current event baseline. Final updates are committed after result reconstruction." />
                                 </StackPanel>
                             </Border>
 
@@ -831,17 +885,35 @@
                                                FontWeight="Bold"
                                                TextWrapping="Wrap"
                                                Text="{Binding SelectedRecentResultHeadline}" />
-                                    <TextBlock Margin="0,8,0,0"
-                                               Foreground="{StaticResource AccentGreenBrush}"
-                                               FontWeight="SemiBold"
-                                               Text="{Binding SelectedRecentResultStatusLine}" />
-                                    <TextBlock Margin="0,8,0,0"
-                                               Style="{StaticResource BodyTextStyle}"
-                                               Text="{Binding SelectedRecentResultCompactDetails}" />
-                                    <TextBlock Margin="0,12,0,0"
-                                               Style="{StaticResource BodyTextStyle}"
-                                               MaxHeight="240"
-                                               Text="{Binding SelectedRecentResultDetails}" />
+                                    <TextBlock Margin="0,6,0,0"
+                                               Style="{StaticResource CaptionTextStyle}"
+                                               Text="{Binding LastResultMetaText}" />
+                                    <Grid Margin="0,16,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.1*" />
+                                            <ColumnDefinition Width="0.9*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0"
+                                                Style="{StaticResource CardBorderStyle}"
+                                                Background="#101821">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="POSITION" />
+                                                <TextBlock Margin="0,10,0,0"
+                                                           FontSize="40"
+                                                           FontWeight="Bold"
+                                                           Text="{Binding LastResultPrimaryPositionText}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <StackPanel Grid.Column="1"
+                                                    Margin="12,0,0,0">
+                                            <TextBlock Foreground="{StaticResource AccentGreenBrush}"
+                                                       FontWeight="SemiBold"
+                                                       Text="{Binding LastResultOutcomeText}" />
+                                            <TextBlock Margin="0,10,0,0"
+                                                       Style="{StaticResource BodyTextStyle}"
+                                                       Text="{Binding SelectedRecentResultCompactDetails}" />
+                                        </StackPanel>
+                                    </Grid>
                                     <Border Margin="0,16,0,0"
                                             Style="{StaticResource StatusPillStyle}">
                                         <TextBlock FontWeight="SemiBold"

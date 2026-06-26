@@ -283,6 +283,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 RaisePropertyChanged(nameof(SelectedRecentResultDetails));
                 RaisePropertyChanged(nameof(SelectedRecentResultStatusLine));
                 RaisePropertyChanged(nameof(SelectedRecentResultCompactDetails));
+                RaisePropertyChanged(nameof(LastResultPrimaryPositionText));
+                RaisePropertyChanged(nameof(LastResultMetaText));
+                RaisePropertyChanged(nameof(LastResultOutcomeText));
             }
         }
     }
@@ -507,6 +510,22 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         ? "No active car profile."
         : $"{CurrentStarterCar}  |  {CurrentLeagueName}  |  {CurrentTitle}";
     public string FeaturedRivalName => _career?.Rivals.OrderByDescending(x => x.RivalryIntensity).FirstOrDefault()?.Name ?? "No featured rival";
+    public string FeaturedRivalStatusText
+    {
+        get
+        {
+            var rival = _career?.Rivals.OrderByDescending(x => x.RivalryIntensity).FirstOrDefault();
+            return rival is null ? "No active rival" : rival.RivalryIntensity >= 25 ? "Active Rival" : "Emerging Rival";
+        }
+    }
+    public string FeaturedRivalHeatText
+    {
+        get
+        {
+            var rival = _career?.Rivals.OrderByDescending(x => x.RivalryIntensity).FirstOrDefault();
+            return rival is null ? "0%" : $"{Math.Clamp(rival.RivalryIntensity, 0, 100)}%";
+        }
+    }
     public string FeaturedRivalMetaText
     {
         get
@@ -570,6 +589,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public string SelectedRecentResultCompactDetails => SelectedRecentResult is null
         ? "Complete an event to populate the most recent result summary."
         : $"Overall P{SelectedRecentResult.OverallPosition}/{SelectedRecentResult.Entrants}  |  Class P{SelectedRecentResult.ClassPosition}  |  {SelectedRecentResult.LapsCompleted} laps";
+    public string LastResultPrimaryPositionText => SelectedRecentResult is null ? "—" : $"P{SelectedRecentResult.OverallPosition}";
+    public string LastResultMetaText => SelectedRecentResult?.Subtitle ?? "No completed event yet.";
+    public string LastResultOutcomeText => SelectedRecentResult?.ResultTag ?? "Awaiting first committed result";
 
     public async Task InitializeAsync()
     {
@@ -1112,11 +1134,16 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaisePropertyChanged(nameof(GarageEligibleEventText));
         RaisePropertyChanged(nameof(GarageDetailSummaryText));
         RaisePropertyChanged(nameof(FeaturedRivalName));
+        RaisePropertyChanged(nameof(FeaturedRivalStatusText));
+        RaisePropertyChanged(nameof(FeaturedRivalHeatText));
         RaisePropertyChanged(nameof(FeaturedRivalMetaText));
         RaisePropertyChanged(nameof(FeaturedRivalDetailText));
         RaisePropertyChanged(nameof(TeamHqSummaryText));
         RaisePropertyChanged(nameof(TeamHqEfficiencyText));
         RaisePropertyChanged(nameof(TeamHqNextUnlockText));
+        RaisePropertyChanged(nameof(LastResultPrimaryPositionText));
+        RaisePropertyChanged(nameof(LastResultMetaText));
+        RaisePropertyChanged(nameof(LastResultOutcomeText));
         UpdateProfileSummary();
     }
 
