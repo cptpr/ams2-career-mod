@@ -99,11 +99,17 @@ public sealed class ResultReconstructionService
         }
 
         var outcome = ResolveOutcome(telemetry, fallbackOutcome);
-        var confidence = status.ForceManualReview || outcome != RaceOutcome.Finished
+        var validationNotes = BuildValidationNotes(telemetry);
+        var confidence = status.ForceManualReview || outcome != RaceOutcome.Finished || validationNotes.Count > 0
             ? ResultConfidence.Medium
             : telemetry.CompletedLaps >= 3
                 ? ResultConfidence.High
                 : ResultConfidence.Low;
+
+        if (validationNotes.Count > 0)
+        {
+            confidence = ResultConfidence.Low;
+        }
 
         var actionText = outcome switch
         {
@@ -117,6 +123,11 @@ public sealed class ResultReconstructionService
 
         var summary = $"{status.LeagueName} {actionText} at {status.TrackName}: P{telemetry.OverallPosition}/{telemetry.Entrants}, " +
                       $"class P{telemetry.ClassPosition}, {telemetry.CompletedLaps}/{Math.Max(telemetry.TotalLaps, telemetry.CompletedLaps)} laps.";
+
+        if (validationNotes.Count > 0)
+        {
+            summary = $"{summary} Telemetry validation: {string.Join("; ", validationNotes)}.";
+        }
 
         return new RaceResultDraft
         {
@@ -164,5 +175,37 @@ public sealed class ResultReconstructionService
         }
 
         return RaceOutcome.Finished;
+    }
+
+    private static List<string> BuildValidationNotes(TelemetrySnapshot telemetry)
+    {
+        var notes = new List<string>();
+
+        if (telemetry.Entrants <= 0)
+        {
+            notes.Add("entrant count is missing");
+        }
+
+        if (telemetry.OverallPosition <= 0 || (telemetry.Entrants > 0 && telemetry.OverallPosition > telemetry.Entrants))
+        {
+            notes.Add("overall position is outside the field size");
+        }
+
+        if (telemetry.ClassPosition <= 0 || (telemetry.Entrants > 0 && telemetry.ClassPosition > telemetry.Entrants))
+        {
+            notes.Add("class position is outside the field size");
+        }
+
+        if (telemetry.CompletedLaps < 0)
+        {
+            notes.Add("completed lap count is negative");
+        }
+
+        if (telemetry.TotalLaps > 0 && telemetry.CompletedLaps > telemetry.TotalLaps)
+        {
+            notes.Add("completed laps exceed total laps");
+        }
+
+        return notes;
     }
 }
