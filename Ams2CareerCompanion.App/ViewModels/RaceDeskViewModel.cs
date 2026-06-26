@@ -14,6 +14,8 @@ public sealed class RaceDeskViewModel : ObservableObject
     private string _sessionPresetStatusText = "No preset status yet.";
     private string _selectedSessionPresetSummaryText = "No session preset selected.";
     private bool _canDeleteSelectedSessionPreset;
+    private string _stateKey = "NoCareer";
+    private string _blockingGuidance = string.Empty;
 
     public RaceDeskViewModel(
         ObservableCollection<SessionPresetInfo> sessionPresets,
@@ -50,9 +52,12 @@ public sealed class RaceDeskViewModel : ObservableObject
     public ObservableCollection<SessionPresetInfo> SessionPresets { get; }
     public ObservableCollection<RaceHistoryEntry> RecentResults { get; }
     public ObservableCollection<RaceHistoryEntry> RaceHistory { get; }
+    public ObservableCollection<ReadinessChecklistItemViewModel> ReadinessChecklist { get; } = new();
     public AutomationStateViewModel Automation { get; } = new();
     public EventPlanViewModel EventPlan { get; } = new();
     public ResultReviewViewModel ResultReview { get; } = new();
+    public DeskActionViewModel PrimaryAction { get; } = new();
+    public DeskActionViewModel SecondaryAction { get; } = new();
 
     public RelayCommand RefreshCommand { get; }
     public RelayCommand LaunchAms2Command { get; }
@@ -118,5 +123,17 @@ public sealed class RaceDeskViewModel : ObservableObject
     {
         get => _canDeleteSelectedSessionPreset;
         set => SetProperty(ref _canDeleteSelectedSessionPreset, value);
+    }
+
+    public string StateKey
+    {
+        get => _stateKey;
+        set => SetProperty(ref _stateKey, value);
+    }
+
+    public string BlockingGuidance
+    {
+        get => _blockingGuidance;
+        set => SetProperty(ref _blockingGuidance, value);
     }
 }

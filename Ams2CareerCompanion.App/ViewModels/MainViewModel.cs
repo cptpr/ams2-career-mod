@@ -417,6 +417,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         ? "Driver rating not established."
         : $"Driver Rating {_career.Progression.DriverRating:n0}  |  Reputation {_career.Progression.Reputation}";
     public string CareerNameCharacterCount => $"{CareerNameInput.Length}/{CareerNameMaxLength}";
+    public string TelemetryHealthText => _telemetryFeed.ConnectionState switch
+    {
+        TelemetryConnectionState.Monitoring => "HEALTHY",
+        TelemetryConnectionState.Simulating => "SIMULATING",
+        _ => _launchService.IsGameRunning ? "WAITING" : "OFFLINE"
+    };
 
     public RaceResultDraft? PendingDraft
     {
@@ -454,6 +460,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
         await _telemetryFeed.StartAsync();
         await RefreshAsync();
+        UpdateRaceDeskFlowState();
         RaiseCommandStates();
     }
 
@@ -469,6 +476,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             StatusMessage = "Create a new career from the Career tab, then launch AMS2 from the Race tab.";
             RefreshCollections(Array.Empty<RaceResultConfirmed>());
             RaiseCareerProperties();
+            UpdateRaceDeskFlowState();
             RaiseCommandStates();
             return;
         }
@@ -478,6 +486,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaiseCareerProperties();
         RefreshNextEventPlan(results);
         StatusMessage = $"Active league: {CurrentLeagueName}. {NextEventHeadlineText}";
+        UpdateRaceDeskFlowState();
         RaiseCommandStates();
     }
 
@@ -493,6 +502,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RewardSummary = "Career created. Your first objective is to complete the Rookie Cup.";
         StatusMessage = "Career created successfully. Go to Race and launch AMS2.";
         await RefreshAsync();
+        UpdateRaceDeskFlowState();
         RaiseCommandStates();
     }
 
@@ -532,6 +542,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             SelectedSessionPreset = SessionPresets.FirstOrDefault(x => x.Key == result.Preset.Key) ?? result.Preset;
         }
 
+        UpdateRaceDeskFlowState();
         await Task.CompletedTask;
     }
 
@@ -559,6 +570,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             ? NextEventDetailsText
             : "Event export succeeded, but AMS2 launch failed.";
         RefreshLauncherState();
+        UpdateRaceDeskFlowState();
         await Task.CompletedTask;
     }
 
@@ -584,6 +596,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         SessionSummary = launchResult.Success
             ? "AMS2 launched with a restored championship/custom-event editor state. Verify the prepared event in-game and start when ready."
             : "Preset was applied, but AMS2 launch failed.";
+        UpdateRaceDeskFlowState();
         await Task.CompletedTask;
     }
 
@@ -730,6 +743,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         Diagnostics.RecordResultStatus(PendingDraft.AutomationRunId, $"Pending result dismissed: {PendingDraft.Outcome} at {PendingDraft.TrackName}.");
         StatusMessage = "Pending result review dismissed.";
         PendingDraft = null;
+        UpdateRaceDeskFlowState();
         RaiseCommandStates();
         await Task.CompletedTask;
     }
@@ -743,6 +757,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             var trackName = ResolveSessionTrackName(snapshot);
 
             ConnectionStateText = BuildConnectionStateText();
+            RaisePropertyChanged(nameof(TelemetryHealthText));
             SessionSummary = snapshot.SessionPhase switch
             {
                 SessionPhase.Grid => $"Grid formed for {leagueName} at {trackName}.",
@@ -751,6 +766,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 _ => snapshot.IsConnected ? "Monitoring AMS2 for the next session." : trackName
             };
             Diagnostics.RecordSessionStatus(_raceAutomationCoordinator.CurrentStatus.RunId, SessionSummary);
+            UpdateRaceDeskFlowState();
         });
     }
 
@@ -767,6 +783,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             PendingDraft = draft;
             StatusMessage = "Result confidence is below automatic commit threshold. Review and confirm the detected finish.";
             Diagnostics.RecordResultStatus(draft.AutomationRunId, $"Pending manual review for {draft.Outcome} at {draft.TrackName}.");
+            UpdateRaceDeskFlowState();
             RaiseCommandStates();
         });
     }
@@ -785,6 +802,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             {
                 StatusMessage = status.Headline;
             }
+
+            UpdateRaceDeskFlowState();
         });
     }
 
@@ -848,6 +867,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         var results = await _repository.LoadRaceHistoryAsync(_career.Id);
         RefreshCollections(results);
         RaiseCareerProperties();
+        UpdateRaceDeskFlowState();
         RaiseCommandStates();
     }
 
@@ -908,6 +928,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaisePropertyChanged(nameof(RecentResultsHeaderText));
         RaisePropertyChanged(nameof(RaceHistoryHeaderText));
         RaisePropertyChanged(nameof(SeasonSummaryText));
+        UpdateRaceDeskFlowState();
     }
 
     private static string BuildRewardSummary(RewardBreakdown reward)
@@ -1055,6 +1076,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             NextEventExportStatusText = "No export target selected yet.";
             RaceDesk.EventPlan.Clear();
             Diagnostics.RecordExportStatus(NextEventExportStatusText);
+            UpdateRaceDeskFlowState();
             return;
         }
 
@@ -1070,6 +1092,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         NextEventExportStatusText = BuildExportStatusText(preview.Message, preview.Readiness, preview.RequiresGameRestart);
         RaceDesk.EventPlan.Update(plan, NextEventDetailsText, NextEventExportStatusText, preview.Readiness);
         Diagnostics.RecordExportStatus(NextEventExportStatusText);
+        UpdateRaceDeskFlowState();
     }
 
     private static string BuildExportStatusText(string message, EventExportReadiness? readiness, bool requiresRestart)
@@ -1155,6 +1178,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 ? "AMS2 detected and currently running."
                 : "AMS2 detected and ready to launch."
             : "AMS2 install not detected. Steam fallback will be used if available.";
+        RaisePropertyChanged(nameof(TelemetryHealthText));
+        UpdateRaceDeskFlowState();
     }
 
     private void UpdateProfileSummary()
@@ -1176,6 +1201,129 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             _career.Progression.Credits,
             _career.Progression.DriverRating,
             _career.Progression.Reputation);
+    }
+
+    private void UpdateRaceDeskFlowState()
+    {
+        RaceDesk.ReadinessChecklist.Clear();
+
+        if (_career is null)
+        {
+            RaceDesk.StateKey = "NoCareer";
+            RaceDesk.BlockingGuidance = "Create a career profile before preparing events.";
+            RaceDesk.PrimaryAction.Set("Create Career", _createCareerCommand, _createCareerCommand.CanExecute(null), "Primary");
+            RaceDesk.SecondaryAction.Clear();
+            AddChecklistItem("Career Profile", "Create or load a career profile.", "Missing", "Error");
+            return;
+        }
+
+        var preview = _nextEventPlan is null ? null : _eventExportAdapter.BuildPreview(_nextEventPlan);
+        var automation = _raceAutomationCoordinator.CurrentStatus;
+        var hasPendingReview = PendingDraft is not null;
+        var telemetryHealthy = _telemetryFeed.ConnectionState == TelemetryConnectionState.Monitoring;
+
+        AddChecklistItem("Career Profile", $"Active profile: {_career.Name}.", "Ready", "Success");
+        AddChecklistItem("Next Event", _nextEventPlan is null ? "Generate the next event plan." : NextEventHeadlineText, _nextEventPlan is null ? "Pending" : "Ready", _nextEventPlan is null ? "Warning" : "Success");
+        AddChecklistItem("Event Export", preview?.Success == true ? "Prepared event can be exported to AMS2." : NextEventExportStatusText, preview?.Success == true ? "Ready" : "Blocked", preview?.Success == true ? "Success" : "Error");
+        AddChecklistItem("AMS2 Session", automation.Detail, automation.Stage.ToString(), automation.Stage is RaceAutomationStage.Error ? "Error" : automation.Stage is RaceAutomationStage.RaceRunning or RaceAutomationStage.GridDetected or RaceAutomationStage.WaitingForSession ? "Warning" : "Neutral");
+        AddChecklistItem("Telemetry", telemetryHealthy ? "Shared memory feed is healthy." : "Waiting for AMS2 shared memory.", telemetryHealthy ? "Healthy" : "Waiting", telemetryHealthy ? "Success" : "Warning");
+
+        if (hasPendingReview)
+        {
+            RaceDesk.StateKey = "ManualReviewRequired";
+            RaceDesk.BlockingGuidance = "A captured result needs manual confirmation before the career can continue.";
+            RaceDesk.PrimaryAction.Set("Commit Result", _confirmPendingResultCommand, _confirmPendingResultCommand.CanExecute(null), "Primary");
+            RaceDesk.SecondaryAction.Set("Dismiss Result", _dismissPendingResultCommand, _dismissPendingResultCommand.CanExecute(null), "Secondary");
+            return;
+        }
+
+        switch (automation.Stage)
+        {
+            case RaceAutomationStage.RaceRunning:
+                RaceDesk.StateKey = "RaceRunning";
+                RaceDesk.BlockingGuidance = "Race is live. Keep AMS2 running and let monitoring continue.";
+                RaceDesk.PrimaryAction.Set("Race Running", null, false, "Neutral");
+                RaceDesk.SecondaryAction.Set("Refresh Status", _refreshCommand, true, "Secondary");
+                return;
+            case RaceAutomationStage.GridDetected:
+                RaceDesk.StateKey = "GridDetected";
+                RaceDesk.BlockingGuidance = "Confirm the race screen in AMS2 and start the session when ready.";
+                RaceDesk.PrimaryAction.Set("Waiting For Race Start", null, false, "Neutral");
+                RaceDesk.SecondaryAction.Set("Refresh Status", _refreshCommand, true, "Secondary");
+                return;
+            case RaceAutomationStage.WaitingForSession:
+                RaceDesk.StateKey = "WaitingForSession";
+                RaceDesk.BlockingGuidance = "AMS2 is running. Navigate to the prepared race screen in-game.";
+                RaceDesk.PrimaryAction.Set("Resume Monitoring", _refreshCommand, true, "Primary");
+                RaceDesk.SecondaryAction.Set("Launch AMS2", _launchAms2Command, _launchAms2Command.CanExecute(null), "Secondary");
+                return;
+            case RaceAutomationStage.LaunchRequested:
+                RaceDesk.StateKey = "LaunchRequested";
+                RaceDesk.BlockingGuidance = "AMS2 launch has been requested. Wait for the session feed.";
+                RaceDesk.PrimaryAction.Set("Launching AMS2...", null, false, "Neutral");
+                RaceDesk.SecondaryAction.Set("Refresh Status", _refreshCommand, true, "Secondary");
+                return;
+            case RaceAutomationStage.SessionFinished:
+                RaceDesk.StateKey = "ResultReconstructing";
+                RaceDesk.BlockingGuidance = "The session has ended. Result reconstruction is finishing.";
+                RaceDesk.PrimaryAction.Set("Continue Career", _refreshCommand, true, "Primary");
+                RaceDesk.SecondaryAction.Clear();
+                return;
+            case RaceAutomationStage.RestartRequired:
+                RaceDesk.StateKey = "RestartRequired";
+                RaceDesk.BlockingGuidance = "AMS2 must be restarted for the prepared event to load safely.";
+                RaceDesk.PrimaryAction.Set("Apply + Restart + Launch AMS2", _applyRecommendedEventAndLaunchCommand, _applyRecommendedEventAndLaunchCommand.CanExecute(null), "Primary");
+                RaceDesk.SecondaryAction.Set("Prepare Event Only", _applyRecommendedEventCommand, _applyRecommendedEventCommand.CanExecute(null), "Secondary");
+                return;
+            case RaceAutomationStage.EventPrepared:
+                RaceDesk.StateKey = "EventPrepared";
+                RaceDesk.BlockingGuidance = "The event package is ready to export into AMS2.";
+                RaceDesk.PrimaryAction.Set("Apply + Launch AMS2", _applyRecommendedEventAndLaunchCommand, _applyRecommendedEventAndLaunchCommand.CanExecute(null), "Primary");
+                RaceDesk.SecondaryAction.Set("Apply Event", _applyRecommendedEventCommand, _applyRecommendedEventCommand.CanExecute(null), "Secondary");
+                return;
+            case RaceAutomationStage.Error:
+                RaceDesk.StateKey = "Error";
+                RaceDesk.BlockingGuidance = automation.Detail;
+                RaceDesk.PrimaryAction.Set("Retry", _refreshCommand, true, "Primary");
+                RaceDesk.SecondaryAction.Set("Launch AMS2", _launchAms2Command, _launchAms2Command.CanExecute(null), "Secondary");
+                return;
+        }
+
+        if (_nextEventPlan is null)
+        {
+            RaceDesk.StateKey = "CareerReady";
+            RaceDesk.BlockingGuidance = "Generate the next planned event to continue the career.";
+            RaceDesk.PrimaryAction.Set("Generate Next Event", _refreshCommand, true, "Primary");
+            RaceDesk.SecondaryAction.Clear();
+            return;
+        }
+
+        if (preview?.Success != true)
+        {
+            RaceDesk.StateKey = "ExportBlocked";
+            RaceDesk.BlockingGuidance = preview?.Message ?? "Event export is currently blocked.";
+            RaceDesk.PrimaryAction.Set("Retry Export Readiness", _refreshCommand, true, "Primary");
+            RaceDesk.SecondaryAction.Set("Launch AMS2", _launchAms2Command, _launchAms2Command.CanExecute(null), "Secondary");
+            return;
+        }
+
+        RaceDesk.StateKey = "EventPlanned";
+        RaceDesk.BlockingGuidance = preview.RequiresGameRestart
+            ? "Prepare the event, then restart AMS2 so the new event package is loaded."
+            : "Prepare the event package and launch AMS2.";
+        RaceDesk.PrimaryAction.Set("Prepare Event", _applyRecommendedEventCommand, _applyRecommendedEventCommand.CanExecute(null), "Primary");
+        RaceDesk.SecondaryAction.Set(preview.RequiresGameRestart ? "Apply + Restart + Launch AMS2" : "Launch AMS2", preview.RequiresGameRestart ? _applyRecommendedEventAndLaunchCommand : _launchAms2Command, true, "Secondary");
+    }
+
+    private void AddChecklistItem(string title, string detail, string statusText, string severity)
+    {
+        RaceDesk.ReadinessChecklist.Add(new ReadinessChecklistItemViewModel
+        {
+            Title = title,
+            Detail = detail,
+            StatusText = statusText,
+            Severity = severity
+        });
     }
 
     private string BuildConnectionStateText()

@@ -4,962 +4,1441 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="AMS2 Career Companion"
+        Title="AMS2 Career"
         Icon="Assets/ams2-career.png"
-        Width="1360"
-        Height="860"
-        MinWidth="1240"
-        MinHeight="780"
-        Background="#0B1020"
-        Foreground="#F3F6FF">
+        Width="1600"
+        Height="980"
+        MinWidth="1480"
+        MinHeight="860"
+        Background="#05090E"
+        Foreground="#F2F4F7"
+        FontFamily="Segoe UI">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <Style TargetType="TabControl">
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Background" Value="#0B1020" />
-            <Setter Property="BorderThickness" Value="0" />
+
+        <SolidColorBrush x:Key="BgRootBrush" Color="#05090E" />
+        <SolidColorBrush x:Key="BgPanelBrush" Color="#0B121A" />
+        <SolidColorBrush x:Key="BgPanelAltBrush" Color="#0E1620" />
+        <SolidColorBrush x:Key="BgCardBrush" Color="#101922" />
+        <SolidColorBrush x:Key="BgCardSoftBrush" Color="#121D28" />
+        <SolidColorBrush x:Key="BorderBrushMain" Color="#1E2A36" />
+        <SolidColorBrush x:Key="TextMainBrush" Color="#F4F7FB" />
+        <SolidColorBrush x:Key="TextSoftBrush" Color="#A6B2BF" />
+        <SolidColorBrush x:Key="TextMutedBrush" Color="#738191" />
+        <SolidColorBrush x:Key="AccentRedBrush" Color="#D62C1A" />
+        <SolidColorBrush x:Key="AccentRedSoftBrush" Color="#5A1817" />
+        <SolidColorBrush x:Key="AccentGreenBrush" Color="#67D13B" />
+        <SolidColorBrush x:Key="AccentAmberBrush" Color="#FFB545" />
+        <SolidColorBrush x:Key="AccentBlueBrush" Color="#3A91FF" />
+        <SolidColorBrush x:Key="AccentPurpleBrush" Color="#7A57F5" />
+
+        <LinearGradientBrush x:Key="HeroGradientBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#152230" Offset="0" />
+            <GradientStop Color="#0B121A" Offset="0.55" />
+            <GradientStop Color="#182127" Offset="1" />
+        </LinearGradientBrush>
+
+        <Style x:Key="CardBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource BgCardBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushMain}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="18" />
+            <Setter Property="Padding" Value="18" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
         </Style>
-        <Style TargetType="TabItem">
-            <Setter Property="Foreground" Value="#EAF1FF" />
+
+        <Style x:Key="MetricCardStyle" TargetType="Border" BasedOn="{StaticResource CardBorderStyle}">
+            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Background" Value="#091018" />
+        </Style>
+
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextMainBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        </Style>
+
+        <Style x:Key="PageTitleStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextMainBrush}" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="28" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        </Style>
+
+        <Style x:Key="BodyTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSoftBrush}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="CaptionTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White" />
             <Setter Property="FontSize" Value="16" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Padding" Value="26,12" />
-            <Setter Property="Margin" Value="0,0,10,0" />
+            <Setter Property="Padding" Value="18,14" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="{StaticResource AccentRedBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="TabBorder"
-                                Background="#15254A"
-                                BorderBrush="#29467A"
-                                BorderThickness="1"
-                                CornerRadius="14"
-                                Padding="{TemplateBinding Padding}">
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="12"
+                                BorderBrush="#F36457"
+                                BorderThickness="1">
                             <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              ContentSource="Header" />
+                                              VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="#2B64FF" />
-                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#7DA2FF" />
-                            </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#7DA2FF" />
+                                <Setter TargetName="Root" Property="Opacity" Value="0.95" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Root" Property="Opacity" Value="0.45" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-    </Window.Resources>
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Background" Value="#16212C" />
+            <Setter Property="BorderBrush" Value="#2B3C4D" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="14,11" />
+        </Style>
 
-        <Border Grid.Row="0"
-                Padding="20"
-                Margin="0,0,0,16"
-                CornerRadius="18"
-                Background="#14203D">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel>
-                    <TextBlock FontSize="30"
-                               FontWeight="Bold"
-                               Text="AMS2 Career Companion" />
-                    <TextBlock Margin="0,8,0,0"
-                               FontSize="15"
-                               Foreground="#B8C4E6"
-                               Text="{Binding StatusMessage}" />
-                    <TextBlock Margin="0,4,0,0"
-                               FontSize="14"
-                               Foreground="#89A0D5"
-                               Text="{Binding SessionSummary}" />
-                </StackPanel>
-
-                <StackPanel Grid.Column="1"
-                            HorizontalAlignment="Right">
-                    <TextBlock HorizontalAlignment="Right"
-                               FontSize="14"
-                               Foreground="#8BD9B6"
-                               Text="{Binding ConnectionStateText}" />
-                    <TextBlock Margin="0,10,0,0"
-                               HorizontalAlignment="Right"
-                               FontSize="16"
-                               FontWeight="SemiBold"
-                               Text="{Binding CurrentTitle}" />
-                    <TextBlock Margin="0,4,0,0"
-                               HorizontalAlignment="Right"
-                               FontSize="14"
-                               Foreground="#D3DCFF"
-                               Text="{Binding StandingText}" />
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <TabControl Grid.Row="1">
-            <TabItem Header="Race">
-                <Grid Margin="0,16,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="420" />
-                        <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <Border Padding="18"
-                                CornerRadius="16"
-                                Background="#11192F">
-                            <StackPanel>
-                                <TextBlock FontSize="22"
-                                           FontWeight="Bold"
-                                           Text="Race Control" />
-                                <TextBlock Margin="0,8,0,0"
-                                           FontSize="13"
-                                           Foreground="#9DAACC"
-                                           Text="Launch AMS2, run the race manually in-game, and let the companion process the result when the session finishes." />
-
-                                <Border Margin="0,18,0,0"
-                                        Padding="14"
-                                        CornerRadius="12"
-                                        Background="#0F1630">
-                                    <StackPanel>
-                                        <TextBlock FontSize="16"
-                                                   FontWeight="Bold"
-                                                   Foreground="#F3F6FF"
-                                                   Text="Next Event Plan" />
-                                        <TextBlock Margin="0,8,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#F3F6FF"
-                                                   Text="{Binding NextEventHeadlineText}" />
-                                        <TextBlock Margin="0,8,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#AFC0EA"
-                                                   Text="{Binding NextEventDetailsText}" />
-                                        <TextBlock Margin="0,10,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#8BD9B6"
-                                                   Text="{Binding NextEventExportStatusText}" />
-                                        <Button Margin="0,12,0,0"
-                                                Padding="12"
-                                                FontSize="15"
-                                                FontWeight="SemiBold"
-                                                Background="#2C7B57"
-                                                BorderThickness="0"
-                                                Command="{Binding ApplyRecommendedEventCommand}"
-                                                Content="Apply Recommended Event" />
-                                        <Button Margin="0,10,0,0"
-                                                Padding="12"
-                                                FontSize="15"
-                                                FontWeight="SemiBold"
-                                                Background="#2D63FF"
-                                                BorderThickness="0"
-                                                Command="{Binding ApplyRecommendedEventAndLaunchCommand}"
-                                                Content="Apply Event + Launch AMS2" />
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Margin="0,16,0,0"
-                                        Padding="14"
-                                        CornerRadius="12"
-                                        Background="#0F1630">
-                                    <StackPanel>
-                                        <TextBlock FontSize="16"
-                                                   FontWeight="Bold"
-                                                   Foreground="#F3F6FF"
-                                                   Text="Automation Monitor" />
-                                        <TextBlock Margin="0,8,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#F3F6FF"
-                                                   Text="{Binding AutomationHeadlineText}" />
-                                        <TextBlock Margin="0,8,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#AFC0EA"
-                                                   Text="{Binding AutomationDetailText}" />
-                                        <TextBlock Margin="0,8,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#8BD9B6"
-                                                   Text="{Binding AutomationTelemetryText}" />
-                                    </StackPanel>
-                                </Border>
-
-                                <Button Margin="0,18,0,0"
-                                        Padding="14"
-                                        FontSize="16"
-                                        FontWeight="SemiBold"
-                                        Background="#2D63FF"
-                                        BorderThickness="0"
-                                        Command="{Binding LaunchAms2Command}"
-                                        Content="Launch AMS2" />
-
-                                <Button Margin="0,10,0,0"
-                                        Padding="14"
-                                        FontSize="16"
-                                        FontWeight="SemiBold"
-                                        Background="#0D96D8"
-                                        BorderThickness="0"
-                                        Command="{Binding LaunchAms2VrCommand}"
-                                        Content="Launch AMS2 In VR" />
-
-                                <Button Margin="0,10,0,0"
-                                        Padding="12"
-                                        FontSize="15"
-                                        FontWeight="SemiBold"
-                                        Background="#3E4A6B"
-                                        BorderThickness="0"
-                                        Command="{Binding RefreshCommand}"
-                                        Content="Refresh Status" />
-
-                                <TextBlock Margin="0,18,0,0"
-                                           FontWeight="SemiBold"
-                                           Foreground="#F3F6FF"
-                                           Text="Launcher Status" />
-                                <TextBlock Margin="0,6,0,0"
-                                           TextWrapping="Wrap"
-                                           Foreground="#D5DDFC"
-                                           Text="{Binding LauncherStatusText}" />
-
-                                <TextBlock Margin="0,18,0,0"
-                                           FontWeight="SemiBold"
-                                           Foreground="#F3F6FF"
-                                           Text="Detected Install" />
-                                <TextBlock Margin="0,6,0,0"
-                                           TextWrapping="Wrap"
-                                           Foreground="#A8B6DA"
-                                           Text="{Binding InstallPathText}" />
-
-                                <Border Margin="0,18,0,0"
-                                        Padding="14"
-                                        CornerRadius="12"
-                                        Background="#0F1630">
-                                    <StackPanel>
-                                        <TextBlock FontSize="16"
-                                                   FontWeight="Bold"
-                                                   Foreground="#F3F6FF"
-                                                   Text="Current Limitation" />
-                                        <TextBlock Margin="0,8,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#D5DDFC"
-                                                   Text="The companion can launch AMS2, but it does not yet navigate AMS2 menus or auto-start a race. Start the event manually in-game for now." />
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Margin="0,16,0,0"
-                                        Padding="14"
-                                        CornerRadius="12"
-                                        Background="#0F1630">
-                                    <StackPanel>
-                                        <TextBlock FontSize="16"
-                                                   FontWeight="Bold"
-                                                   Foreground="#F3F6FF"
-                                                   Text="Prepared Event Presets" />
-                                        <TextBlock Margin="0,8,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#D5DDFC"
-                                                   Text="Non-macro path: ship built-in AMS2 event presets and allow optional user-captured presets, then reapply the selected preset before launch so the prepared event is already loaded in-game." />
-                                        <TextBlock Margin="0,10,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#8DA0CF"
-                                                   Text="{Binding SessionPresetStatusText}" />
-
-                                        <TextBlock Margin="0,14,0,6"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#F3F6FF"
-                                                   Text="New Preset Name" />
-                                        <TextBox Padding="10"
-                                                 FontSize="14"
-                                                 Text="{Binding SessionPresetNameInput, UpdateSourceTrigger=PropertyChanged}" />
-
-                                        <Button Margin="0,10,0,0"
-                                                Padding="12"
-                                                FontSize="15"
-                                                FontWeight="SemiBold"
-                                                Background="#2D63FF"
-                                                BorderThickness="0"
-                                                Command="{Binding CapturePresetCommand}"
-                                                Content="Capture Current AMS2 Event As Preset" />
-
-                                        <TextBlock Margin="0,16,0,6"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#F3F6FF"
-                                                   Text="Saved Presets" />
-                                        <ComboBox Padding="8"
-                                                  FontSize="14"
-                                                  ItemsSource="{Binding SessionPresets}"
-                                                  DisplayMemberPath="DisplayName"
-                                                  SelectedItem="{Binding SelectedSessionPreset}" />
-                                        <TextBlock Margin="0,8,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#8DA0CF"
-                                                   Text="{Binding SelectedSessionPresetSummaryText}" />
-
-                                        <Button Margin="0,10,0,0"
-                                                Padding="12"
-                                                FontSize="15"
-                                                FontWeight="SemiBold"
-                                                Background="#2C7B57"
-                                                BorderThickness="0"
-                                                Command="{Binding ApplyPresetCommand}"
-                                                Content="Apply Selected Preset" />
-
-                                        <Button Margin="0,10,0,0"
-                                                Padding="12"
-                                                FontSize="15"
-                                                FontWeight="SemiBold"
-                                                Background="#0D96D8"
-                                                BorderThickness="0"
-                                                Command="{Binding LaunchWithPresetCommand}"
-                                                Content="Apply Preset + Launch AMS2" />
-
-                                        <Button Margin="0,10,0,0"
-                                                Padding="12"
-                                                FontSize="15"
-                                                FontWeight="SemiBold"
-                                                Background="#7A2941"
-                                                BorderThickness="0"
-                                                Command="{Binding DeletePresetCommand}"
-                                                IsEnabled="{Binding CanDeleteSelectedSessionPreset}"
-                                                Content="Delete Selected Preset" />
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Margin="0,16,0,0"
-                                Padding="18"
-                                CornerRadius="16"
-                                Background="#11192F"
-                                Visibility="{Binding DeveloperToolsEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <StackPanel>
-                                <TextBlock FontSize="20"
-                                           FontWeight="Bold"
-                                           Foreground="#F3F6FF"
-                                           Text="Developer Tools" />
-                                <TextBlock Margin="0,8,0,0"
-                                           FontSize="13"
-                                           Foreground="#9DAACC"
-                                           Text="These controls generate simulated telemetry for development. They are not normal gameplay flow." />
-
-                                <Button Margin="0,14,0,0"
-                                        Padding="12"
-                                        FontSize="15"
-                                        FontWeight="SemiBold"
-                                        Background="#22A06B"
-                                        BorderThickness="0"
-                                        Command="{Binding SimulateRaceCommand}"
-                                        Content="Simulate Clean Race" />
-
-                                <Button Margin="0,10,0,0"
-                                        Padding="12"
-                                        FontSize="15"
-                                        FontWeight="SemiBold"
-                                        Background="#C98B1B"
-                                        BorderThickness="0"
-                                        Command="{Binding SimulateUncertainRaceCommand}"
-                                        Content="Simulate Uncertain Race" />
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-
-                    <Grid Grid.Column="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="16" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <Grid Grid.Row="0">
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="210" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
                             <Border Grid.Column="0"
-                                    Padding="18"
-                                    CornerRadius="16"
-                                    Background="#11192F">
-                                <StackPanel>
-                                    <TextBlock FontSize="22"
+                                    Margin="0,0,22,0"
+                                    Background="#071018"
+                                    BorderBrush="{StaticResource BorderBrushMain}"
+                                    BorderThickness="1"
+                                    CornerRadius="24">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Margin="20,22,20,16">
+                                        <Image Source="Assets/ams2-career.png"
+                                               Width="112"
+                                               Height="64"
+                                               Stretch="Uniform"
+                                               HorizontalAlignment="Left" />
+                                    </StackPanel>
+
+                                    <TabPanel Grid.Row="1"
+                                              Margin="0,14,0,12"
+                                              IsItemsHost="True" />
+
+                                    <StackPanel Grid.Row="2"
+                                                Margin="20,0,20,20">
+                                        <Border Width="38"
+                                                Height="38"
+                                                Background="#0D1620"
+                                                BorderBrush="#223140"
+                                                BorderThickness="1"
+                                                CornerRadius="10">
+                                            <TextBlock HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       FontFamily="Segoe MDL2 Assets"
+                                                       FontSize="13"
+                                                       Foreground="{StaticResource TextSoftBrush}"
+                                                       Text="&#xE76B;" />
+                                        </Border>
+                                        <TextBlock Margin="0,10,0,0"
+                                                   Style="{StaticResource CaptionTextStyle}"
+                                                   Text="v1.2.0" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Column="1"
+                                    Background="Transparent">
+                                <ContentPresenter ContentSource="SelectedContent" />
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="{StaticResource TextSoftBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="ItemRoot"
+                                Margin="14,0,14,10"
+                                Padding="18,16"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="1"
+                                CornerRadius="14">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemRoot" Property="Background" Value="#571615" />
+                                <Setter TargetName="ItemRoot" Property="BorderBrush" Value="#8A261B" />
+                                <Setter Property="Foreground" Value="{StaticResource TextMainBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemRoot" Property="Background" Value="#101922" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SidebarHeaderGlyphStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Foreground" Value="#D6DDE7" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="SidebarHeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#D6DDE7" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="StatusPillStyle" TargetType="Border">
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="CornerRadius" Value="999" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#0E1A12" />
+            <Setter Property="BorderBrush" Value="#284B2D" />
+        </Style>
+
+        <Style x:Key="ReadinessBadgeStyle" TargetType="Border">
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="CornerRadius" Value="999" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#111A21" />
+            <Setter Property="BorderBrush" Value="#2A3A4A" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource BgRootBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="90" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Margin="18,18,18,14"
+                Background="#091018"
+                BorderBrush="{StaticResource BorderBrushMain}"
+                BorderThickness="1"
+                CornerRadius="20">
+            <Grid Margin="18,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.5*" />
+                    <ColumnDefinition Width="0.6*" />
+                    <ColumnDefinition Width="0.8*" />
+                    <ColumnDefinition Width="0.9*" />
+                    <ColumnDefinition Width="0.9*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <Ellipse Width="48"
+                             Height="48"
+                             Fill="#1B2630"
+                             Stroke="#314150"
+                             StrokeThickness="1" />
+                    <StackPanel Margin="14,0,0,0"
+                                VerticalAlignment="Center">
+                        <TextBlock FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextMainBrush}"
+                                   Text="{Binding Profile.Name}" />
+                        <TextBlock Style="{StaticResource CaptionTextStyle}"
+                                   Text="Active Profile" />
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Grid.Column="1"
+                        Style="{StaticResource MetricCardStyle}"
+                        Margin="10,0,0,0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="LEVEL" />
+                        <TextBlock Margin="0,4,0,0"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Text="{Binding Profile.Level}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2"
+                        Style="{StaticResource MetricCardStyle}"
+                        Margin="10,0,0,0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="DRIVER RATING" />
+                        <TextBlock Margin="0,4,0,0"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Text="{Binding Profile.DriverRating, StringFormat={}{0:0}}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3"
+                        Style="{StaticResource MetricCardStyle}"
+                        Margin="10,0,0,0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="CREDITS" />
+                        <TextBlock Margin="0,4,0,0"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Text="{Binding Profile.Credits, StringFormat={}{0:N0}}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="4"
+                        Style="{StaticResource MetricCardStyle}"
+                        Margin="10,0,0,0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="REPUTATION" />
+                        <TextBlock Margin="0,4,0,0"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Text="{Binding Profile.Reputation}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="5"
+                        Style="{StaticResource MetricCardStyle}"
+                        Margin="10,0,0,0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="AMS2 CONNECTION" />
+                        <TextBlock Margin="0,6,0,0"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource AccentGreenBrush}"
+                                   Text="{Binding ConnectionStateText}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="6"
+                        Style="{StaticResource MetricCardStyle}"
+                        Margin="10,0,0,0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="TELEMETRY HEALTH" />
+                        <TextBlock Margin="0,6,0,0"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource AccentGreenBrush}"
+                                   Text="{Binding TelemetryHealthText}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <TabControl Grid.Row="1"
+                    Margin="18,0,18,18"
+                    TabStripPlacement="Left">
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource SidebarHeaderGlyphStyle}" Text="&#xEB8B;" />
+                        <TextBlock Margin="14,0,0,0" Style="{StaticResource SidebarHeaderTextStyle}" Text="RACE DESK" />
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="18" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1.05*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Row="0"
+                                Grid.Column="0"
+                                Style="{StaticResource CardBorderStyle}"
+                                Background="{StaticResource HeroGradientBrush}"
+                                Padding="26">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.2*" />
+                                    <ColumnDefinition Width="0.9*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Style="{StaticResource CaptionTextStyle}" Text="NEXT EVENT" />
+                                    <TextBlock Margin="0,12,0,0"
+                                               FontSize="28"
                                                FontWeight="Bold"
-                                               Text="{Binding CurrentCareerName}" />
-                                    <TextBlock Margin="0,10,0,0"
-                                               FontSize="14"
-                                               Foreground="#A6B4D9"
-                                               Text="{Binding CurrentStarterCar}" />
-                                    <TextBlock Margin="0,6,0,0"
-                                               FontSize="15"
-                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextMainBrush}"
+                                               Text="{Binding RaceDesk.EventPlan.Headline}" />
+                                    <TextBlock Margin="0,8,0,0"
+                                               Style="{StaticResource BodyTextStyle}"
                                                Text="{Binding CurrentLeagueName}" />
+
+                                    <Grid Margin="0,28,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0"
+                                                Margin="0,0,10,0"
+                                                Style="{StaticResource CardBorderStyle}"
+                                                Background="#101821">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="TRACK" />
+                                                <TextBlock Margin="0,8,0,0"
+                                                           FontSize="20"
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding RaceDesk.EventPlan.Plan.TrackDisplayName}" />
+                                                <TextBlock Margin="0,6,0,0"
+                                                           Style="{StaticResource BodyTextStyle}"
+                                                           Text="{Binding RaceDesk.EventPlan.Plan.Country}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Grid.Column="1"
+                                                Margin="10,0,0,0"
+                                                Style="{StaticResource CardBorderStyle}"
+                                                Background="#101821">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="CAR / CLASS" />
+                                                <TextBlock Margin="0,8,0,0"
+                                                           FontSize="20"
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding CurrentStarterCar}" />
+                                                <TextBlock Margin="0,6,0,0"
+                                                           Style="{StaticResource BodyTextStyle}"
+                                                           Text="{Binding RaceDesk.EventPlan.Plan.PlayerCarClassName}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <Border Margin="0,18,0,0"
+                                            Style="{StaticResource CardBorderStyle}"
+                                            Background="#101821">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="ROUND" />
+                                                <TextBlock Margin="0,8,0,0"
+                                                           FontSize="19"
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding RaceDesk.EventPlan.Plan.EventNumber}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="SESSION" />
+                                                <TextBlock Margin="0,8,0,0"
+                                                           FontSize="19"
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding RaceDesk.EventPlan.Plan.EventTemplateName}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="REWARDS PREVIEW" />
+                                                <TextBlock Margin="0,8,0,0"
+                                                           FontSize="19"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource AccentAmberBrush}"
+                                                           Text="{Binding RewardSummary}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+
+                                <Border Grid.Column="1"
+                                        Margin="28,0,0,0"
+                                        CornerRadius="20"
+                                        BorderBrush="#2A3642"
+                                        BorderThickness="1">
+                                    <Grid>
+                                        <Grid.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#202A33" Offset="0" />
+                                                <GradientStop Color="#182028" Offset="0.4" />
+                                                <GradientStop Color="#0E141A" Offset="1" />
+                                            </LinearGradientBrush>
+                                        </Grid.Background>
+                                        <StackPanel VerticalAlignment="Bottom"
+                                                    Margin="24">
+                                            <TextBlock FontSize="22"
+                                                       FontWeight="SemiBold"
+                                                       Text="{Binding RaceDesk.EventPlan.Plan.TrackDisplayName}" />
+                                            <TextBlock Margin="0,8,0,0"
+                                                       Style="{StaticResource BodyTextStyle}"
+                                                       Text="{Binding RaceDesk.EventPlan.Details}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="0"
+                                Grid.Column="1"
+                                Margin="18,0,0,0"
+                                Style="{StaticResource CardBorderStyle}">
+                            <DockPanel LastChildFill="True">
+                                <StackPanel DockPanel.Dock="Top">
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="EVENT READINESS" />
                                     <TextBlock Margin="0,10,0,0"
-                                               FontSize="15"
-                                               Text="{Binding ProgressText}" />
+                                               Style="{StaticResource BodyTextStyle}"
+                                               Text="{Binding RaceDesk.BlockingGuidance}" />
+                                </StackPanel>
+
+                                <StackPanel Margin="0,18,0,0">
+                                    <ItemsControl ItemsSource="{Binding RaceDesk.ReadinessChecklist}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,0,0,10"
+                                                        Padding="14"
+                                                        Background="#0D151D"
+                                                        BorderBrush="#1F2A35"
+                                                        BorderThickness="1"
+                                                        CornerRadius="12">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel>
+                                                            <TextBlock FontSize="14"
+                                                                       FontWeight="SemiBold"
+                                                                       Text="{Binding Title}" />
+                                                            <TextBlock Margin="0,6,0,0"
+                                                                       Style="{StaticResource CaptionTextStyle}"
+                                                                       Text="{Binding Detail}" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1">
+                                                            <TextBlock FontSize="12"
+                                                                       FontWeight="Bold"
+                                                                       Text="{Binding StatusText}" />
+                                                            <Border.Style>
+                                                                <Style TargetType="Border" BasedOn="{StaticResource ReadinessBadgeStyle}">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Severity}" Value="Success">
+                                                                            <Setter Property="Background" Value="#0F2411" />
+                                                                            <Setter Property="BorderBrush" Value="#38653A" />
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Severity}" Value="Warning">
+                                                                            <Setter Property="Background" Value="#2B1F11" />
+                                                                            <Setter Property="BorderBrush" Value="#7A5A1E" />
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Severity}" Value="Error">
+                                                                            <Setter Property="Background" Value="#2B1717" />
+                                                                            <Setter Property="BorderBrush" Value="#6D2A2A" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Button Margin="0,18,0,0"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Command="{Binding RaceDesk.PrimaryAction.Command}"
+                                            Content="{Binding RaceDesk.PrimaryAction.Label}"
+                                            IsEnabled="{Binding RaceDesk.PrimaryAction.IsEnabled}"
+                                            Visibility="{Binding RaceDesk.PrimaryAction.IsVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                                    <Button Margin="0,10,0,0"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Command="{Binding RaceDesk.SecondaryAction.Command}"
+                                            Content="{Binding RaceDesk.SecondaryAction.Label}"
+                                            IsEnabled="{Binding RaceDesk.SecondaryAction.IsEnabled}"
+                                            Visibility="{Binding RaceDesk.SecondaryAction.IsVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+
+                        <Grid Grid.Row="2"
+                              Grid.ColumnSpan="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.15*" />
+                                <ColumnDefinition Width="1.15*" />
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Margin="0,0,14,0"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="PRE-RACE CHECKLIST" />
+                                    <TextBlock Margin="0,10,0,0"
+                                               Style="{StaticResource BodyTextStyle}"
+                                               Text="AMS2 still requires confirmation in-game. Use this checklist as the guided handoff between the desk and the sim." />
+                                    <ItemsControl Margin="0,18,0,0"
+                                                  ItemsSource="{Binding RaceDesk.ReadinessChecklist}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Width="26"
+                                                            Height="26"
+                                                            CornerRadius="8"
+                                                            Background="#161F27"
+                                                            BorderBrush="#283542"
+                                                            BorderThickness="1">
+                                                        <TextBlock HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   FontSize="12"
+                                                                   FontWeight="Bold"
+                                                                   Text="•" />
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1"
+                                                                Margin="12,0,0,0">
+                                                        <TextBlock FontSize="14"
+                                                                   FontWeight="SemiBold"
+                                                                   Text="{Binding Title}" />
+                                                        <TextBlock Margin="0,4,0,0"
+                                                                   Style="{StaticResource CaptionTextStyle}"
+                                                                   Text="{Binding Detail}" />
+                                                    </StackPanel>
+                                                    <Border Grid.Column="2"
+                                                            Style="{StaticResource ReadinessBadgeStyle}">
+                                                        <TextBlock FontSize="11"
+                                                                   FontWeight="Bold"
+                                                                   Text="{Binding StatusText}" />
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1"
+                                    Margin="0,0,14,0"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="RIVAL SPOTLIGHT" />
+                                    <Border Margin="0,16,0,0"
+                                            Height="120"
+                                            Background="#151D25"
+                                            BorderBrush="#253443"
+                                            BorderThickness="1"
+                                            CornerRadius="14" />
+                                    <TextBlock Margin="0,16,0,0"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Text="{Binding FeaturedRivalText}" />
+                                    <TextBlock Margin="0,8,0,0"
+                                               Style="{StaticResource BodyTextStyle}"
+                                               Text="Current rival prominence and overlap are driven by the career state. Deeper showdown and timeline systems can bind here later without changing the shell." />
+                                    <ItemsControl Margin="0,14,0,0"
+                                                  ItemsSource="{Binding Rivals}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Margin="0,0,0,6"
+                                                           Style="{StaticResource CaptionTextStyle}"
+                                                           Text="{Binding}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </StackPanel>
                             </Border>
 
                             <Border Grid.Column="2"
-                                    Padding="18"
-                                    CornerRadius="16"
-                                    Background="#11192F">
+                                    Margin="0,0,14,0"
+                                    Style="{StaticResource CardBorderStyle}">
                                 <StackPanel>
-                                    <TextBlock FontSize="22"
-                                               FontWeight="Bold"
-                                               Text="Featured Rival" />
-                                    <TextBlock Margin="0,10,0,0"
-                                               FontSize="14"
-                                               TextWrapping="Wrap"
-                                               Foreground="#D6E1FF"
-                                               Text="{Binding FeaturedRivalText}" />
-                                    <TextBlock Margin="0,14,0,0"
-                                               FontSize="14"
-                                               Foreground="#99A6C9"
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="REWARDS PREVIEW" />
+                                    <TextBlock Margin="0,16,0,0"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentAmberBrush}"
                                                Text="{Binding RewardSummary}" />
+                                    <TextBlock Margin="0,10,0,0"
+                                               Style="{StaticResource BodyTextStyle}"
+                                               Text="Values here reflect the current progression engine and committed result rules. Estimates stay honest until the result is reconstructed and committed." />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="3"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="LAST RESULT" />
+                                    <TextBlock Margin="0,16,0,0"
+                                               FontSize="18"
+                                               FontWeight="Bold"
+                                               Text="{Binding SelectedRecentResultHeadline}" />
+                                    <TextBlock Margin="0,8,0,0"
+                                               Style="{StaticResource BodyTextStyle}"
+                                               Text="{Binding SelectedRecentResultDetails}" />
+                                    <Border Margin="0,16,0,0"
+                                            Style="{StaticResource StatusPillStyle}">
+                                        <TextBlock FontWeight="SemiBold"
+                                                   Foreground="{StaticResource AccentGreenBrush}"
+                                                   Text="{Binding RaceDesk.ResultReview.Summary}" />
+                                    </Border>
                                 </StackPanel>
                             </Border>
                         </Grid>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource SidebarHeaderGlyphStyle}" Text="&#xEC43;" />
+                        <TextBlock Margin="14,0,0,0" Style="{StaticResource SidebarHeaderTextStyle}" Text="CAREER" />
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="20" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource PageTitleStyle}" Text="CAREER PROGRESSION" />
+                            <TextBlock Margin="0,8,0,0"
+                                       Style="{StaticResource BodyTextStyle}"
+                                       Text="Climb the motorsport ladder and unlock new paths through committed results, rating growth, and league completion." />
+                        </StackPanel>
 
                         <Border Grid.Row="2"
-                                Padding="18"
-                                CornerRadius="16"
-                                Background="#11192F">
+                                Style="{StaticResource CardBorderStyle}">
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="24" />
-                                    <ColumnDefinition Width="360" />
-                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="24" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
 
-                                <DockPanel Grid.Column="0"
-                                           LastChildFill="True">
-                                    <TextBlock DockPanel.Dock="Top"
-                                               Margin="0,0,0,12"
-                                               FontSize="18"
-                                               FontWeight="Bold"
-                                               Foreground="#F3F6FF"
-                                               Text="Recent Results" />
-                                    <TextBlock DockPanel.Dock="Top"
-                                               Margin="0,0,0,12"
-                                               Foreground="#8DA0CF"
-                                               Text="{Binding RecentResultsHeaderText}" />
-                                    <ListBox ItemsSource="{Binding RecentResults}"
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="TIER 0" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="18" FontWeight="SemiBold" Text="ROOKIE" />
+                                        <Border Margin="0,16,0,0" Style="{StaticResource CardBorderStyle}" Background="#2A1111">
+                                            <StackPanel>
+                                                <TextBlock FontSize="16" FontWeight="SemiBold" Text="{Binding CurrentLeagueName}" />
+                                                <TextBlock Margin="0,6,0,0" Foreground="{StaticResource AccentRedBrush}" Text="ACTIVE" />
+                                            </StackPanel>
+                                        </Border>
+                                        <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding UnlockedLeagues}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Margin="0,0,0,10"
+                                                            Padding="14"
+                                                            Background="#101821"
+                                                            BorderBrush="#273544"
+                                                            BorderThickness="1"
+                                                            CornerRadius="12">
+                                                        <TextBlock Style="{StaticResource BodyTextStyle}" Text="{Binding}" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Margin="8,0">
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="TIER 1" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="18" FontWeight="SemiBold" Text="CLUB" />
+                                        <Border Margin="0,16,0,0" Style="{StaticResource CardBorderStyle}" Background="#0D151D">
+                                            <TextBlock Style="{StaticResource BodyTextStyle}" Text="Unlocked league branches will populate here as the official content pack expands." />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Margin="8,0">
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="TIER 2" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="18" FontWeight="SemiBold" Text="REGIONAL" />
+                                        <Border Margin="0,16,0,0" Style="{StaticResource CardBorderStyle}" Background="#0D151D">
+                                            <TextBlock Style="{StaticResource BodyTextStyle}" Text="Regional branches are ready for data-driven rendering." />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="3" Margin="8,0">
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="TIER 3" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="18" FontWeight="SemiBold" Text="NATIONAL" />
+                                        <Border Margin="0,16,0,0" Style="{StaticResource CardBorderStyle}" Background="#0D151D">
+                                            <TextBlock Style="{StaticResource BodyTextStyle}" Text="National series unlocks will bind here as the league pack grows." />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="4" Margin="8,0">
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="TIER 4" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="18" FontWeight="SemiBold" Text="INTERNATIONAL" />
+                                        <Border Margin="0,16,0,0" Style="{StaticResource CardBorderStyle}" Background="#0D151D">
+                                            <TextBlock Style="{StaticResource BodyTextStyle}" Text="International progression stays locked until the backend content graph expands." />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="5" Margin="8,0,0,0">
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="TIER 5" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="18" FontWeight="SemiBold" Text="PRESTIGE" />
+                                        <Border Margin="0,16,0,0" Style="{StaticResource CardBorderStyle}" Background="#11101E" BorderBrush="#4A3579">
+                                            <TextBlock Style="{StaticResource BodyTextStyle}" Text="Prestige-tier competitions are reserved for the late career ladder." />
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="1*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0"
+                                            Style="{StaticResource CardBorderStyle}"
+                                            Background="#0D151D">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="1.2*" />
+                                                <ColumnDefinition Width="0.9*" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="{Binding CurrentLeagueName}" />
+                                                <TextBlock Margin="0,10,0,0"
+                                                           Style="{StaticResource BodyTextStyle}"
+                                                           Text="This panel is bound to the current career state and acts as the series detail anchor for the designed Career screen." />
+                                                <TextBlock Margin="0,18,0,0" Style="{StaticResource CaptionTextStyle}" Text="ACTIVE PROFILE" />
+                                                <TextBlock Margin="0,6,0,0" FontSize="18" FontWeight="SemiBold" Text="{Binding Profile.Name}" />
+                                            </StackPanel>
+                                            <Border Grid.Column="1"
+                                                    Margin="24,0,0,0"
+                                                    Background="#16212C"
+                                                    BorderBrush="#243445"
+                                                    BorderThickness="1"
+                                                    CornerRadius="16" />
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Grid.Column="1"
+                                            Margin="18,0,0,0"
+                                            Style="{StaticResource CardBorderStyle}">
+                                        <StackPanel>
+                                            <TextBlock Style="{StaticResource SectionTitleStyle}" Text="NEXT EVENT" />
+                                            <TextBlock Margin="0,14,0,0"
+                                                       FontSize="18"
+                                                       FontWeight="Bold"
+                                                       Text="{Binding RaceDesk.EventPlan.Headline}" />
+                                            <TextBlock Margin="0,10,0,0"
+                                                       Style="{StaticResource BodyTextStyle}"
+                                                       Text="{Binding RaceDesk.EventPlan.Details}" />
+                                            <Button Margin="0,22,0,0"
+                                                    Style="{StaticResource PrimaryButtonStyle}"
+                                                    Content="GO TO RACE DESK"
+                                                    Command="{Binding RefreshCommand}" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource SidebarHeaderGlyphStyle}" Text="&#xE804;" />
+                        <TextBlock Margin="14,0,0,0" Style="{StaticResource SidebarHeaderTextStyle}" Text="GARAGE" />
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2.1*" />
+                            <ColumnDefinition Width="0.95*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource PageTitleStyle}" Text="GARAGE" />
+                            <TextBlock Margin="0,8,0,0"
+                                       Style="{StaticResource BodyTextStyle}"
+                                       Text="Owned and career-accessible cars live here. Storage is unlimited; long-term balancing can decide ownership rules later without changing the screen structure." />
+
+                            <Border Margin="0,20,0,0"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <UniformGrid Columns="3" Margin="0,0,0,18">
+                                        <Border Margin="0,0,14,14"
+                                                Style="{StaticResource CardBorderStyle}"
+                                                Background="#121B24">
+                                            <StackPanel>
+                                                <Border Width="72"
+                                                        Padding="10,5"
+                                                        Background="#153017"
+                                                        BorderBrush="#2D6B31"
+                                                        BorderThickness="1"
+                                                        CornerRadius="999">
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               FontSize="11"
+                                                               FontWeight="Bold"
+                                                               Foreground="{StaticResource AccentGreenBrush}"
+                                                               Text="OWNED" />
+                                                </Border>
+                                                <Border Margin="0,14,0,0"
+                                                        Height="120"
+                                                        Background="#1B2731"
+                                                        CornerRadius="14" />
+                                                <TextBlock Margin="0,16,0,0"
+                                                           FontSize="20"
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding CurrentStarterCar}" />
+                                                <TextBlock Margin="0,6,0,0"
+                                                           Style="{StaticResource BodyTextStyle}"
+                                                           Text="{Binding Profile.ActiveLeagueName}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Margin="0,0,14,14"
+                                                Style="{StaticResource CardBorderStyle}"
+                                                Background="#121B24">
+                                            <StackPanel>
+                                                <Border Width="86"
+                                                        Padding="10,5"
+                                                        Background="#152319"
+                                                        BorderBrush="#2B4B2E"
+                                                        BorderThickness="1"
+                                                        CornerRadius="999">
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               FontSize="11"
+                                                               FontWeight="Bold"
+                                                               Foreground="{StaticResource AccentGreenBrush}"
+                                                               Text="AVAILABLE" />
+                                                </Border>
+                                                <Border Margin="0,14,0,0"
+                                                        Height="120"
+                                                        Background="#1B2731"
+                                                        CornerRadius="14" />
+                                                <TextBlock Margin="0,16,0,0"
+                                                           FontSize="20"
+                                                           FontWeight="SemiBold"
+                                                           Text="Career Unlock Pool" />
+                                                <TextBlock Margin="0,6,0,0"
+                                                           Style="{StaticResource BodyTextStyle}"
+                                                           Text="Additional car ownership and repair detail can bind here once the garage backend expands." />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Margin="0,0,0,14"
+                                                Style="{StaticResource CardBorderStyle}"
+                                                Background="#121B24">
+                                            <StackPanel>
+                                                <Border Width="72"
+                                                        Padding="10,5"
+                                                        Background="#1C1D20"
+                                                        BorderBrush="#41454A"
+                                                        BorderThickness="1"
+                                                        CornerRadius="999">
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               FontSize="11"
+                                                               FontWeight="Bold"
+                                                               Foreground="#C3CAD3"
+                                                               Text="LOCKED" />
+                                                </Border>
+                                                <Border Margin="0,14,0,0"
+                                                        Height="120"
+                                                        Background="#1B2731"
+                                                        CornerRadius="14"
+                                                        Opacity="0.5" />
+                                                <TextBlock Margin="0,16,0,0"
+                                                           FontSize="20"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#B8C0CA"
+                                                           Text="Future Unlock" />
+                                                <TextBlock Margin="0,6,0,0"
+                                                           Style="{StaticResource BodyTextStyle}"
+                                                           Text="Unlock through level, league, or future credit purchase rules." />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+
+                                    <Border Style="{StaticResource CardBorderStyle}" Background="#0D151D">
+                                        <UniformGrid Columns="4">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="DLC OWNED" />
+                                                <TextBlock Margin="0,8,0,0" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Text="Data-Ready" />
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="CARS AVAILABLE" />
+                                                <TextBlock Margin="0,8,0,0" FontSize="24" FontWeight="Bold" Text="{Binding StarterCars.Count}" />
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="TRACKS AVAILABLE" />
+                                                <TextBlock Margin="0,8,0,0" FontSize="24" FontWeight="Bold" Text="{Binding UnlockedLeagues.Count}" />
+                                            </StackPanel>
+                                            <Button Style="{StaticResource SecondaryButtonStyle}"
+                                                    Margin="12,0,0,0"
+                                                    Content="SCAN CONTENT"
+                                                    Command="{Binding RefreshCommand}" />
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <Border Grid.Column="1"
+                                Margin="18,0,0,0"
+                                Style="{StaticResource CardBorderStyle}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="{Binding CurrentStarterCar}" />
+                                <TextBlock Margin="0,8,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding Profile.ActiveLeagueName}" />
+                                <Border Margin="0,16,0,0"
+                                        Height="190"
+                                        Background="#1A2530"
+                                        CornerRadius="16" />
+                                <Border Margin="0,18,0,0"
+                                        Style="{StaticResource StatusPillStyle}">
+                                    <TextBlock FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" Text="Condition: Good" />
+                                </Border>
+                                <TextBlock Margin="0,18,0,0" Style="{StaticResource SectionTitleStyle}" Text="ELIGIBLE EVENTS" />
+                                <TextBlock Margin="0,10,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding RaceDesk.EventPlan.Headline}" />
+                                <Button Margin="0,22,0,0"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Content="REPAIR CAR"
+                                        IsEnabled="False" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource SidebarHeaderGlyphStyle}" Text="&#xE7EF;" />
+                        <TextBlock Margin="14,0,0,0" Style="{StaticResource SidebarHeaderTextStyle}" Text="TEAM HQ" />
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="0.9*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource PageTitleStyle}" Text="TEAM HQ" />
+                            <TextBlock Margin="0,8,0,0"
+                                       Style="{StaticResource BodyTextStyle}"
+                                       Text="Permanent upgrades that improve the career operation. The screen is ready for the future Team HQ backend without hardcoding final balancing now." />
+
+                            <UniformGrid Margin="0,22,0,0" Columns="3">
+                                <Border Margin="0,0,14,14" Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="MECHANIC" />
+                                        <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="Current bonus: Repair costs -10%" />
+                                        <TextBlock Margin="0,10,0,0" Style="{StaticResource CaptionTextStyle}" Text="Upgrade cost: future data bind" />
+                                        <Button Margin="0,18,0,0" Style="{StaticResource PrimaryButtonStyle}" Content="UPGRADE" IsEnabled="False" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Margin="0,0,14,14" Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="RACE ENGINEER" />
+                                        <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="Current bonus: setup note unlocks and future prep modifiers." />
+                                        <TextBlock Margin="0,10,0,0" Style="{StaticResource CaptionTextStyle}" Text="Upgrade cost: future data bind" />
+                                        <Button Margin="0,18,0,0" Style="{StaticResource PrimaryButtonStyle}" Content="UPGRADE" IsEnabled="False" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Margin="0,0,0,14" Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="MANAGER" />
+                                        <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="Current bonus: future reward and opportunity modifiers." />
+                                        <TextBlock Margin="0,10,0,0" Style="{StaticResource CaptionTextStyle}" Text="Upgrade cost: future data bind" />
+                                        <Button Margin="0,18,0,0" Style="{StaticResource PrimaryButtonStyle}" Content="UPGRADE" IsEnabled="False" />
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+                        </StackPanel>
+
+                        <Border Grid.Column="1"
+                                Margin="18,0,0,0"
+                                Style="{StaticResource CardBorderStyle}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="TEAM HQ SUMMARY" />
+                                <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="The shell is in place. Permanent bonuses, focus, and efficiency metrics will bind here when the Team HQ model is implemented." />
+                                <Border Margin="0,18,0,0" Style="{StaticResource StatusPillStyle}">
+                                    <TextBlock FontWeight="SemiBold" Foreground="{StaticResource AccentAmberBrush}" Text="Future backend integration pending" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource SidebarHeaderGlyphStyle}" Text="&#xE902;" />
+                        <TextBlock Margin="14,0,0,0" Style="{StaticResource SidebarHeaderTextStyle}" Text="RIVALS" />
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.1*" />
+                            <ColumnDefinition Width="1.7*" />
+                            <ColumnDefinition Width="1*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource PageTitleStyle}" Text="RIVALS" />
+                            <TextBlock Margin="0,8,0,0"
+                                       Style="{StaticResource BodyTextStyle}"
+                                       Text="Track rivalries, compare performance, and expose the most relevant competitor for the current event flow." />
+                            <ItemsControl Margin="0,20,0,0"
+                                          ItemsSource="{Binding Rivals}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,0,12"
+                                                Style="{StaticResource CardBorderStyle}">
+                                            <TextBlock Style="{StaticResource BodyTextStyle}" Text="{Binding}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <Border Grid.Column="1"
+                                Margin="18,0,18,0"
+                                Style="{StaticResource CardBorderStyle}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="ACTIVE RIVAL" />
+                                <TextBlock Margin="0,16,0,0"
+                                           FontSize="28"
+                                           FontWeight="Bold"
+                                           Text="{Binding FeaturedRivalText}" />
+                                <TextBlock Margin="0,12,0,0"
+                                           Style="{StaticResource BodyTextStyle}"
+                                           Text="The current backend rival model is lightweight but stable enough to drive spotlight, overlap, and reward flavor in the designed screen." />
+                                <Border Margin="0,20,0,0"
+                                        Height="260"
+                                        Background="#151E27"
+                                        BorderBrush="#243443"
+                                        BorderThickness="1"
+                                        CornerRadius="16" />
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Grid.Column="2">
+                            <Border Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="NEXT POSSIBLE OVERLAP" />
+                                    <TextBlock Margin="0,14,0,0" FontSize="18" FontWeight="SemiBold" Text="{Binding RaceDesk.EventPlan.Headline}" />
+                                    <TextBlock Margin="0,8,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding RaceDesk.EventPlan.Details}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Margin="0,18,0,0"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="REWARDS PREVIEW" />
+                                    <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="Rival showdown rewards and heat thresholds will attach here when the deeper rivalry systems are implemented." />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource SidebarHeaderGlyphStyle}" Text="&#xE81C;" />
+                        <TextBlock Margin="14,0,0,0" Style="{StaticResource SidebarHeaderTextStyle}" Text="HISTORY" />
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="18" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource PageTitleStyle}" Text="HISTORY" />
+                            <TextBlock Margin="0,8,0,0"
+                                       Style="{StaticResource BodyTextStyle}"
+                                       Text="The race ledger is append-only and duplicate-payout-safe. Review committed events, confidence levels, and season summary data here." />
+                        </StackPanel>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2.4*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Top">
+                                        <TextBlock Style="{StaticResource SectionTitleStyle}" Text="RACE LOG" />
+                                        <TextBlock Margin="0,8,0,0" Style="{StaticResource CaptionTextStyle}" Text="{Binding RaceHistoryHeaderText}" />
+                                    </StackPanel>
+
+                                    <ListBox Margin="0,18,0,0"
+                                             ItemsSource="{Binding RaceHistory}"
                                              SelectedItem="{Binding SelectedRecentResult}"
-                                             Background="#0F1630"
+                                             Background="Transparent"
                                              BorderThickness="0"
-                                             Foreground="#F3F6FF">
+                                             Foreground="{StaticResource TextMainBrush}">
                                         <ListBox.ItemContainerStyle>
                                             <Style TargetType="ListBoxItem">
                                                 <Setter Property="Margin" Value="0,0,0,10" />
                                                 <Setter Property="Padding" Value="0" />
                                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                                <Setter Property="Template">
-                                                    <Setter.Value>
-                                                        <ControlTemplate TargetType="ListBoxItem">
-                                                            <Border x:Name="ItemBorder"
-                                                                    Padding="14"
-                                                                    CornerRadius="12"
-                                                                    Background="#131D39"
-                                                                    BorderBrush="#223761"
-                                                                    BorderThickness="1">
-                                                                <ContentPresenter />
-                                                            </Border>
-                                                            <ControlTemplate.Triggers>
-                                                                <Trigger Property="IsSelected" Value="True">
-                                                                    <Setter TargetName="ItemBorder" Property="Background" Value="#19305C" />
-                                                                    <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#5C8CFF" />
-                                                                </Trigger>
-                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#4D75C5" />
-                                                                </Trigger>
-                                                            </ControlTemplate.Triggers>
-                                                        </ControlTemplate>
-                                                    </Setter.Value>
-                                                </Setter>
                                             </Style>
                                         </ListBox.ItemContainerStyle>
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <StackPanel>
-                                                        <TextBlock FontSize="16"
-                                                                   FontWeight="SemiBold"
-                                                                   Foreground="#F3F6FF"
-                                                                   Text="{Binding Headline}" />
-                                                        <TextBlock Margin="0,6,0,0"
-                                                                   Foreground="#93A6D4"
-                                                                   Text="{Binding Subtitle}" />
-                                                        <TextBlock Margin="0,8,0,0"
-                                                                   Foreground="#D7E1FF"
-                                                                   Text="{Binding DetailLine}" />
-                                                    </StackPanel>
-
-                                                    <Border Grid.Column="1"
-                                                            Margin="12,0,0,0"
-                                                            Padding="10,5"
-                                                            VerticalAlignment="Top"
-                                                            CornerRadius="999"
-                                                            Background="#243D73">
-                                                        <TextBlock FontSize="12"
-                                                                   FontWeight="Bold"
-                                                                   Foreground="#EAF1FF"
-                                                                   Text="{Binding ResultTag}" />
-                                                    </Border>
-                                                </Grid>
+                                                <Border Padding="14"
+                                                        Background="#0D151D"
+                                                        BorderBrush="#243545"
+                                                        BorderThickness="1"
+                                                        CornerRadius="14">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="2*" />
+                                                            <ColumnDefinition Width="1.1*" />
+                                                            <ColumnDefinition Width="0.9*" />
+                                                            <ColumnDefinition Width="0.8*" />
+                                                            <ColumnDefinition Width="0.8*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock FontSize="15" FontWeight="SemiBold" Text="{Binding Headline}" />
+                                                            <TextBlock Margin="0,4,0,0" Style="{StaticResource CaptionTextStyle}" Text="{Binding Subtitle}" />
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource BodyTextStyle}" Text="{Binding DetailLine}" />
+                                                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="{StaticResource AccentGreenBrush}" Text="{Binding ResultTag}" />
+                                                        <TextBlock Grid.Column="3" VerticalAlignment="Center" Style="{StaticResource BodyTextStyle}" Text="{Binding CleanlinessTag}" />
+                                                        <TextBlock Grid.Column="4" VerticalAlignment="Center" Style="{StaticResource BodyTextStyle}" Text="{Binding ReviewTag}" />
+                                                    </Grid>
+                                                </Border>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
                                     </ListBox>
                                 </DockPanel>
+                            </Border>
 
-                                <Border Grid.Column="2"
-                                        Padding="14"
-                                        CornerRadius="12"
-                                        Background="#0F1630">
+                            <StackPanel Grid.Column="1"
+                                        Margin="18,0,0,0">
+                                <Border Style="{StaticResource CardBorderStyle}">
                                     <StackPanel>
-                                        <TextBlock FontSize="18"
+                                        <TextBlock Style="{StaticResource SectionTitleStyle}" Text="RESULT SUMMARY" />
+                                        <TextBlock Margin="0,16,0,0"
+                                                   FontSize="24"
                                                    FontWeight="Bold"
-                                                   Foreground="#F3F6FF"
-                                                   Text="Selected Result" />
-                                        <TextBlock Margin="0,10,0,0"
-                                                   FontSize="16"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#DDE6FF"
                                                    Text="{Binding SelectedRecentResultHeadline}" />
                                         <TextBlock Margin="0,10,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#D5DDFC"
+                                                   Style="{StaticResource BodyTextStyle}"
                                                    Text="{Binding SelectedRecentResultDetails}" />
-                                        <TextBlock Margin="0,18,0,0"
-                                                   FontSize="18"
-                                                   FontWeight="Bold"
-                                                   Foreground="#F3F6FF"
-                                                   Text="Manual Review" />
-                                        <TextBlock Margin="0,10,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#D5DDFC"
-                                                   Text="{Binding PendingDraftSummary}" />
-                                        <Button Margin="0,16,0,0"
-                                                Padding="12"
-                                                FontWeight="SemiBold"
-                                                Background="#8E58FF"
-                                                BorderThickness="0"
-                                                Command="{Binding ConfirmPendingResultCommand}"
-                                                Content="Confirm Pending Result" />
                                     </StackPanel>
                                 </Border>
-                            </Grid>
-                        </Border>
+                                <Border Margin="0,18,0,0"
+                                        Style="{StaticResource CardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource SectionTitleStyle}" Text="SEASON TO DATE" />
+                                        <TextBlock Margin="0,16,0,0"
+                                                   Style="{StaticResource BodyTextStyle}"
+                                                   Text="{Binding SeasonSummaryText}" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
                     </Grid>
-                </Grid>
+                </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="Career">
-                <Grid Margin="0,16,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="420" />
-                        <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource SidebarHeaderGlyphStyle}" Text="&#xE713;" />
+                        <TextBlock Margin="14,0,0,0" Style="{StaticResource SidebarHeaderTextStyle}" Text="SETTINGS" />
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="20" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                    <Border Grid.Column="0"
-                            Padding="18"
-                            CornerRadius="16"
-                            Background="#11192F">
                         <StackPanel>
-                            <TextBlock FontSize="22"
-                                       FontWeight="Bold"
-                                       Foreground="#F3F6FF"
-                                       Text="Career Setup" />
+                            <TextBlock Style="{StaticResource PageTitleStyle}" Text="SETTINGS" />
                             <TextBlock Margin="0,8,0,0"
-                                       FontSize="13"
-                                       Foreground="#9DAACC"
-                                       Text="Create the save here once, instead of keeping setup controls on the main race screen." />
-
-                            <TextBlock Margin="0,18,0,6"
-                                       FontWeight="SemiBold"
-                                       Foreground="#F3F6FF"
-                                       Text="Career Name" />
-                            <TextBox Padding="10"
-                                     MaxLength="32"
-                                     FontSize="15"
-                                     Text="{Binding CareerNameInput, UpdateSourceTrigger=PropertyChanged}" />
-                            <TextBlock Margin="0,6,0,0"
-                                       HorizontalAlignment="Right"
-                                       Foreground="#8DA0CF"
-                                       Text="{Binding CareerNameCharacterCount}" />
-
-                            <TextBlock Margin="0,16,0,6"
-                                       FontWeight="SemiBold"
-                                       Foreground="#F3F6FF"
-                                       Text="Starter Car" />
-                            <ComboBox Padding="8"
-                                      FontSize="15"
-                                      ItemsSource="{Binding StarterCars}"
-                                      SelectedItem="{Binding SelectedStarterCar}"
-                                      DisplayMemberPath="DisplayLabel" />
-
-                            <Button Margin="0,18,0,0"
-                                    Padding="12"
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Background="#2D63FF"
-                                    BorderThickness="0"
-                                    Command="{Binding CreateCareerCommand}"
-                                    Content="Create Career" />
-
-                            <Separator Margin="0,18,0,18" />
-
-                            <TextBlock FontSize="20"
-                                       FontWeight="Bold"
-                                       Foreground="#F3F6FF"
-                                       Text="Career Profiles" />
-                            <TextBlock Margin="0,8,0,0"
-                                       FontSize="13"
-                                       Foreground="#9DAACC"
-                                       Text="{Binding AvailableCareersText}" />
-                            <TextBlock Margin="0,6,0,0"
-                                       FontSize="13"
-                                       Foreground="#D9E3FF"
-                                       Text="{Binding ActiveCareerSummaryText}" />
-                            <TextBlock Margin="0,6,0,0"
-                                       FontSize="13"
-                                       Foreground="#94A7D6"
-                                       Text="{Binding SelectedCareerSummaryText}" />
-                            <ListBox Margin="0,12,0,0"
-                                     Height="220"
-                                     ItemsSource="{Binding Careers}"
-                                     SelectedItem="{Binding SelectedCareerSummary}"
-                                     Background="#0F1630"
-                                     BorderThickness="0"
-                                     Foreground="#F3F6FF">
-                                <ListBox.ItemContainerStyle>
-                                    <Style TargetType="ListBoxItem">
-                                        <Setter Property="Margin" Value="0,0,0,8" />
-                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="ListBoxItem">
-                                                    <Border x:Name="ItemBorder"
-                                                            Padding="12"
-                                                            CornerRadius="10"
-                                                            Background="#131D39"
-                                                            BorderBrush="#223761"
-                                                            BorderThickness="1">
-                                                        <ContentPresenter />
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsSelected" Value="True">
-                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#19305C" />
-                                                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#5C8CFF" />
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </ListBox.ItemContainerStyle>
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel>
-                                                <TextBlock FontWeight="SemiBold"
-                                                           Foreground="#F3F6FF"
-                                                           Text="{Binding Name}" />
-                                                <TextBlock Margin="0,4,0,0"
-                                                           Foreground="#9FB0D8"
-                                                           Text="{Binding DisplayLabel}" />
-                                            </StackPanel>
-                                            <Border Grid.Column="1"
-                                                    Margin="12,0,0,0"
-                                                    Padding="8,4"
-                                                    VerticalAlignment="Top"
-                                                    CornerRadius="999"
-                                                    Background="#21593E"
-                                                    Visibility="{Binding IsCurrent, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <TextBlock FontSize="11"
-                                                           FontWeight="Bold"
-                                                           Foreground="#E8FFF3"
-                                                           Text="ACTIVE" />
-                                            </Border>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                            <Button Margin="0,12,0,0"
-                                    Padding="12"
-                                    FontSize="15"
-                                    FontWeight="SemiBold"
-                                    Background="#3E4A6B"
-                                    BorderThickness="0"
-                                    Command="{Binding LoadSelectedCareerCommand}"
-                                    Content="Load Selected Career" />
-                            <Button Margin="0,10,0,0"
-                                    Padding="12"
-                                    FontSize="15"
-                                    FontWeight="SemiBold"
-                                    Background="#7A2941"
-                                    BorderThickness="0"
-                                    Command="{Binding DeleteSelectedCareerCommand}"
-                                    Content="Delete Selected Career" />
+                                       Style="{StaticResource BodyTextStyle}"
+                                       Text="Setup, diagnostics, automation behavior, and profile management. Raw logs stay accessible but do not dominate the normal user path." />
                         </StackPanel>
-                    </Border>
 
-                    <Border Grid.Column="2"
-                            Padding="18"
-                            CornerRadius="16"
-                            Background="#11192F">
-                        <DockPanel LastChildFill="True">
-                            <TextBlock DockPanel.Dock="Top"
-                                       Margin="0,0,0,12"
-                                       FontSize="18"
-                                       FontWeight="Bold"
-                                       Foreground="#F3F6FF"
-                                       Text="Unlocked Leagues" />
-                            <ListBox ItemsSource="{Binding UnlockedLeagues}"
-                                     Background="#0F1630"
-                                     BorderThickness="0"
-                                     Foreground="#F3F6FF" />
-                        </DockPanel>
-                    </Border>
-                </Grid>
-            </TabItem>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.1*" />
+                                <ColumnDefinition Width="1.05*" />
+                                <ColumnDefinition Width="0.95*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="18" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-            <TabItem Header="Challenges">
-                <Border Margin="0,16,0,0"
-                        Padding="18"
-                        CornerRadius="16"
-                        Background="#11192F">
-                    <DockPanel LastChildFill="True">
-                        <TextBlock DockPanel.Dock="Top"
-                                   Margin="0,0,0,12"
-                                   FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="#F3F6FF"
-                                   Text="Challenges" />
-                        <ListBox ItemsSource="{Binding Challenges}"
-                                 Background="#0F1630"
-                                 BorderThickness="0"
-                                 Foreground="#F3F6FF" />
-                    </DockPanel>
-                </Border>
-            </TabItem>
+                            <Border Grid.Column="0"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="SETUP" />
+                                    <TextBlock Margin="0,18,0,0" Style="{StaticResource CaptionTextStyle}" Text="AMS2 INSTALL PATH" />
+                                    <TextBox Margin="0,8,0,0"
+                                             Padding="12"
+                                             Background="#0D151D"
+                                             BorderBrush="#2A3946"
+                                             BorderThickness="1"
+                                             Foreground="{StaticResource TextMainBrush}"
+                                             Text="{Binding InstallPathText}" />
+                                    <TextBlock Margin="0,16,0,0" Style="{StaticResource CaptionTextStyle}" Text="AMS2 PROFILE PATH" />
+                                    <TextBox Margin="0,8,0,0"
+                                             Padding="12"
+                                             Background="#0D151D"
+                                             BorderBrush="#2A3946"
+                                             BorderThickness="1"
+                                             Foreground="{StaticResource TextMainBrush}"
+                                             Text="{Binding RaceDesk.SessionPresetStatusText}" />
+                                    <TextBlock Margin="0,18,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding LauncherStatusText}" />
+                                    <Button Margin="0,22,0,0"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Command="{Binding RefreshCommand}"
+                                            Content="TEST NOW" />
+                                </StackPanel>
+                            </Border>
 
-            <TabItem Header="History">
-                <Grid Margin="0,16,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="16" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                            <Border Grid.Column="1"
+                                    Margin="18,0,18,0"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="AUTOMATION" />
+                                    <TextBlock Margin="0,18,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding RaceDesk.BlockingGuidance}" />
+                                    <TextBlock Margin="0,18,0,0" Style="{StaticResource CaptionTextStyle}" Text="RESULT AUTO-COMMIT" />
+                                    <TextBlock Margin="0,6,0,0" Style="{StaticResource BodyTextStyle}" Text="High-confidence results commit automatically. Others route through Result Review." />
+                                    <TextBlock Margin="0,18,0,0" Style="{StaticResource CaptionTextStyle}" Text="CURRENT PRIMARY ACTION" />
+                                    <TextBlock Margin="0,6,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding RaceDesk.PrimaryAction.Label}" />
+                                </StackPanel>
+                            </Border>
 
-                    <Border Grid.Row="0"
-                            Padding="18"
-                            CornerRadius="16"
-                            Background="#11192F">
-                        <StackPanel>
-                            <TextBlock FontSize="22"
-                                       FontWeight="Bold"
-                                       Foreground="#F3F6FF"
-                                       Text="Season Log" />
-                            <TextBlock Margin="0,10,0,0"
-                                       Foreground="#D7E1FF"
-                                       Text="{Binding RaceHistoryHeaderText}" />
-                            <TextBlock Margin="0,8,0,0"
-                                       TextWrapping="Wrap"
-                                       Foreground="#97A8D3"
-                                       Text="{Binding SeasonSummaryText}" />
-                        </StackPanel>
-                    </Border>
+                            <Border Grid.Column="2"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="DISPLAY" />
+                                    <TextBlock Margin="0,18,0,0" Style="{StaticResource BodyTextStyle}" Text="Rig Mode, ultrawide behavior, and accessibility controls can bind here as settings persistence is added." />
+                                    <CheckBox Margin="0,18,0,0" Foreground="{StaticResource TextMainBrush}" Content="Rig Mode" IsChecked="True" />
+                                    <CheckBox Margin="0,10,0,0" Foreground="{StaticResource TextMainBrush}" Content="Ultrawide Mode" IsChecked="True" />
+                                    <CheckBox Margin="0,10,0,0" Foreground="{StaticResource TextMainBrush}" Content="High Contrast" />
+                                </StackPanel>
+                            </Border>
 
-                    <Border Grid.Row="2"
-                            Padding="18"
-                            CornerRadius="16"
-                            Background="#11192F">
-                        <DockPanel LastChildFill="True">
-                            <TextBlock DockPanel.Dock="Top"
-                                       Margin="0,0,0,12"
-                                       FontSize="18"
-                                       FontWeight="Bold"
-                                       Foreground="#F3F6FF"
-                                       Text="Full Race History" />
-                            <ListBox ItemsSource="{Binding RaceHistory}"
-                                     Background="#0F1630"
-                                     BorderThickness="0"
-                                     Foreground="#F3F6FF">
-                                <ListBox.ItemContainerStyle>
-                                    <Style TargetType="ListBoxItem">
-                                        <Setter Property="Margin" Value="0,0,0,10" />
-                                        <Setter Property="Padding" Value="0" />
-                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                    </Style>
-                                </ListBox.ItemContainerStyle>
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Padding="14"
-                                                CornerRadius="12"
-                                                Background="#131D39"
-                                                BorderBrush="#223761"
-                                                BorderThickness="1">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="2.3*" />
-                                                    <ColumnDefinition Width="1.2*" />
-                                                    <ColumnDefinition Width="1.1*" />
-                                                    <ColumnDefinition Width="0.9*" />
-                                                    <ColumnDefinition Width="0.9*" />
-                                                </Grid.ColumnDefinitions>
+                            <Border Grid.Row="2"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="PROFILES" />
+                                    <TextBlock Margin="0,16,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding ActiveCareerSummaryText}" />
+                                    <ListBox Margin="0,16,0,0"
+                                             Height="180"
+                                             ItemsSource="{Binding Careers}"
+                                             SelectedItem="{Binding SelectedCareerSummary}"
+                                             Background="#0D151D"
+                                             BorderBrush="#243545"
+                                             BorderThickness="1"
+                                             Foreground="{StaticResource TextMainBrush}" />
+                                    <StackPanel Margin="0,16,0,0"
+                                                Orientation="Horizontal">
+                                        <Button Width="180"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Command="{Binding LoadSelectedCareerCommand}"
+                                                Content="LOAD PROFILE" />
+                                        <Button Width="180"
+                                                Margin="12,0,0,0"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Command="{Binding DeleteSelectedCareerCommand}"
+                                                Content="DELETE PROFILE" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
 
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock FontSize="15"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="#F3F6FF"
-                                                               Text="{Binding Headline}" />
-                                                    <TextBlock Margin="0,4,0,0"
-                                                               Foreground="#92A4D1"
-                                                               Text="{Binding Subtitle}" />
-                                                </StackPanel>
-
-                                                <TextBlock Grid.Column="1"
-                                                           VerticalAlignment="Center"
-                                                           Foreground="#E0E8FF"
-                                                           Text="{Binding DetailLine}" />
-
-                                                <TextBlock Grid.Column="2"
-                                                           VerticalAlignment="Center"
-                                                           Foreground="#D1DCF8"
-                                                           Text="{Binding ResultTag}" />
-
-                                                <TextBlock Grid.Column="3"
-                                                           VerticalAlignment="Center"
-                                                           Foreground="#D1DCF8"
-                                                           Text="{Binding CleanlinessTag}" />
-
-                                                <TextBlock Grid.Column="4"
-                                                           VerticalAlignment="Center"
-                                                           Foreground="#D1DCF8"
-                                                           Text="{Binding ReviewTag}" />
-                                            </Grid>
+                            <Border Grid.Row="2"
+                                    Grid.Column="2"
+                                    Style="{StaticResource CardBorderStyle}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="DIAGNOSTICS" />
+                                    <WrapPanel Margin="0,16,0,0">
+                                        <Border Style="{StaticResource StatusPillStyle}" Margin="0,0,10,10">
+                                            <TextBlock Foreground="{StaticResource AccentGreenBrush}" Text="{Binding Diagnostics.LastAutomationStatus}" />
                                         </Border>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                        </DockPanel>
-                    </Border>
-                </Grid>
-            </TabItem>
-
-            <TabItem Header="Rivals">
-                <Border Margin="0,16,0,0"
-                        Padding="18"
-                        CornerRadius="16"
-                        Background="#11192F">
-                    <DockPanel LastChildFill="True">
-                        <TextBlock DockPanel.Dock="Top"
-                                   Margin="0,0,0,12"
-                                   FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="#F3F6FF"
-                                   Text="Rivals" />
-                        <ListBox ItemsSource="{Binding Rivals}"
-                                 Background="#0F1630"
-                                 BorderThickness="0"
-                                 Foreground="#F3F6FF" />
-                    </DockPanel>
-                </Border>
-            </TabItem>
-
-            <TabItem Header="Settings">
-                <Grid Margin="0,16,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="420" />
-                        <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0"
-                            Padding="18"
-                            CornerRadius="16"
-                            Background="#11192F">
-                        <StackPanel>
-                            <TextBlock FontSize="22"
-                                       FontWeight="Bold"
-                                       Foreground="#F3F6FF"
-                                       Text="Settings" />
-                            <TextBlock Margin="0,8,0,0"
-                                       FontSize="13"
-                                       Foreground="#9DAACC"
-                                       Text="Current settings are local UI controls for launcher and development visibility. Persisted settings can be added next." />
-
-                            <CheckBox Margin="0,18,0,0"
-                                      IsChecked="{Binding DeveloperToolsEnabled}"
-                                      Foreground="#F3F6FF"
-                                      Content="Show developer simulation tools" />
-                            <TextBlock Margin="0,8,0,0"
-                                       Foreground="#8DA0CF"
-                                       Text="{Binding DeveloperToolsVisibilityText}" />
-
-                            <Button Margin="0,18,0,0"
-                                    Padding="12"
-                                    FontSize="15"
-                                    FontWeight="SemiBold"
-                                    Background="#3E4A6B"
-                                    BorderThickness="0"
-                                    Command="{Binding RefreshCommand}"
-                                    Content="Refresh Launcher Detection" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="2"
-                            Padding="18"
-                            CornerRadius="16"
-                            Background="#11192F">
-                        <StackPanel>
-                            <TextBlock FontSize="18"
-                                       FontWeight="Bold"
-                                       Foreground="#F3F6FF"
-                                       Text="Detection Details" />
-                            <TextBlock Margin="0,12,0,0"
-                                       FontWeight="SemiBold"
-                                       Foreground="#F3F6FF"
-                                       Text="Launcher Status" />
-                            <TextBlock Margin="0,6,0,0"
-                                       TextWrapping="Wrap"
-                                       Foreground="#D5DDFC"
-                                       Text="{Binding LauncherStatusText}" />
-
-                            <TextBlock Margin="0,16,0,0"
-                                       FontWeight="SemiBold"
-                                       Foreground="#F3F6FF"
-                                       Text="Install Path" />
-                            <TextBlock Margin="0,6,0,0"
-                                       TextWrapping="Wrap"
-                                       Foreground="#A8B6DA"
-                                       Text="{Binding InstallPathText}" />
-                        </StackPanel>
-                    </Border>
-                </Grid>
+                                        <Border Style="{StaticResource StatusPillStyle}" Margin="0,0,10,10">
+                                            <TextBlock Foreground="{StaticResource AccentGreenBrush}" Text="{Binding Diagnostics.LastSessionStatus}" />
+                                        </Border>
+                                    </WrapPanel>
+                                    <TextBlock Margin="0,12,0,0" Style="{StaticResource CaptionTextStyle}" Text="AUTOMATION TRACE" />
+                                    <TextBlock Margin="0,6,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding Diagnostics.AutomationTracePath}" />
+                                    <TextBlock Margin="0,14,0,0" Style="{StaticResource CaptionTextStyle}" Text="TELEMETRY LOG" />
+                                    <TextBlock Margin="0,6,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding Diagnostics.TelemetryLogPath}" />
+                                    <TextBlock Margin="0,14,0,0" Style="{StaticResource CaptionTextStyle}" Text="STARTUP ERROR LOG" />
+                                    <TextBlock Margin="0,6,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding Diagnostics.StartupErrorLogPath}" />
+                                    <TextBlock Margin="0,14,0,0" Style="{StaticResource CaptionTextStyle}" Text="RUN ID" />
+                                    <TextBlock Margin="0,6,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding Diagnostics.CurrentRunId}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
-
-        <TextBlock Grid.Row="2"
-                   Margin="4,14,0,0"
-                   FontSize="12"
-                   Foreground="#7381A7"
-                   Text="Real AMS2 launch is available. Race menu automation and deeper settings persistence are still pending." />
     </Grid>
 </Window>
