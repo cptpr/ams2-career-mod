@@ -14,13 +14,15 @@ public sealed class CareerEventPlanner
         var leagueHistoryCount = history.Count(result => string.Equals(result.Draft.LeagueId, league.Id, StringComparison.Ordinal));
         var eventCount = Math.Max(league.TrackLayoutIds.Count, 1);
         var eventNumber = leagueHistoryCount + 1;
-
-        var layout = ResolveTrackLayout(league, leagueHistoryCount, content);
+        var template = ResolveEventTemplate(state, league, leagueHistoryCount, content);
+        var layout = ResolveTrackLayout(league, template, leagueHistoryCount, content);
         var track = content.Tracks.FirstOrDefault(x => string.Equals(x.Id, layout.TrackId, StringComparison.Ordinal));
         var classDefinition = ResolveCarClass(state, league, content);
 
         return new CareerEventPlan
         {
+            EventTemplateId = template?.Id ?? string.Empty,
+            EventTemplateName = template?.Name ?? $"{league.Name} Event",
             LeagueId = league.Id,
             LeagueName = league.Name,
             EventNumber = eventNumber,
@@ -36,8 +38,10 @@ public sealed class CareerEventPlanner
             RecommendedDriverRating = league.RecommendedDriverRating,
             BaseXpReward = league.BaseXpReward,
             BaseCreditReward = league.BaseCreditReward,
-            SuggestedPresetSlug = league.Id,
-            SetupNotes = BuildSetupNotes(league, layout, classDefinition)
+            ExportAdapterId = template?.ExportAdapterId ?? "championship-editor-preset",
+            RequiresGameRestart = template?.RequiresGameRestart ?? false,
+            SuggestedPresetSlug = string.IsNullOrWhiteSpace(template?.PresetSlug) ? league.Id : template.PresetSlug,
+            SetupNotes = BuildSetupNotes(league, layout, classDefinition, template)
         };
     }
 
@@ -47,8 +51,34 @@ public sealed class CareerEventPlanner
             ?? content.Leagues.First();
     }
 
-    private static OfficialTrackLayoutDefinition ResolveTrackLayout(LeagueDefinition league, int leagueHistoryCount, CareerContentCatalog content)
+    private static EventTemplateDefinition? ResolveEventTemplate(CareerState state, LeagueDefinition league, int leagueHistoryCount, CareerContentCatalog content)
     {
+        var playerClassName = state.PlayerProfile.SelectedCarClass;
+        var playerClass = content.CarClasses.FirstOrDefault(x => string.Equals(x.Name, playerClassName, StringComparison.OrdinalIgnoreCase));
+        var templates = content.EventTemplates
+            .Where(template => string.Equals(template.LeagueId, league.Id, StringComparison.Ordinal))
+            .Where(template => playerClass is null || template.EligibleCarClassIds.Count == 0 || template.EligibleCarClassIds.Contains(playerClass.Id, StringComparer.Ordinal))
+            .ToArray();
+
+        if (templates.Length == 0)
+        {
+            return null;
+        }
+
+        return templates[leagueHistoryCount % templates.Length];
+    }
+
+    private static OfficialTrackLayoutDefinition ResolveTrackLayout(LeagueDefinition league, EventTemplateDefinition? template, int leagueHistoryCount, CareerContentCatalog content)
+    {
+        if (!string.IsNullOrWhiteSpace(template?.TrackLayoutId))
+        {
+            var templateLayout = content.TrackLayouts.FirstOrDefault(x => string.Equals(x.Id, template.TrackLayoutId, StringComparison.Ordinal));
+            if (templateLayout is not null)
+            {
+                return templateLayout;
+            }
+        }
+
         if (league.TrackLayoutIds.Count > 0)
         {
             var nextLayoutId = league.TrackLayoutIds[leagueHistoryCount % league.TrackLayoutIds.Count];
@@ -81,15 +111,21 @@ public sealed class CareerEventPlanner
             ?? byEligibleId;
     }
 
-    private static string BuildSetupNotes(LeagueDefinition league, OfficialTrackLayoutDefinition layout, OfficialCarClassDefinition? classDefinition)
+    private static string BuildSetupNotes(LeagueDefinition league, OfficialTrackLayoutDefinition layout, OfficialCarClassDefinition? classDefinition, EventTemplateDefinition? template)
     {
         var lines = new List<string>
         {
             $"League branch: {league.Name}",
+            $"Event template: {template?.Name ?? "Default rotation"}",
             $"Track target: {(string.IsNullOrWhiteSpace(layout.DisplayName) ? league.TrackName : layout.DisplayName)}",
             $"Class target: {classDefinition?.Name ?? league.ClassName}",
             $"Recommended grid: {(layout.RecommendedGridSize > 0 ? layout.RecommendedGridSize : league.GridSize)}"
         };
+
+        if (!string.IsNullOrWhiteSpace(template?.SetupInstructions))
+        {
+            lines.Add(template.SetupInstructions);
+        }
 
         if (!string.IsNullOrWhiteSpace(layout.Grade))
         {

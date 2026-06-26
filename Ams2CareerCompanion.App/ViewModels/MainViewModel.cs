@@ -17,12 +17,15 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly IMockRaceSimulator _mockRaceSimulator;
     private readonly Ams2LaunchService _launchService;
     private readonly Ams2SessionPresetService _sessionPresetService;
+    private readonly ChampionshipEditorPresetExportAdapter _eventExportAdapter;
     private readonly CareerFactory _careerFactory;
     private readonly CareerEventPlanner _eventPlanner;
     private readonly CareerProgressionEngine _progressionEngine;
     private readonly RelayCommand _createCareerCommand;
     private readonly RelayCommand _launchAms2Command;
     private readonly RelayCommand _launchAms2VrCommand;
+    private readonly RelayCommand _applyRecommendedEventCommand;
+    private readonly RelayCommand _applyRecommendedEventAndLaunchCommand;
     private readonly RelayCommand _launchWithPresetCommand;
     private readonly RelayCommand _capturePresetCommand;
     private readonly RelayCommand _applyPresetCommand;
@@ -38,6 +41,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private CareerSummary? _selectedCareerSummary;
     private RaceHistoryEntry? _selectedRecentResult;
     private RaceResultDraft? _pendingDraft;
+    private CareerEventPlan? _nextEventPlan;
     private StarterCarDefinition? _selectedStarterCar;
     private SessionPresetInfo? _selectedSessionPreset;
     private string _sessionPresetNameInput = "rookie-cup";
@@ -51,6 +55,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private string _installPathText = "Not detected yet.";
     private string _nextEventHeadlineText = "No next event available.";
     private string _nextEventDetailsText = "Create or load a career to generate the next event plan.";
+    private string _nextEventExportStatusText = "No export target selected yet.";
     private bool _developerToolsEnabled;
 
     public MainViewModel(
@@ -70,6 +75,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _mockRaceSimulator = mockRaceSimulator;
         _launchService = launchService;
         _sessionPresetService = sessionPresetService;
+        _eventExportAdapter = new ChampionshipEditorPresetExportAdapter(sessionPresetService);
         _careerFactory = careerFactory;
         _eventPlanner = new CareerEventPlanner();
         _progressionEngine = progressionEngine;
@@ -86,6 +92,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _createCareerCommand = new RelayCommand(CreateCareerAsync, () => SelectedStarterCar is not null && !string.IsNullOrWhiteSpace(CareerNameInput));
         _launchAms2Command = new RelayCommand(LaunchAms2Async);
         _launchAms2VrCommand = new RelayCommand(LaunchAms2VrAsync);
+        _applyRecommendedEventCommand = new RelayCommand(ApplyRecommendedEventAsync, () => _nextEventPlan is not null);
+        _applyRecommendedEventAndLaunchCommand = new RelayCommand(ApplyRecommendedEventAndLaunchAsync, () => _nextEventPlan is not null);
         _launchWithPresetCommand = new RelayCommand(LaunchWithPresetAsync, () => SelectedSessionPreset is not null);
         _capturePresetCommand = new RelayCommand(CapturePresetAsync, () => !string.IsNullOrWhiteSpace(SessionPresetNameInput));
         _applyPresetCommand = new RelayCommand(ApplyPresetAsync, () => SelectedSessionPreset is not null);
@@ -113,6 +121,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public RelayCommand CreateCareerCommand => _createCareerCommand;
     public RelayCommand LaunchAms2Command => _launchAms2Command;
     public RelayCommand LaunchAms2VrCommand => _launchAms2VrCommand;
+    public RelayCommand ApplyRecommendedEventCommand => _applyRecommendedEventCommand;
+    public RelayCommand ApplyRecommendedEventAndLaunchCommand => _applyRecommendedEventAndLaunchCommand;
     public RelayCommand LaunchWithPresetCommand => _launchWithPresetCommand;
     public RelayCommand CapturePresetCommand => _capturePresetCommand;
     public RelayCommand ApplyPresetCommand => _applyPresetCommand;
@@ -264,6 +274,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         private set => SetProperty(ref _nextEventDetailsText, value);
     }
 
+    public string NextEventExportStatusText
+    {
+        get => _nextEventExportStatusText;
+        private set => SetProperty(ref _nextEventExportStatusText, value);
+    }
+
     public bool DeveloperToolsEnabled
     {
         get => _developerToolsEnabled;
@@ -394,6 +410,47 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         SessionSummary = launchResult.Success
             ? NextEventDetailsText
             : "VR launch could not be started. Check the detected install path in Settings.";
+        await Task.CompletedTask;
+    }
+
+    private async Task ApplyRecommendedEventAsync()
+    {
+        var result = _eventExportAdapter.Apply(_nextEventPlan);
+        NextEventExportStatusText = result.Message;
+        StatusMessage = result.Message;
+
+        if (result.Success && result.Preset is not null)
+        {
+            SelectedSessionPreset = SessionPresets.FirstOrDefault(x => x.Key == result.Preset.Key) ?? result.Preset;
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private async Task ApplyRecommendedEventAndLaunchAsync()
+    {
+        var applyResult = _eventExportAdapter.Apply(_nextEventPlan);
+        NextEventExportStatusText = applyResult.Message;
+
+        if (!applyResult.Success)
+        {
+            StatusMessage = applyResult.Message;
+            return;
+        }
+
+        if (applyResult.Preset is not null)
+        {
+            SelectedSessionPreset = SessionPresets.FirstOrDefault(x => x.Key == applyResult.Preset.Key) ?? applyResult.Preset;
+        }
+
+        var launchResult = _launchService.Launch();
+        RefreshLauncherState();
+        StatusMessage = launchResult.Success
+            ? $"{applyResult.Message} AMS2 launch requested."
+            : $"{applyResult.Message} {launchResult.Message}";
+        SessionSummary = launchResult.Success
+            ? NextEventDetailsText
+            : "Event export succeeded, but AMS2 launch failed.";
         await Task.CompletedTask;
     }
 
@@ -745,6 +802,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _createCareerCommand.RaiseCanExecuteChanged();
         _launchAms2Command.RaiseCanExecuteChanged();
         _launchAms2VrCommand.RaiseCanExecuteChanged();
+        _applyRecommendedEventCommand.RaiseCanExecuteChanged();
+        _applyRecommendedEventAndLaunchCommand.RaiseCanExecuteChanged();
         _launchWithPresetCommand.RaiseCanExecuteChanged();
         _capturePresetCommand.RaiseCanExecuteChanged();
         _applyPresetCommand.RaiseCanExecuteChanged();
@@ -829,17 +888,25 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     {
         if (_career is null)
         {
+            _nextEventPlan = null;
             NextEventHeadlineText = "No next event available.";
             NextEventDetailsText = "Create or load a career to generate the next event plan.";
+            NextEventExportStatusText = "No export target selected yet.";
             return;
         }
 
-        var plan = _eventPlanner.BuildNextEvent(_career, _content, results);
+        _nextEventPlan = _eventPlanner.BuildNextEvent(_career, _content, results);
+        var plan = _nextEventPlan;
         NextEventHeadlineText = $"Next Event: {plan.LeagueName} at {plan.TrackDisplayName}  |  Round {plan.EventNumber}/{plan.EventCount}";
         NextEventDetailsText =
             $"{plan.PlayerCarClassName}  |  {plan.Country}  |  Grid {plan.RecommendedGridSize}  |  " +
             $"Reward {plan.BaseXpReward} XP / {plan.BaseCreditReward:n0} credits  |  " +
-            $"Preset target: {plan.SuggestedPresetSlug}\n{plan.SetupNotes}";
+            $"Template: {plan.EventTemplateName}  |  Preset target: {plan.SuggestedPresetSlug}\n{plan.SetupNotes}";
+
+        var preview = _eventExportAdapter.BuildPreview(plan);
+        NextEventExportStatusText = preview.Success
+            ? $"{preview.Message} {(preview.RequiresGameRestart ? "Game restart required after applying." : "No restart required.")}"
+            : preview.Message;
     }
 
     private string ResolveSessionLeagueName(SessionStatusSnapshot snapshot)

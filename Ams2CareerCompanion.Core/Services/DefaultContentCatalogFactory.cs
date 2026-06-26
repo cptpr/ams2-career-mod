@@ -170,6 +170,39 @@ public static class DefaultContentCatalogFactory
                     BaseCreditReward = 3600
                 }
             ],
+            EventTemplates =
+            [
+                new EventTemplateDefinition
+                {
+                    Id = "rookie-cup-goiania",
+                    LeagueId = "rookie-cup",
+                    Name = "Rookie Sprint at Goiania",
+                    TrackLayoutId = "goiania-short",
+                    EligibleCarClassIds = ["rookie-cup"],
+                    PresetSlug = "bundled-rookie-event",
+                    SetupInstructions = "Use the bundled rookie preset and confirm the selected rookie tin-top in AMS2."
+                },
+                new EventTemplateDefinition
+                {
+                    Id = "club-tour-curvelo",
+                    LeagueId = "club-tour",
+                    Name = "Club Tour at Curvelo",
+                    TrackLayoutId = "curvelo-club",
+                    EligibleCarClassIds = ["club-touring"],
+                    PresetSlug = "bundled-rookie-event",
+                    SetupInstructions = "Temporary preset placeholder until the club touring preset library is added."
+                },
+                new EventTemplateDefinition
+                {
+                    Id = "regional-gt-cascavel",
+                    LeagueId = "regional-gt",
+                    Name = "Regional GT at Cascavel",
+                    TrackLayoutId = "cascavel-international",
+                    EligibleCarClassIds = ["regional-gt"],
+                    PresetSlug = "bundled-rookie-event",
+                    SetupInstructions = "Temporary preset placeholder until the regional GT preset library is added."
+                }
+            ],
             Titles =
             [
                 new CareerTitleDefinition { Id = "title-rookie", Name = "Rookie Initiate", RequiredLevel = 1 },

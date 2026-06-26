@@ -2,6 +2,8 @@ namespace Ams2CareerCompanion.Core.Models;
 
 public sealed class CareerEventPlan
 {
+    public string EventTemplateId { get; init; } = string.Empty;
+    public string EventTemplateName { get; init; } = string.Empty;
     public string LeagueId { get; init; } = string.Empty;
     public string LeagueName { get; init; } = string.Empty;
     public int EventNumber { get; init; }
@@ -17,6 +19,8 @@ public sealed class CareerEventPlan
     public int RecommendedDriverRating { get; init; }
     public int BaseXpReward { get; init; }
     public int BaseCreditReward { get; init; }
+    public string ExportAdapterId { get; init; } = string.Empty;
+    public bool RequiresGameRestart { get; init; }
     public string SuggestedPresetSlug { get; init; } = string.Empty;
     public string SetupNotes { get; init; } = string.Empty;
 }

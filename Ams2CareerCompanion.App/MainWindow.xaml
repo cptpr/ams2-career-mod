@@ -144,6 +144,26 @@
                                                    TextWrapping="Wrap"
                                                    Foreground="#AFC0EA"
                                                    Text="{Binding NextEventDetailsText}" />
+                                        <TextBlock Margin="0,10,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#8BD9B6"
+                                                   Text="{Binding NextEventExportStatusText}" />
+                                        <Button Margin="0,12,0,0"
+                                                Padding="12"
+                                                FontSize="15"
+                                                FontWeight="SemiBold"
+                                                Background="#2C7B57"
+                                                BorderThickness="0"
+                                                Command="{Binding ApplyRecommendedEventCommand}"
+                                                Content="Apply Recommended Event" />
+                                        <Button Margin="0,10,0,0"
+                                                Padding="12"
+                                                FontSize="15"
+                                                FontWeight="SemiBold"
+                                                Background="#2D63FF"
+                                                BorderThickness="0"
+                                                Command="{Binding ApplyRecommendedEventAndLaunchCommand}"
+                                                Content="Apply Event + Launch AMS2" />
                                     </StackPanel>
                                 </Border>
 

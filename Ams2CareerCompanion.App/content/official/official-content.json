@@ -275,6 +275,74 @@
       "baseCreditReward": 5000
     }
   ],
+  "eventTemplates": [
+    {
+      "id": "rookie-kart-goiania",
+      "leagueId": "rookie-kart-cup",
+      "name": "Rookie Kart Sprint at Goiania",
+      "trackLayoutId": "goiania-short",
+      "eligibleCarClassIds": [ "rookie-karts" ],
+      "exportAdapterId": "championship-editor-preset",
+      "presetSlug": "bundled-rookie-event",
+      "requiresGameRestart": true,
+      "setupInstructions": "Apply the rookie preset, restart AMS2 if prompted, then select the kart branch equivalent in-game."
+    },
+    {
+      "id": "rookie-cup-goiania",
+      "leagueId": "rookie-cup",
+      "name": "Rookie Sprint at Goiania",
+      "trackLayoutId": "goiania-short",
+      "eligibleCarClassIds": [ "rookie-cup" ],
+      "exportAdapterId": "championship-editor-preset",
+      "presetSlug": "bundled-rookie-event",
+      "requiresGameRestart": true,
+      "setupInstructions": "Apply the rookie preset, restart AMS2 if prompted, then confirm the selected rookie tin-top and start the race."
+    },
+    {
+      "id": "club-tour-curvelo",
+      "leagueId": "club-tour",
+      "name": "Club Tour at Curvelo",
+      "trackLayoutId": "curvelo-club",
+      "eligibleCarClassIds": [ "club-touring" ],
+      "exportAdapterId": "championship-editor-preset",
+      "presetSlug": "bundled-rookie-event",
+      "requiresGameRestart": true,
+      "setupInstructions": "Temporary preset placeholder until the club touring preset set is added. Confirm the Curvelo event layout and touring class manually."
+    },
+    {
+      "id": "formula-foundation-interlagos",
+      "leagueId": "formula-foundation",
+      "name": "Formula Foundation at Interlagos",
+      "trackLayoutId": "interlagos-short",
+      "eligibleCarClassIds": [ "formula-trainer" ],
+      "exportAdapterId": "championship-editor-preset",
+      "presetSlug": "bundled-rookie-event",
+      "requiresGameRestart": true,
+      "setupInstructions": "Temporary preset placeholder until the formula trainer preset set is added. Confirm the formula branch manually."
+    },
+    {
+      "id": "regional-gt-cascavel",
+      "leagueId": "regional-gt",
+      "name": "Regional GT at Cascavel",
+      "trackLayoutId": "cascavel-international",
+      "eligibleCarClassIds": [ "regional-gt" ],
+      "exportAdapterId": "championship-editor-preset",
+      "presetSlug": "bundled-rookie-event",
+      "requiresGameRestart": true,
+      "setupInstructions": "Temporary preset placeholder until the GT preset set is added. Confirm the GT field and Cascavel layout manually."
+    },
+    {
+      "id": "national-stock-interlagos",
+      "leagueId": "national-stock",
+      "name": "National Stock at Interlagos",
+      "trackLayoutId": "interlagos-grand-prix",
+      "eligibleCarClassIds": [ "stock-car" ],
+      "exportAdapterId": "championship-editor-preset",
+      "presetSlug": "bundled-rookie-event",
+      "requiresGameRestart": true,
+      "setupInstructions": "Temporary preset placeholder until the stock car preset set is added. Confirm the national stock setup manually."
+    }
+  ],
   "titles": [
     { "id": "title-rookie", "name": "Rookie Initiate", "requiredLevel": 1 },
     { "id": "title-club", "name": "Club Charger", "requiredLevel": 3 },

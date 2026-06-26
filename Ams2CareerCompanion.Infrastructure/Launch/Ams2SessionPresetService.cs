@@ -31,6 +31,16 @@ public sealed class Ams2SessionPresetService
             .ToArray();
     }
 
+    public SessionPresetInfo? FindPresetBySlug(string? presetSlug)
+    {
+        if (string.IsNullOrWhiteSpace(presetSlug))
+        {
+            return null;
+        }
+
+        return ListPresets().FirstOrDefault(x => string.Equals(x.Slug, presetSlug, StringComparison.OrdinalIgnoreCase));
+    }
+
     public PresetOperationResult CaptureCurrentPreset(string presetName)
     {
         var normalizedName = NormalizePresetName(presetName);

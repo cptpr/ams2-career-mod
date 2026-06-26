@@ -90,6 +90,20 @@ public sealed class LeagueDefinition
     public int BaseCreditReward { get; init; }
 }
 
+public sealed class EventTemplateDefinition
+{
+    public string Id { get; init; } = string.Empty;
+    public string LeagueId { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public string TrackLayoutId { get; init; } = string.Empty;
+    public IReadOnlyList<string> EligibleCarClassIds { get; init; } = Array.Empty<string>();
+    public string ExportAdapterId { get; init; } = "championship-editor-preset";
+    public string PresetSlug { get; init; } = string.Empty;
+    public bool RequiresGameRestart { get; init; } = true;
+    public int? RecommendedGridSizeOverride { get; init; }
+    public string SetupInstructions { get; init; } = string.Empty;
+}
+
 public sealed class CareerTitleDefinition
 {
     public string Id { get; init; } = string.Empty;
@@ -125,6 +139,7 @@ public sealed class CareerContentCatalog
     public IReadOnlyList<OfficialTrackLayoutDefinition> TrackLayouts { get; init; } = Array.Empty<OfficialTrackLayoutDefinition>();
     public IReadOnlyList<StarterCarDefinition> StarterCars { get; init; } = Array.Empty<StarterCarDefinition>();
     public IReadOnlyList<LeagueDefinition> Leagues { get; init; } = Array.Empty<LeagueDefinition>();
+    public IReadOnlyList<EventTemplateDefinition> EventTemplates { get; init; } = Array.Empty<EventTemplateDefinition>();
     public IReadOnlyList<CareerTitleDefinition> Titles { get; init; } = Array.Empty<CareerTitleDefinition>();
     public IReadOnlyList<ChallengeTemplate> ChallengeTemplates { get; init; } = Array.Empty<ChallengeTemplate>();
     public IReadOnlyList<RivalArchetype> RivalArchetypes { get; init; } = Array.Empty<RivalArchetype>();

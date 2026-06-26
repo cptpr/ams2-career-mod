@@ -45,6 +45,7 @@ public sealed class FileCareerContentCatalogLoader
         EnsureCount(catalog.Titles, nameof(catalog.Titles), 1);
         EnsureCount(catalog.ChallengeTemplates, nameof(catalog.ChallengeTemplates), 1);
         EnsureCount(catalog.RivalArchetypes, nameof(catalog.RivalArchetypes), 1);
+        EnsureCount(catalog.EventTemplates, nameof(catalog.EventTemplates), 1);
         EnsureCount(catalog.CarClasses, nameof(catalog.CarClasses), 1);
         EnsureCount(catalog.Cars, nameof(catalog.Cars), 1);
         EnsureCount(catalog.Tracks, nameof(catalog.Tracks), 1);
@@ -56,6 +57,7 @@ public sealed class FileCareerContentCatalogLoader
         EnsureUniqueIds(catalog.TrackLayouts.Select(x => x.Id), "track layout");
         EnsureUniqueIds(catalog.StarterCars.Select(x => x.Id), "starter car");
         EnsureUniqueIds(catalog.Leagues.Select(x => x.Id), "league");
+        EnsureUniqueIds(catalog.EventTemplates.Select(x => x.Id), "event template");
         EnsureUniqueIds(catalog.Titles.Select(x => x.Id), "title");
         EnsureUniqueIds(catalog.ChallengeTemplates.Select(x => x.Id), "challenge");
 
@@ -95,6 +97,17 @@ public sealed class FileCareerContentCatalogLoader
             foreach (var classId in league.EligibleCarClassIds)
             {
                 EnsureReference(classId, carClassIds, $"league '{league.Id}' eligible car class");
+            }
+        }
+
+        foreach (var template in catalog.EventTemplates)
+        {
+            EnsureReference(template.LeagueId, leagueIds, $"event template '{template.Id}' league");
+            EnsureReference(template.TrackLayoutId, layoutIds, $"event template '{template.Id}' track layout");
+
+            foreach (var classId in template.EligibleCarClassIds)
+            {
+                EnsureReference(classId, carClassIds, $"event template '{template.Id}' eligible car class");
             }
         }
     }
