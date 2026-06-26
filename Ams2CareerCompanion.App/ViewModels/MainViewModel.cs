@@ -3,6 +3,7 @@ using System.Windows;
 using Ams2CareerCompanion.Core.Interfaces;
 using Ams2CareerCompanion.Core.Models;
 using Ams2CareerCompanion.Core.Services;
+using Ams2CareerCompanion.Infrastructure.Diagnostics;
 using Ams2CareerCompanion.Infrastructure.Launch;
 
 namespace Ams2CareerCompanion.App.ViewModels;
@@ -18,6 +19,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly Ams2LaunchService _launchService;
     private readonly Ams2SessionPresetService _sessionPresetService;
     private readonly RaceAutomationCoordinator _raceAutomationCoordinator;
+    private readonly RaceAutomationTraceWriter _automationTraceWriter;
     private readonly ChampionshipEditorPresetExportAdapter _eventExportAdapter;
     private readonly CareerFactory _careerFactory;
     private readonly CareerEventPlanner _eventPlanner;
@@ -70,6 +72,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         Ams2LaunchService launchService,
         Ams2SessionPresetService sessionPresetService,
         RaceAutomationCoordinator raceAutomationCoordinator,
+        RaceAutomationTraceWriter automationTraceWriter,
         ResultReconstructionService resultReconstructionService,
         CareerFactory careerFactory,
         CareerProgressionEngine progressionEngine)
@@ -81,6 +84,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _launchService = launchService;
         _sessionPresetService = sessionPresetService;
         _raceAutomationCoordinator = raceAutomationCoordinator;
+        _automationTraceWriter = automationTraceWriter;
         _eventExportAdapter = new ChampionshipEditorPresetExportAdapter(sessionPresetService);
         _careerFactory = careerFactory;
         _eventPlanner = new CareerEventPlanner();
@@ -640,6 +644,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     {
         _ = Application.Current.Dispatcher.InvokeAsync(() =>
         {
+            _automationTraceWriter.AppendSessionSnapshot(_raceAutomationCoordinator.CurrentStatus.RunId, snapshot);
             var leagueName = ResolveSessionLeagueName(snapshot);
             var trackName = ResolveSessionTrackName(snapshot);
 
@@ -720,6 +725,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         var update = _progressionEngine.ApplyRaceResult(_career, confirmed, _content);
         await _repository.SaveCareerAsync(_career, setAsCurrent: true);
         await _repository.AppendRaceResultAsync(_career.Id, confirmed);
+        _automationTraceWriter.AppendCommittedResult(_career.Id, confirmed);
 
         FeaturedRivalText = update.FeaturedRival is null
             ? "No featured rival available."

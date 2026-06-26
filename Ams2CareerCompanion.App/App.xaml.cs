@@ -63,6 +63,7 @@ public partial class App : Application
                 launchService,
                 sessionPresetService,
                 raceAutomationCoordinator,
+                automationTraceWriter,
                 resultService,
                 careerFactory,
                 progressionEngine);
