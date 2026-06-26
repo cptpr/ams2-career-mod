@@ -23,6 +23,14 @@ public enum ResultConfidence
     Low
 }
 
+public enum RaceOutcome
+{
+    Finished,
+    Retired,
+    Abandoned,
+    Unknown
+}
+
 public enum TelemetryConnectionState
 {
     Disconnected,
@@ -46,12 +54,14 @@ public sealed class TelemetrySnapshot
     public DateTime TimestampUtc { get; init; }
     public int CurrentLap { get; init; }
     public int CompletedLaps { get; init; }
+    public int TotalLaps { get; init; }
     public int OverallPosition { get; init; }
     public int ClassPosition { get; init; }
     public int Entrants { get; init; }
     public double FuelLiters { get; init; }
     public bool IsInPit { get; init; }
     public bool WasCleanLap { get; init; }
+    public uint ParticipantRaceState { get; init; }
 }
 
 public sealed class MockRaceScenario
@@ -74,6 +84,7 @@ public sealed class RaceResultDraft
     public string LeagueName { get; init; } = string.Empty;
     public string TrackName { get; init; } = string.Empty;
     public DateTime CompletedUtc { get; init; }
+    public RaceOutcome Outcome { get; init; } = RaceOutcome.Unknown;
     public int OverallPosition { get; init; }
     public int ClassPosition { get; init; }
     public int Entrants { get; init; }

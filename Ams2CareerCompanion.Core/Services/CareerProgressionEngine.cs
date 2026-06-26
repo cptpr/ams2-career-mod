@@ -72,6 +72,17 @@ public sealed class CareerProgressionEngine
 
     private static RewardBreakdown BuildBaseReward(RaceResultDraft draft, LeagueDefinition league)
     {
+        if (draft.Outcome is RaceOutcome.Abandoned or RaceOutcome.Retired)
+        {
+            return new RewardBreakdown
+            {
+                XpDelta = Math.Max(15, league.BaseXpReward / 6),
+                CreditsDelta = Math.Max(0, league.BaseCreditReward / 10),
+                DriverRatingDelta = -10,
+                ReputationDelta = 0
+            };
+        }
+
         var placementFactor = Math.Max(0, draft.Entrants - draft.OverallPosition);
         var cleanBonusXp = draft.IsCleanRace ? 40 : 0;
         var cleanBonusCredits = draft.IsCleanRace ? 300 : 0;
@@ -92,16 +103,20 @@ public sealed class CareerProgressionEngine
             switch (challenge.Kind)
             {
                 case ChallengeKind.FinishRace:
+                    if (draft.Outcome != RaceOutcome.Finished)
+                    {
+                        break;
+                    }
                     challenge.Progress = Math.Min(challenge.Target, challenge.Progress + 1);
                     break;
                 case ChallengeKind.CleanFinish:
-                    if (draft.IsCleanRace)
+                    if (draft.Outcome == RaceOutcome.Finished && draft.IsCleanRace)
                     {
                         challenge.Progress = Math.Min(challenge.Target, challenge.Progress + 1);
                     }
                     break;
                 case ChallengeKind.PodiumFinish:
-                    if (draft.OverallPosition <= 3)
+                    if (draft.Outcome == RaceOutcome.Finished && draft.OverallPosition <= 3)
                     {
                         challenge.Progress = Math.Min(challenge.Target, challenge.Progress + 1);
                     }
@@ -179,9 +194,9 @@ public sealed class CareerProgressionEngine
         }
 
         featured.DriverRating = Math.Max(850, featured.DriverRating + Random.Shared.NextDouble() * 12 - 4);
-        featured.Reputation = Math.Max(0, featured.Reputation + (draft.OverallPosition <= 3 ? 2 : 1));
+        featured.Reputation = Math.Max(0, featured.Reputation + (draft.Outcome == RaceOutcome.Finished && draft.OverallPosition <= 3 ? 2 : 1));
 
-        if (draft.OverallPosition <= 3)
+        if (draft.Outcome == RaceOutcome.Finished && draft.OverallPosition <= 3)
         {
             featured.RivalryIntensity = Math.Min(100, featured.RivalryIntensity + 10);
         }
@@ -190,7 +205,7 @@ public sealed class CareerProgressionEngine
             featured.RivalryIntensity = Math.Min(100, featured.RivalryIntensity + 4);
         }
 
-        if (draft.OverallPosition == 1)
+        if (draft.Outcome == RaceOutcome.Finished && draft.OverallPosition == 1)
         {
             featured.RivalryIntensity = Math.Min(100, featured.RivalryIntensity + 6);
         }

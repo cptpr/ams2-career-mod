@@ -301,6 +301,7 @@ public sealed class Ams2SharedMemoryFeed : IGameTelemetryFeed
         var classPosition = BuildClassPosition(buffer, safeViewedIndex, participantCount, overallPosition);
         var fuelLevel = BinaryPrimitives.ReadSingleLittleEndian(buffer.AsSpan(OffsetFuelLevel, 4));
         var fuelCapacity = BinaryPrimitives.ReadSingleLittleEndian(buffer.AsSpan(OffsetFuelCapacity, 4));
+        var totalLaps = BinaryPrimitives.ReadInt32LittleEndian(buffer.AsSpan(OffsetLapsInEvent, 4));
         var lastLapTime = BinaryPrimitives.ReadSingleLittleEndian(buffer.AsSpan(OffsetLastLapTime, 4));
         if (safeViewedIndex < StoredParticipantsMax)
         {
@@ -316,12 +317,16 @@ public sealed class Ams2SharedMemoryFeed : IGameTelemetryFeed
             TimestampUtc = DateTime.UtcNow,
             CurrentLap = (int)Math.Max(currentLap, lapsCompleted),
             CompletedLaps = (int)lapsCompleted,
+            TotalLaps = Math.Max(totalLaps, 0),
             OverallPosition = (int)Math.Max(overallPosition, 1),
             ClassPosition = classPosition,
             Entrants = Math.Max(participantCount, 1),
             FuelLiters = fuelCapacity > 0 ? fuelCapacity * fuelLevel : 0,
             IsInPit = pitMode is 1 or 2 or 3 or 4 or 5,
-            WasCleanLap = !lapInvalidated && lastLapTime >= 0
+            WasCleanLap = !lapInvalidated && lastLapTime >= 0,
+            ParticipantRaceState = safeViewedIndex < StoredParticipantsMax
+                ? BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(OffsetRaceStatesByParticipant + safeViewedIndex * 4, 4))
+                : 0
         };
     }
 

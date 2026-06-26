@@ -700,6 +700,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             LeagueName = string.IsNullOrWhiteSpace(draft.LeagueName) ? activeLeague?.Name ?? draft.LeagueName : draft.LeagueName,
             TrackName = string.IsNullOrWhiteSpace(draft.TrackName) ? activeLeague?.TrackName ?? draft.TrackName : draft.TrackName,
             CompletedUtc = draft.CompletedUtc,
+            Outcome = draft.Outcome,
             OverallPosition = draft.OverallPosition,
             ClassPosition = draft.ClassPosition,
             Entrants = draft.Entrants,
@@ -1054,6 +1055,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
             var resultTag = draft.OverallPosition switch
             {
+                _ when draft.Outcome == RaceOutcome.Abandoned => "Abandoned",
+                _ when draft.Outcome == RaceOutcome.Retired => "Retired",
                 1 => "Win",
                 2 or 3 => "Podium",
                 <= 5 => "Top 5",
@@ -1079,11 +1082,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 ResultTag = resultTag,
                 CleanlinessTag = cleanTag,
                 ReviewTag = reviewTag,
-                DetailLine = $"Overall P{draft.OverallPosition}/{draft.Entrants}  |  Class P{draft.ClassPosition}  |  {draft.LapsCompleted} laps",
+                DetailLine = $"Outcome {draft.Outcome}  |  Overall P{draft.OverallPosition}/{draft.Entrants}  |  Class P{draft.ClassPosition}  |  {draft.LapsCompleted} laps",
                 Details =
                     $"League: {draft.LeagueName}\n" +
                     $"Track: {draft.TrackName}\n" +
                     $"Completed: {completedLocal}\n" +
+                    $"Outcome: {draft.Outcome}\n" +
                     $"Overall finish: P{draft.OverallPosition}/{draft.Entrants}\n" +
                     $"Class finish: P{draft.ClassPosition}\n" +
                     $"Laps completed: {draft.LapsCompleted}\n" +

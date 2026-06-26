@@ -74,12 +74,14 @@ public sealed class MockAms2TelemetryFeed : IGameTelemetryFeed, IMockRaceSimulat
                 TimestampUtc = DateTime.UtcNow,
                 CurrentLap = lap,
                 CompletedLaps = lap,
+                TotalLaps = scenario.TotalLaps,
                 OverallPosition = position,
                 ClassPosition = Math.Min(position, scenario.PlannedClassPosition),
                 Entrants = scenario.GridSize,
                 FuelLiters = Math.Max(3, 42 - lap * 4.2),
                 IsInPit = false,
-                WasCleanLap = scenario.IsCleanRace
+                WasCleanLap = scenario.IsCleanRace,
+                ParticipantRaceState = 2
             });
 
             await Task.Delay(650, token);
@@ -90,12 +92,14 @@ public sealed class MockAms2TelemetryFeed : IGameTelemetryFeed, IMockRaceSimulat
             TimestampUtc = DateTime.UtcNow,
             CurrentLap = scenario.TotalLaps,
             CompletedLaps = scenario.TotalLaps,
+            TotalLaps = scenario.TotalLaps,
             OverallPosition = scenario.PlannedFinishPosition,
             ClassPosition = scenario.PlannedClassPosition,
             Entrants = scenario.GridSize,
             FuelLiters = 6,
             IsInPit = false,
-            WasCleanLap = scenario.IsCleanRace
+            WasCleanLap = scenario.IsCleanRace,
+            ParticipantRaceState = 3
         });
 
         SessionStatusChanged?.Invoke(this, new SessionStatusSnapshot
