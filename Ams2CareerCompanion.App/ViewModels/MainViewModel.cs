@@ -722,6 +722,16 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             WasReviewed = reviewed
         };
 
+        if (await _repository.HasLoggedRaceAsync(_career.Id, confirmed.Draft.Id, confirmed.Draft.AutomationRunId))
+        {
+            StatusMessage = confirmed.Draft.AutomationRunId is null
+                ? "This race result was already logged."
+                : "This automation run already produced a logged race result.";
+            PendingDraft = null;
+            RaiseCommandStates();
+            return;
+        }
+
         var update = _progressionEngine.ApplyRaceResult(_career, confirmed, _content);
         await _repository.SaveCareerAsync(_career, setAsCurrent: true);
         await _repository.AppendRaceResultAsync(_career.Id, confirmed);

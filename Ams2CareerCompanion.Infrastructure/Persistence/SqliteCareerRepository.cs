@@ -163,6 +163,32 @@ public sealed class SqliteCareerRepository : ICareerRepository
         await WriteAppStateAsync(connection, CurrentCareerKey, nextCareerId, cancellationToken);
     }
 
+    public async Task<bool> HasLoggedRaceAsync(Guid careerId, Guid draftId, Guid? automationRunId, CancellationToken cancellationToken = default)
+    {
+        await using var connection = CreateConnection();
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT EXISTS(
+                SELECT 1
+                FROM race_results
+                WHERE career_id = $careerId
+                  AND (
+                    draft_id = $draftId
+                    OR ($automationRunId IS NOT NULL AND automation_run_id = $automationRunId)
+                  )
+            );
+            """;
+        command.Parameters.AddWithValue("$careerId", careerId.ToString("D"));
+        command.Parameters.AddWithValue("$draftId", draftId.ToString("D"));
+        command.Parameters.AddWithValue("$automationRunId", automationRunId?.ToString("D") ?? (object)DBNull.Value);
+
+        var exists = await command.ExecuteScalarAsync(cancellationToken);
+        return exists is 1L or 1;
+    }
+
     public async Task AppendRaceResultAsync(Guid careerId, RaceResultConfirmed result, CancellationToken cancellationToken = default)
     {
         var payload = JsonSerializer.Serialize(result, _jsonOptions);
@@ -289,6 +315,10 @@ public sealed class SqliteCareerRepository : ICareerRepository
             CREATE UNIQUE INDEX IF NOT EXISTS idx_race_results_career_draft
             ON race_results(career_id, draft_id)
             WHERE draft_id IS NOT NULL;
+
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_race_results_career_run
+            ON race_results(career_id, automation_run_id)
+            WHERE automation_run_id IS NOT NULL;
             """;
         indexCommand.ExecuteNonQuery();
     }
