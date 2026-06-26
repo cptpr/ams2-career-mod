@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using Ams2CareerCompanion.Core.Interfaces;
 using Ams2CareerCompanion.Core.Models;
@@ -38,6 +39,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly RelayCommand _simulateRaceCommand;
     private readonly RelayCommand _simulateUncertainRaceCommand;
     private readonly RelayCommand _confirmPendingResultCommand;
+    private readonly RelayCommand _dismissPendingResultCommand;
     private readonly RelayCommand _refreshCommand;
 
     private CareerState? _career;
@@ -73,6 +75,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         Ams2SessionPresetService sessionPresetService,
         RaceAutomationCoordinator raceAutomationCoordinator,
         RaceAutomationTraceWriter automationTraceWriter,
+        string? telemetryLogPath,
+        string startupErrorLogPath,
         ResultReconstructionService resultReconstructionService,
         CareerFactory careerFactory,
         CareerProgressionEngine progressionEngine)
@@ -113,7 +117,29 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _simulateRaceCommand = new RelayCommand(() => SimulateRaceAsync(false), () => _career is not null);
         _simulateUncertainRaceCommand = new RelayCommand(() => SimulateRaceAsync(true), () => _career is not null);
         _confirmPendingResultCommand = new RelayCommand(ConfirmPendingResultAsync, () => PendingDraft is not null);
+        _dismissPendingResultCommand = new RelayCommand(DismissPendingResultAsync, () => PendingDraft is not null);
         _refreshCommand = new RelayCommand(RefreshAsync);
+
+        RaceDesk = new RaceDeskViewModel(
+            SessionPresets,
+            RecentResults,
+            RaceHistory,
+            _refreshCommand,
+            _launchAms2Command,
+            _launchAms2VrCommand,
+            _applyRecommendedEventCommand,
+            _applyRecommendedEventAndLaunchCommand,
+            _launchWithPresetCommand,
+            _capturePresetCommand,
+            _applyPresetCommand,
+            _deletePresetCommand,
+            _confirmPendingResultCommand,
+            _dismissPendingResultCommand);
+        Diagnostics = new DiagnosticsSummaryViewModel();
+        Diagnostics.InitializePaths(
+            automationTraceWriter.TraceFilePath,
+            telemetryLogPath ?? Path.Combine(AppContext.BaseDirectory, "telemetry.log"),
+            startupErrorLogPath);
 
         telemetryFeed.SessionStatusChanged += OnSessionStatusChanged;
         resultReconstructionService.DraftCreated += OnDraftCreated;
@@ -143,7 +169,11 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public RelayCommand SimulateRaceCommand => _simulateRaceCommand;
     public RelayCommand SimulateUncertainRaceCommand => _simulateUncertainRaceCommand;
     public RelayCommand ConfirmPendingResultCommand => _confirmPendingResultCommand;
+    public RelayCommand DismissPendingResultCommand => _dismissPendingResultCommand;
     public RelayCommand RefreshCommand => _refreshCommand;
+    public RaceDeskViewModel RaceDesk { get; }
+    public DiagnosticsSummaryViewModel Diagnostics { get; }
+    public ProfileSummaryViewModel Profile { get; } = new();
 
     public string CareerNameInput
     {
@@ -200,6 +230,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 _deletePresetCommand.RaiseCanExecuteChanged();
                 RaisePropertyChanged(nameof(SelectedSessionPresetSummaryText));
                 RaisePropertyChanged(nameof(CanDeleteSelectedSessionPreset));
+                RaceDesk.SelectedSessionPresetSummaryText = SelectedSessionPresetSummaryText;
+                RaceDesk.CanDeleteSelectedSessionPreset = CanDeleteSelectedSessionPreset;
             }
         }
     }
@@ -234,37 +266,73 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public string ConnectionStateText
     {
         get => _connectionStateText;
-        private set => SetProperty(ref _connectionStateText, value);
+        private set
+        {
+            if (SetProperty(ref _connectionStateText, value))
+            {
+                RaceDesk.ConnectionStateText = value;
+            }
+        }
     }
 
     public string SessionSummary
     {
         get => _sessionSummary;
-        private set => SetProperty(ref _sessionSummary, value);
+        private set
+        {
+            if (SetProperty(ref _sessionSummary, value))
+            {
+                RaceDesk.SessionSummary = value;
+            }
+        }
     }
 
     public string StatusMessage
     {
         get => _statusMessage;
-        private set => SetProperty(ref _statusMessage, value);
+        private set
+        {
+            if (SetProperty(ref _statusMessage, value))
+            {
+                RaceDesk.StatusMessage = value;
+            }
+        }
     }
 
     public string RewardSummary
     {
         get => _rewardSummary;
-        private set => SetProperty(ref _rewardSummary, value);
+        private set
+        {
+            if (SetProperty(ref _rewardSummary, value))
+            {
+                RaceDesk.RewardSummary = value;
+            }
+        }
     }
 
     public string LauncherStatusText
     {
         get => _launcherStatusText;
-        private set => SetProperty(ref _launcherStatusText, value);
+        private set
+        {
+            if (SetProperty(ref _launcherStatusText, value))
+            {
+                RaceDesk.LauncherStatusText = value;
+            }
+        }
     }
 
     public string InstallPathText
     {
         get => _installPathText;
-        private set => SetProperty(ref _installPathText, value);
+        private set
+        {
+            if (SetProperty(ref _installPathText, value))
+            {
+                RaceDesk.InstallPathText = value;
+            }
+        }
     }
 
     public string FeaturedRivalText
@@ -360,6 +428,16 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 RaisePropertyChanged(nameof(HasPendingDraft));
                 RaisePropertyChanged(nameof(PendingDraftSummary));
                 _confirmPendingResultCommand.RaiseCanExecuteChanged();
+                _dismissPendingResultCommand.RaiseCanExecuteChanged();
+
+                if (value is null)
+                {
+                    RaceDesk.ResultReview.Clear();
+                }
+                else
+                {
+                    RaceDesk.ResultReview.SetPendingDraft(value);
+                }
             }
         }
     }
@@ -446,6 +524,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     {
         var result = _raceAutomationCoordinator.PrepareEvent(_nextEventPlan);
         NextEventExportStatusText = BuildExportStatusText(result.Message, result.Readiness, result.RequiresGameRestart);
+        Diagnostics.RecordExportStatus(NextEventExportStatusText);
         StatusMessage = result.Message;
 
         if (result.Success && result.Preset is not null)
@@ -460,6 +539,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     {
         var (applyResult, launchResult) = _raceAutomationCoordinator.PrepareAndLaunch(_nextEventPlan, vr: false);
         NextEventExportStatusText = BuildExportStatusText(applyResult.Message, applyResult.Readiness, applyResult.RequiresGameRestart);
+        Diagnostics.RecordExportStatus(NextEventExportStatusText);
 
         if (!applyResult.Success)
         {
@@ -640,6 +720,20 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaiseCommandStates();
     }
 
+    private async Task DismissPendingResultAsync()
+    {
+        if (PendingDraft is null)
+        {
+            return;
+        }
+
+        Diagnostics.RecordResultStatus(PendingDraft.AutomationRunId, $"Pending result dismissed: {PendingDraft.Outcome} at {PendingDraft.TrackName}.");
+        StatusMessage = "Pending result review dismissed.";
+        PendingDraft = null;
+        RaiseCommandStates();
+        await Task.CompletedTask;
+    }
+
     private void OnSessionStatusChanged(object? sender, SessionStatusSnapshot snapshot)
     {
         _ = Application.Current.Dispatcher.InvokeAsync(() =>
@@ -656,6 +750,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 SessionPhase.Finished => $"Session finished at {trackName}. Evaluating result confidence.",
                 _ => snapshot.IsConnected ? "Monitoring AMS2 for the next session." : trackName
             };
+            Diagnostics.RecordSessionStatus(_raceAutomationCoordinator.CurrentStatus.RunId, SessionSummary);
         });
     }
 
@@ -671,6 +766,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
             PendingDraft = draft;
             StatusMessage = "Result confidence is below automatic commit threshold. Review and confirm the detected finish.";
+            Diagnostics.RecordResultStatus(draft.AutomationRunId, $"Pending manual review for {draft.Outcome} at {draft.TrackName}.");
             RaiseCommandStates();
         });
     }
@@ -682,6 +778,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             AutomationHeadlineText = status.Headline;
             AutomationDetailText = status.Detail;
             AutomationTelemetryText = status.TelemetryLine;
+            RaceDesk.Automation.Update(status);
+            Diagnostics.RecordAutomationStatus(status.RunId, $"{status.Stage}: {status.Headline}");
 
             if (status.Stage == RaceAutomationStage.SessionFinished)
             {
@@ -736,6 +834,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         await _repository.SaveCareerAsync(_career, setAsCurrent: true);
         await _repository.AppendRaceResultAsync(_career.Id, confirmed);
         _automationTraceWriter.AppendCommittedResult(_career.Id, confirmed);
+        Diagnostics.RecordResultStatus(confirmed.Draft.AutomationRunId, $"Committed {confirmed.Draft.Outcome} result for {confirmed.Draft.TrackName}.");
 
         FeaturedRivalText = update.FeaturedRival is null
             ? "No featured rival available."
@@ -852,6 +951,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaisePropertyChanged(nameof(SeasonSummaryText));
         RaisePropertyChanged(nameof(NextEventHeadlineText));
         RaisePropertyChanged(nameof(NextEventDetailsText));
+        UpdateProfileSummary();
     }
 
     private void RaiseCommandStates()
@@ -870,6 +970,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _simulateRaceCommand.RaiseCanExecuteChanged();
         _simulateUncertainRaceCommand.RaiseCanExecuteChanged();
         _confirmPendingResultCommand.RaiseCanExecuteChanged();
+        _dismissPendingResultCommand.RaiseCanExecuteChanged();
     }
 
     private async Task RefreshCareerListAsync()
@@ -910,6 +1011,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         }
 
         RaisePropertyChanged(nameof(SessionPresetStatusText));
+        RaceDesk.SessionPresetStatusText = SessionPresetStatusText;
+        RaceDesk.SelectedSessionPresetSummaryText = SelectedSessionPresetSummaryText;
+        RaceDesk.CanDeleteSelectedSessionPreset = CanDeleteSelectedSessionPreset;
     }
 
     private string BuildSessionPresetStatusText()
@@ -949,6 +1053,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             NextEventHeadlineText = "No next event available.";
             NextEventDetailsText = "Create or load a career to generate the next event plan.";
             NextEventExportStatusText = "No export target selected yet.";
+            RaceDesk.EventPlan.Clear();
+            Diagnostics.RecordExportStatus(NextEventExportStatusText);
             return;
         }
 
@@ -962,6 +1068,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
         var preview = _eventExportAdapter.BuildPreview(plan);
         NextEventExportStatusText = BuildExportStatusText(preview.Message, preview.Readiness, preview.RequiresGameRestart);
+        RaceDesk.EventPlan.Update(plan, NextEventDetailsText, NextEventExportStatusText, preview.Readiness);
+        Diagnostics.RecordExportStatus(NextEventExportStatusText);
     }
 
     private static string BuildExportStatusText(string message, EventExportReadiness? readiness, bool requiresRestart)
@@ -1049,6 +1157,27 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             : "AMS2 install not detected. Steam fallback will be used if available.";
     }
 
+    private void UpdateProfileSummary()
+    {
+        if (_career is null)
+        {
+            Profile.Clear();
+            return;
+        }
+
+        Profile.Update(
+            _career.Id,
+            _career.Name,
+            _career.PlayerProfile.StarterCarName,
+            GetCurrentTitle(),
+            CurrentLeagueName,
+            _career.Progression.Level,
+            _career.Progression.Xp,
+            _career.Progression.Credits,
+            _career.Progression.DriverRating,
+            _career.Progression.Reputation);
+    }
+
     private string BuildConnectionStateText()
     {
         return _telemetryFeed.ConnectionState switch
@@ -1078,80 +1207,5 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     {
         _raceAutomationCoordinator.Dispose();
         await _telemetryFeed.DisposeAsync();
-    }
-
-    public sealed class RaceHistoryEntry
-    {
-        public required Guid Id { get; init; }
-        public required int OverallPosition { get; init; }
-        public required int ClassPosition { get; init; }
-        public required int Entrants { get; init; }
-        public required int LapsCompleted { get; init; }
-        public required bool IsCleanRace { get; init; }
-        public required bool WasReviewed { get; init; }
-        public Guid? AutomationRunId { get; init; }
-        public required string Headline { get; init; }
-        public required string Subtitle { get; init; }
-        public required string ResultTag { get; init; }
-        public required string CleanlinessTag { get; init; }
-        public required string ReviewTag { get; init; }
-        public required string DetailLine { get; init; }
-        public required string Details { get; init; }
-
-        public static RaceHistoryEntry From(RaceResultConfirmed result)
-        {
-            var draft = result.Draft;
-            var completedLocal = draft.CompletedUtc == default
-                ? "Unknown date"
-                : draft.CompletedUtc.ToLocalTime().ToString("dd MMM yyyy  HH:mm");
-
-            var resultTag = draft.OverallPosition switch
-            {
-                _ when draft.Outcome == RaceOutcome.Disqualified => "Disqualified",
-                _ when draft.Outcome == RaceOutcome.Restarted => "Restarted",
-                _ when draft.Outcome == RaceOutcome.Abandoned => "Abandoned",
-                _ when draft.Outcome == RaceOutcome.Retired => "Retired",
-                1 => "Win",
-                2 or 3 => "Podium",
-                <= 5 => "Top 5",
-                <= 10 => "Top 10",
-                _ => "Finish"
-            };
-
-            var cleanTag = draft.IsCleanRace ? "Clean race" : "Incident flagged";
-            var reviewTag = result.WasReviewed ? "Manual review" : "Auto logged";
-            var confidenceTag = $"{draft.Confidence} confidence";
-
-            return new RaceHistoryEntry
-            {
-                Id = result.Id,
-                OverallPosition = draft.OverallPosition,
-                ClassPosition = draft.ClassPosition,
-                Entrants = draft.Entrants,
-                LapsCompleted = draft.LapsCompleted,
-                IsCleanRace = draft.IsCleanRace,
-                WasReviewed = result.WasReviewed,
-                AutomationRunId = draft.AutomationRunId,
-                Headline = $"{draft.LeagueName} at {draft.TrackName}",
-                Subtitle = completedLocal,
-                ResultTag = resultTag,
-                CleanlinessTag = cleanTag,
-                ReviewTag = reviewTag,
-                DetailLine = $"Outcome {draft.Outcome}  |  Overall P{draft.OverallPosition}/{draft.Entrants}  |  Class P{draft.ClassPosition}  |  {draft.LapsCompleted} laps",
-                Details =
-                    $"League: {draft.LeagueName}\n" +
-                    $"Track: {draft.TrackName}\n" +
-                    $"Completed: {completedLocal}\n" +
-                    $"Outcome: {draft.Outcome}\n" +
-                    $"Overall finish: P{draft.OverallPosition}/{draft.Entrants}\n" +
-                    $"Class finish: P{draft.ClassPosition}\n" +
-                    $"Laps completed: {draft.LapsCompleted}\n" +
-                    $"Race cleanliness: {cleanTag}\n" +
-                    $"Capture mode: {reviewTag}\n" +
-                    $"Detection quality: {confidenceTag}\n" +
-                    $"Automation run: {(draft.AutomationRunId?.ToString("D") ?? "Not linked")}\n\n" +
-                    $"Stored summary:\n{draft.Summary}"
-            };
-        }
     }
 }

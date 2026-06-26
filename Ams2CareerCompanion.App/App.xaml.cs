@@ -54,6 +54,7 @@ public partial class App : Application
             var raceAutomationCoordinator = new RaceAutomationCoordinator(telemetryFeed, launchService, eventExportAdapter, runContext, automationTraceWriter);
             var careerFactory = new CareerFactory();
             var progressionEngine = new CareerProgressionEngine();
+            var startupErrorLogPath = Path.Combine(AppContext.BaseDirectory, "startup-error.log");
 
             var viewModel = new MainViewModel(
                 content,
@@ -64,6 +65,8 @@ public partial class App : Application
                 sessionPresetService,
                 raceAutomationCoordinator,
                 automationTraceWriter,
+                liveTelemetryFeed.LogPath,
+                startupErrorLogPath,
                 resultService,
                 careerFactory,
                 progressionEngine);

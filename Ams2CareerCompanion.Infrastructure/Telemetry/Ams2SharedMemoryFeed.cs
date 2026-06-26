@@ -65,6 +65,7 @@ public sealed class Ams2SharedMemoryFeed : IGameTelemetryFeed
     public event EventHandler<TelemetrySnapshot>? TelemetryReceived;
 
     public TelemetryConnectionState ConnectionState { get; private set; } = TelemetryConnectionState.Disconnected;
+    public string? LogPath => _logPath;
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
