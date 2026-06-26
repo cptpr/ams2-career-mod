@@ -464,9 +464,13 @@
                 </Grid>
             </Border>
 
-            <TabControl Grid.Column="2"
-                        SelectedIndex="{Binding SelectedPageIndex}"
-                        Background="Transparent">
+            <ScrollViewer Grid.Column="2"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          CanContentScroll="False"
+                          Padding="0,0,6,0">
+                <TabControl SelectedIndex="{Binding SelectedPageIndex}"
+                            Background="Transparent">
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
@@ -1539,7 +1543,8 @@
                     </Grid>
                 </ScrollViewer>
             </TabItem>
-            </TabControl>
+                </TabControl>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </Window>
