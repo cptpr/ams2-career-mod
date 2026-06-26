@@ -1,11 +1,13 @@
 using Ams2CareerCompanion.Core.Interfaces;
 using Ams2CareerCompanion.Core.Models;
+using Ams2CareerCompanion.Core.Services;
 using Ams2CareerCompanion.Infrastructure.Diagnostics;
 
 namespace Ams2CareerCompanion.Infrastructure.Launch;
 
 public sealed class RaceAutomationCoordinator : IDisposable
 {
+    private readonly RaceAutomationRunContext _runContext;
     private readonly IGameTelemetryFeed _telemetryFeed;
     private readonly Ams2LaunchService _launchService;
     private readonly ChampionshipEditorPresetExportAdapter _exportAdapter;
@@ -21,8 +23,10 @@ public sealed class RaceAutomationCoordinator : IDisposable
         IGameTelemetryFeed telemetryFeed,
         Ams2LaunchService launchService,
         ChampionshipEditorPresetExportAdapter exportAdapter,
+        RaceAutomationRunContext runContext,
         RaceAutomationTraceWriter? traceWriter = null)
     {
+        _runContext = runContext;
         _telemetryFeed = telemetryFeed;
         _launchService = launchService;
         _exportAdapter = exportAdapter;
@@ -38,10 +42,12 @@ public sealed class RaceAutomationCoordinator : IDisposable
 
     public EventExportResult PrepareEvent(CareerEventPlan? eventPlan)
     {
+        var run = _runContext.StartNewRun("event-prepared");
         var result = _exportAdapter.Apply(eventPlan);
         Publish(result.Success
             ? new RaceAutomationStatus
             {
+                RunId = run.RunId,
                 Stage = result.RequiresGameRestart ? RaceAutomationStage.RestartRequired : RaceAutomationStage.EventPrepared,
                 Headline = result.RequiresGameRestart ? "Event prepared. Restart required." : "Event prepared.",
                 Detail = result.Message,
@@ -49,6 +55,7 @@ public sealed class RaceAutomationCoordinator : IDisposable
             }
             : new RaceAutomationStatus
             {
+                RunId = run.RunId,
                 Stage = RaceAutomationStage.Error,
                 Headline = "Event preparation failed.",
                 Detail = result.Message
@@ -65,9 +72,11 @@ public sealed class RaceAutomationCoordinator : IDisposable
         }
 
         var launchResult = vr ? _launchService.LaunchVr() : _launchService.Launch();
+        var run = _runContext.EnsureRun("launch-requested");
         Publish(launchResult.Success
             ? new RaceAutomationStatus
             {
+                RunId = run.RunId,
                 Stage = RaceAutomationStage.LaunchRequested,
                 Headline = vr ? "Launch requested in VR." : "Launch requested.",
                 Detail = exportResult.RequiresGameRestart
@@ -78,6 +87,7 @@ public sealed class RaceAutomationCoordinator : IDisposable
             }
             : new RaceAutomationStatus
             {
+                RunId = run.RunId,
                 Stage = RaceAutomationStage.Error,
                 Headline = "Launch failed.",
                 Detail = launchResult.Message,
@@ -93,38 +103,49 @@ public sealed class RaceAutomationCoordinator : IDisposable
 
         if (!snapshot.IsConnected)
         {
+            var shouldClearRun = _currentStatus.Stage is RaceAutomationStage.GridDetected or RaceAutomationStage.RaceRunning or RaceAutomationStage.SessionFinished;
             status = new RaceAutomationStatus
             {
+                RunId = _runContext.CurrentRunId,
                 Stage = _launchService.IsGameRunning ? RaceAutomationStage.WaitingForSession : RaceAutomationStage.Idle,
                 Headline = _launchService.IsGameRunning ? "AMS2 running. Waiting for session feed." : "No live AMS2 session detected.",
                 Detail = snapshot.TrackName
             };
             Publish(status);
+            if (shouldClearRun)
+            {
+                _runContext.Clear();
+            }
             return;
         }
 
+        var run = _runContext.EnsureRun("live-session-detected");
         status = snapshot.SessionPhase switch
         {
             SessionPhase.Grid => new RaceAutomationStatus
             {
+                RunId = run.RunId,
                 Stage = RaceAutomationStage.GridDetected,
                 Headline = "Grid detected.",
                 Detail = $"{snapshot.LeagueName} at {snapshot.TrackName}"
             },
             SessionPhase.Running => new RaceAutomationStatus
             {
+                RunId = run.RunId,
                 Stage = RaceAutomationStage.RaceRunning,
                 Headline = "Race running.",
                 Detail = $"{snapshot.LeagueName} at {snapshot.TrackName}"
             },
             SessionPhase.Finished => new RaceAutomationStatus
             {
+                RunId = run.RunId,
                 Stage = RaceAutomationStage.SessionFinished,
                 Headline = "Race finished.",
                 Detail = $"Monitoring completed session at {snapshot.TrackName}."
             },
             _ => new RaceAutomationStatus
             {
+                RunId = run.RunId,
                 Stage = RaceAutomationStage.WaitingForSession,
                 Headline = "AMS2 connected.",
                 Detail = $"Monitoring {snapshot.TrackName}."
@@ -143,6 +164,7 @@ public sealed class RaceAutomationCoordinator : IDisposable
 
         Publish(new RaceAutomationStatus
         {
+            RunId = _currentStatus.RunId ?? _runContext.CurrentRunId,
             Stage = _currentStatus.Stage,
             Headline = _currentStatus.Headline,
             Detail = _currentStatus.Detail,
@@ -159,6 +181,7 @@ public sealed class RaceAutomationCoordinator : IDisposable
     {
         _currentStatus = new RaceAutomationStatus
         {
+            RunId = next.RunId,
             Stage = next.Stage,
             Headline = next.Headline,
             Detail = next.Detail,

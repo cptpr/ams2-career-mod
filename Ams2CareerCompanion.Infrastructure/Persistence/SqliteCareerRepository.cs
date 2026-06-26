@@ -173,11 +173,12 @@ public sealed class SqliteCareerRepository : ICareerRepository
         await using var command = connection.CreateCommand();
         command.CommandText =
             """
-            INSERT OR IGNORE INTO race_results (id, draft_id, career_id, completed_utc, data_json)
-            VALUES ($id, $draftId, $careerId, $completedUtc, $data);
+            INSERT OR IGNORE INTO race_results (id, draft_id, automation_run_id, career_id, completed_utc, data_json)
+            VALUES ($id, $draftId, $automationRunId, $careerId, $completedUtc, $data);
             """;
         command.Parameters.AddWithValue("$id", result.Id.ToString("D"));
         command.Parameters.AddWithValue("$draftId", result.Draft.Id.ToString("D"));
+        command.Parameters.AddWithValue("$automationRunId", result.Draft.AutomationRunId?.ToString("D") ?? (object)DBNull.Value);
         command.Parameters.AddWithValue("$careerId", careerId.ToString("D"));
         command.Parameters.AddWithValue("$completedUtc", result.Draft.CompletedUtc.ToString("O"));
         command.Parameters.AddWithValue("$data", payload);
@@ -266,6 +267,7 @@ public sealed class SqliteCareerRepository : ICareerRepository
             CREATE TABLE IF NOT EXISTS race_results (
                 id TEXT PRIMARY KEY,
                 draft_id TEXT,
+                automation_run_id TEXT,
                 career_id TEXT NOT NULL,
                 completed_utc TEXT NOT NULL,
                 data_json TEXT NOT NULL
@@ -279,6 +281,7 @@ public sealed class SqliteCareerRepository : ICareerRepository
         command.ExecuteNonQuery();
 
         EnsureColumnExists(connection, "race_results", "draft_id", "TEXT");
+        EnsureColumnExists(connection, "race_results", "automation_run_id", "TEXT");
 
         using var indexCommand = connection.CreateCommand();
         indexCommand.CommandText =

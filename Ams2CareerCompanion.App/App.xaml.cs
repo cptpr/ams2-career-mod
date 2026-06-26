@@ -48,9 +48,10 @@ public partial class App : Application
             var launchService = new Ams2LaunchService();
             var sessionPresetService = new Ams2SessionPresetService(dataDirectory);
             var eventExportAdapter = new ChampionshipEditorPresetExportAdapter(sessionPresetService);
-            var resultService = new ResultReconstructionService(telemetryFeed);
+            var runContext = new RaceAutomationRunContext();
+            var resultService = new ResultReconstructionService(telemetryFeed, runContext);
             var automationTraceWriter = new RaceAutomationTraceWriter(dataDirectory);
-            var raceAutomationCoordinator = new RaceAutomationCoordinator(telemetryFeed, launchService, eventExportAdapter, automationTraceWriter);
+            var raceAutomationCoordinator = new RaceAutomationCoordinator(telemetryFeed, launchService, eventExportAdapter, runContext, automationTraceWriter);
             var careerFactory = new CareerFactory();
             var progressionEngine = new CareerProgressionEngine();
 

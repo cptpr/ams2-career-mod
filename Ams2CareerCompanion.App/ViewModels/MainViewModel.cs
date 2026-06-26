@@ -696,6 +696,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         var normalizedDraft = new RaceResultDraft
         {
             Id = draft.Id,
+            AutomationRunId = draft.AutomationRunId,
             LeagueId = string.IsNullOrWhiteSpace(draft.LeagueId) ? _career.ActiveLeagueId : draft.LeagueId,
             LeagueName = string.IsNullOrWhiteSpace(draft.LeagueName) ? activeLeague?.Name ?? draft.LeagueName : draft.LeagueName,
             TrackName = string.IsNullOrWhiteSpace(draft.TrackName) ? activeLeague?.TrackName ?? draft.TrackName : draft.TrackName,
@@ -1038,6 +1039,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         public required int LapsCompleted { get; init; }
         public required bool IsCleanRace { get; init; }
         public required bool WasReviewed { get; init; }
+        public Guid? AutomationRunId { get; init; }
         public required string Headline { get; init; }
         public required string Subtitle { get; init; }
         public required string ResultTag { get; init; }
@@ -1077,6 +1079,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 LapsCompleted = draft.LapsCompleted,
                 IsCleanRace = draft.IsCleanRace,
                 WasReviewed = result.WasReviewed,
+                AutomationRunId = draft.AutomationRunId,
                 Headline = $"{draft.LeagueName} at {draft.TrackName}",
                 Subtitle = completedLocal,
                 ResultTag = resultTag,
@@ -1093,7 +1096,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                     $"Laps completed: {draft.LapsCompleted}\n" +
                     $"Race cleanliness: {cleanTag}\n" +
                     $"Capture mode: {reviewTag}\n" +
-                    $"Detection quality: {confidenceTag}\n\n" +
+                    $"Detection quality: {confidenceTag}\n" +
+                    $"Automation run: {(draft.AutomationRunId?.ToString("D") ?? "Not linked")}\n\n" +
                     $"Stored summary:\n{draft.Summary}"
             };
         }

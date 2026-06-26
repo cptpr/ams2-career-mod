@@ -26,6 +26,7 @@ public sealed class RaceAutomationTraceWriter
         {
             var payload = JsonSerializer.Serialize(new RaceAutomationTraceRecord
             {
+                RunId = status.RunId,
                 TimestampUtc = status.TimestampUtc,
                 Stage = status.Stage.ToString(),
                 Headline = status.Headline,
@@ -44,6 +45,7 @@ public sealed class RaceAutomationTraceWriter
 
     private sealed class RaceAutomationTraceRecord
     {
+        public Guid? RunId { get; init; }
         public DateTime TimestampUtc { get; init; }
         public string Stage { get; init; } = string.Empty;
         public string Headline { get; init; } = string.Empty;

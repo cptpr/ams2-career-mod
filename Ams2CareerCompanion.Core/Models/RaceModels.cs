@@ -80,6 +80,7 @@ public sealed class MockRaceScenario
 public sealed class RaceResultDraft
 {
     public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid? AutomationRunId { get; init; }
     public string LeagueId { get; init; } = string.Empty;
     public string LeagueName { get; init; } = string.Empty;
     public string TrackName { get; init; } = string.Empty;

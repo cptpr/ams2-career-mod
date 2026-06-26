@@ -15,6 +15,7 @@ public enum RaceAutomationStage
 
 public sealed class RaceAutomationStatus
 {
+    public Guid? RunId { get; init; }
     public RaceAutomationStage Stage { get; init; } = RaceAutomationStage.Idle;
     public string Headline { get; init; } = string.Empty;
     public string Detail { get; init; } = string.Empty;
