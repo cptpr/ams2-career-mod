@@ -1,5 +1,6 @@
 using Ams2CareerCompanion.Core.Interfaces;
 using Ams2CareerCompanion.Core.Models;
+using Ams2CareerCompanion.Infrastructure.Diagnostics;
 
 namespace Ams2CareerCompanion.Infrastructure.Launch;
 
@@ -8,6 +9,7 @@ public sealed class RaceAutomationCoordinator : IDisposable
     private readonly IGameTelemetryFeed _telemetryFeed;
     private readonly Ams2LaunchService _launchService;
     private readonly ChampionshipEditorPresetExportAdapter _exportAdapter;
+    private readonly RaceAutomationTraceWriter? _traceWriter;
     private RaceAutomationStatus _currentStatus = new()
     {
         Stage = RaceAutomationStage.Idle,
@@ -18,11 +20,13 @@ public sealed class RaceAutomationCoordinator : IDisposable
     public RaceAutomationCoordinator(
         IGameTelemetryFeed telemetryFeed,
         Ams2LaunchService launchService,
-        ChampionshipEditorPresetExportAdapter exportAdapter)
+        ChampionshipEditorPresetExportAdapter exportAdapter,
+        RaceAutomationTraceWriter? traceWriter = null)
     {
         _telemetryFeed = telemetryFeed;
         _launchService = launchService;
         _exportAdapter = exportAdapter;
+        _traceWriter = traceWriter;
 
         _telemetryFeed.SessionStatusChanged += OnSessionStatusChanged;
         _telemetryFeed.TelemetryReceived += OnTelemetryReceived;
@@ -163,6 +167,7 @@ public sealed class RaceAutomationCoordinator : IDisposable
             LaunchRequested = next.LaunchRequested,
             TimestampUtc = DateTime.UtcNow
         };
+        _traceWriter?.Append(_currentStatus);
         StatusChanged?.Invoke(this, _currentStatus);
     }
 

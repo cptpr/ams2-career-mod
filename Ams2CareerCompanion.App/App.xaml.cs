@@ -3,6 +3,7 @@ using System.Windows;
 using Ams2CareerCompanion.App.ViewModels;
 using Ams2CareerCompanion.Core.Models;
 using Ams2CareerCompanion.Core.Services;
+using Ams2CareerCompanion.Infrastructure.Diagnostics;
 using Ams2CareerCompanion.Infrastructure.Launch;
 using Ams2CareerCompanion.Infrastructure.OfficialContent;
 using Ams2CareerCompanion.Infrastructure.Persistence;
@@ -48,7 +49,8 @@ public partial class App : Application
             var sessionPresetService = new Ams2SessionPresetService(dataDirectory);
             var eventExportAdapter = new ChampionshipEditorPresetExportAdapter(sessionPresetService);
             var resultService = new ResultReconstructionService(telemetryFeed);
-            var raceAutomationCoordinator = new RaceAutomationCoordinator(telemetryFeed, launchService, eventExportAdapter);
+            var automationTraceWriter = new RaceAutomationTraceWriter(dataDirectory);
+            var raceAutomationCoordinator = new RaceAutomationCoordinator(telemetryFeed, launchService, eventExportAdapter, automationTraceWriter);
             var careerFactory = new CareerFactory();
             var progressionEngine = new CareerProgressionEngine();
 
