@@ -281,6 +281,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             {
                 RaisePropertyChanged(nameof(SelectedRecentResultHeadline));
                 RaisePropertyChanged(nameof(SelectedRecentResultDetails));
+                RaisePropertyChanged(nameof(SelectedRecentResultStatusLine));
+                RaisePropertyChanged(nameof(SelectedRecentResultCompactDetails));
             }
         }
     }
@@ -464,6 +466,28 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         ? "Driver rating not established."
         : $"Driver Rating {_career.Progression.DriverRating:n0}  |  Reputation {_career.Progression.Reputation}";
     public string CareerNameCharacterCount => $"{CareerNameInput.Length}/{CareerNameMaxLength}";
+    public string NextEventDisplayTitle => _nextEventPlan is null
+        ? "No next event planned."
+        : $"{_nextEventPlan.LeagueName} Round {_nextEventPlan.EventNumber}";
+    public string NextEventDisplaySubtitle => _nextEventPlan is null
+        ? "Create or load a career to generate the next event."
+        : $"{_nextEventPlan.LeagueName}  |  Round {_nextEventPlan.EventNumber}/{_nextEventPlan.EventCount}";
+    public string NextEventRoundDisplay => _nextEventPlan is null
+        ? "-"
+        : $"{_nextEventPlan.EventNumber}/{_nextEventPlan.EventCount}";
+    public string NextEventSessionDisplay => _nextEventPlan?.EventTemplateName ?? "No session planned";
+    public string NextEventRewardCreditsText => _nextEventPlan is null
+        ? "No reward set"
+        : $"+{_nextEventPlan.BaseCreditReward:n0} CR";
+    public string NextEventRewardXpText => _nextEventPlan is null
+        ? string.Empty
+        : $"+{_nextEventPlan.BaseXpReward} XP";
+    public string NextEventHeroMetaText => _nextEventPlan is null
+        ? "No event package generated yet."
+        : $"{_nextEventPlan.Country}  |  Grid {_nextEventPlan.RecommendedGridSize}  |  Class {_nextEventPlan.PlayerCarClassName}";
+    public string NextEventHeroNotesText => _nextEventPlan is null
+        ? "Generate an event to receive setup guidance."
+        : _nextEventPlan.SetupNotes;
     public string TelemetryHealthText => _telemetryFeed.ConnectionState switch
     {
         TelemetryConnectionState.Monitoring => "HEALTHY",
@@ -499,6 +523,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public string PendingDraftSummary => PendingDraft?.Summary ?? "No pending result review.";
     public string SelectedRecentResultHeadline => SelectedRecentResult?.Headline ?? "Select a race result";
     public string SelectedRecentResultDetails => SelectedRecentResult?.Details ?? "Finish a race or select one from the list to inspect the full stored result details.";
+    public string SelectedRecentResultStatusLine => SelectedRecentResult is null
+        ? "No committed result yet."
+        : $"{SelectedRecentResult.ResultTag}  |  {SelectedRecentResult.CleanlinessTag}  |  {SelectedRecentResult.ReviewTag}";
+    public string SelectedRecentResultCompactDetails => SelectedRecentResult is null
+        ? "Complete an event to populate the most recent result summary."
+        : $"Overall P{SelectedRecentResult.OverallPosition}/{SelectedRecentResult.Entrants}  |  Class P{SelectedRecentResult.ClassPosition}  |  {SelectedRecentResult.LapsCompleted} laps";
 
     public async Task InitializeAsync()
     {
@@ -1025,6 +1055,14 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaisePropertyChanged(nameof(SeasonSummaryText));
         RaisePropertyChanged(nameof(NextEventHeadlineText));
         RaisePropertyChanged(nameof(NextEventDetailsText));
+        RaisePropertyChanged(nameof(NextEventDisplayTitle));
+        RaisePropertyChanged(nameof(NextEventDisplaySubtitle));
+        RaisePropertyChanged(nameof(NextEventRoundDisplay));
+        RaisePropertyChanged(nameof(NextEventSessionDisplay));
+        RaisePropertyChanged(nameof(NextEventRewardCreditsText));
+        RaisePropertyChanged(nameof(NextEventRewardXpText));
+        RaisePropertyChanged(nameof(NextEventHeroMetaText));
+        RaisePropertyChanged(nameof(NextEventHeroNotesText));
         UpdateProfileSummary();
     }
 
