@@ -445,7 +445,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private async Task ApplyRecommendedEventAsync()
     {
         var result = _raceAutomationCoordinator.PrepareEvent(_nextEventPlan);
-        NextEventExportStatusText = result.Message;
+        NextEventExportStatusText = BuildExportStatusText(result.Message, result.Readiness, result.RequiresGameRestart);
         StatusMessage = result.Message;
 
         if (result.Success && result.Preset is not null)
@@ -459,7 +459,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private async Task ApplyRecommendedEventAndLaunchAsync()
     {
         var (applyResult, launchResult) = _raceAutomationCoordinator.PrepareAndLaunch(_nextEventPlan, vr: false);
-        NextEventExportStatusText = applyResult.Message;
+        NextEventExportStatusText = BuildExportStatusText(applyResult.Message, applyResult.Readiness, applyResult.RequiresGameRestart);
 
         if (!applyResult.Success)
         {
@@ -961,9 +961,43 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             $"Template: {plan.EventTemplateName}  |  Preset target: {plan.SuggestedPresetSlug}\n{plan.SetupNotes}";
 
         var preview = _eventExportAdapter.BuildPreview(plan);
-        NextEventExportStatusText = preview.Success
-            ? $"{preview.Message} {(preview.RequiresGameRestart ? "Game restart required after applying." : "No restart required.")}"
-            : preview.Message;
+        NextEventExportStatusText = BuildExportStatusText(preview.Message, preview.Readiness, preview.RequiresGameRestart);
+    }
+
+    private static string BuildExportStatusText(string message, EventExportReadiness? readiness, bool requiresRestart)
+    {
+        if (readiness is null)
+        {
+            return message;
+        }
+
+        var lines = new List<string> { message };
+
+        if (!string.IsNullOrWhiteSpace(readiness.TargetFilePath))
+        {
+            lines.Add($"Target file: {readiness.TargetFilePath}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(readiness.PresetFilePath))
+        {
+            lines.Add($"Preset source: {readiness.PresetFilePath}");
+        }
+
+        if (readiness.BlockingIssues.Count > 0)
+        {
+            lines.Add($"Blocking: {string.Join(" | ", readiness.BlockingIssues)}");
+        }
+
+        if (readiness.Guidance.Count > 0)
+        {
+            lines.Add($"Guidance: {string.Join(" | ", readiness.Guidance)}");
+        }
+
+        lines.Add(requiresRestart
+            ? "Launch rule: restart AMS2 after applying this prepared event."
+            : "Launch rule: no restart required after applying.");
+
+        return string.Join("\n", lines);
     }
 
     private string ResolveSessionLeagueName(SessionStatusSnapshot snapshot)

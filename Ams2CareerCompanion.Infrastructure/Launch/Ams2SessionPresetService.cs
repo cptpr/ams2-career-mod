@@ -18,6 +18,42 @@ public sealed class Ams2SessionPresetService
     public string PresetDirectory => _presetDirectory;
     public string BundledPresetDirectory => _bundledPresetDirectory;
     public string? ProfileDirectory => ResolveProfileDirectory();
+    public string ChampionshipEditorFilePath => ChampionshipEditorFileName;
+
+    public SessionPresetEnvironmentReport GetEnvironmentReport()
+    {
+        var profileDirectory = ResolveProfileDirectory();
+        if (profileDirectory is null)
+        {
+            return new SessionPresetEnvironmentReport(
+                false,
+                null,
+                null,
+                false,
+                "AMS2 profile directory was not found in Documents.",
+                ["Launch AMS2 once and create or load a profile before applying prepared events."]);
+        }
+
+        var targetFilePath = Path.Combine(profileDirectory, ChampionshipEditorFileName);
+        if (!TryVerifyWritableDirectory(profileDirectory, out var writeFailure))
+        {
+            return new SessionPresetEnvironmentReport(
+                false,
+                profileDirectory,
+                targetFilePath,
+                false,
+                "AMS2 profile directory is not writable.",
+                [writeFailure ?? "Check Documents folder permissions for the AMS2 profile directory."]);
+        }
+
+        return new SessionPresetEnvironmentReport(
+            true,
+            profileDirectory,
+            targetFilePath,
+            File.Exists(targetFilePath),
+            "AMS2 profile target is ready for prepared event export.",
+            Array.Empty<string>());
+    }
 
     public IReadOnlyList<SessionPresetInfo> ListPresets()
     {
@@ -72,14 +108,14 @@ public sealed class Ams2SessionPresetService
             return new PresetOperationResult(false, $"Preset '{preset.Name}' was not found.");
         }
 
-        var profileDirectory = ResolveProfileDirectory();
-        if (profileDirectory is null)
+        var environment = GetEnvironmentReport();
+        if (!environment.IsReady || string.IsNullOrWhiteSpace(environment.ProfileDirectory) || string.IsNullOrWhiteSpace(environment.TargetFilePath))
         {
-            return new PresetOperationResult(false, "AMS2 profile directory was not found in Documents.");
+            return new PresetOperationResult(false, environment.Message);
         }
 
-        Directory.CreateDirectory(profileDirectory);
-        var targetFile = Path.Combine(profileDirectory, ChampionshipEditorFileName);
+        Directory.CreateDirectory(environment.ProfileDirectory);
+        var targetFile = environment.TargetFilePath;
         var backupFile = targetFile + ".backup";
 
         if (File.Exists(targetFile))
@@ -227,6 +263,24 @@ public sealed class Ams2SessionPresetService
         return candidates.FirstOrDefault();
     }
 
+    private static bool TryVerifyWritableDirectory(string directoryPath, out string? failureReason)
+    {
+        try
+        {
+            Directory.CreateDirectory(directoryPath);
+            var probeFile = Path.Combine(directoryPath, ".ams2-career-write-test");
+            File.WriteAllText(probeFile, DateTime.UtcNow.ToString("O"));
+            File.Delete(probeFile);
+            failureReason = null;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            failureReason = ex.Message;
+            return false;
+        }
+    }
+
     private sealed record SessionPresetMetadata(string? Name, string? Description);
 }
 
@@ -251,3 +305,11 @@ public sealed record SessionPresetInfo(
 }
 
 public sealed record PresetOperationResult(bool Success, string Message, string? PresetName = null);
+
+public sealed record SessionPresetEnvironmentReport(
+    bool IsReady,
+    string? ProfileDirectory,
+    string? TargetFilePath,
+    bool TargetFileAlreadyExists,
+    string Message,
+    IReadOnlyList<string> Guidance);
