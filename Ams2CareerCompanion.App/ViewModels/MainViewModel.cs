@@ -488,6 +488,21 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public string NextEventHeroNotesText => _nextEventPlan is null
         ? "Generate an event to receive setup guidance."
         : _nextEventPlan.SetupNotes;
+    public string CurrentLeagueDescriptionText => _career is null
+        ? "Create a career to begin the motorsport ladder."
+        : $"Progress through {CurrentLeagueName} by completing committed races, improving driver rating, and unlocking the next branch.";
+    public string CareerProgressSummaryText => _career is null
+        ? "No progress recorded yet."
+        : $"Level {_career.Progression.Level}  |  Driver Rating {_career.Progression.DriverRating:n0}  |  Credits {_career.Progression.Credits:n0}  |  Reputation {_career.Progression.Reputation}";
+    public string ChallengeSummaryText => Challenges.Count == 0
+        ? "No active challenge summary yet."
+        : Challenges.First();
+    public string GarageEligibleEventText => _nextEventPlan is null
+        ? "No eligible event planned yet."
+        : $"{NextEventDisplayTitle}  |  {NextEventHeroMetaText}";
+    public string GarageDetailSummaryText => _career is null
+        ? "No active car profile."
+        : $"{CurrentStarterCar}  |  {CurrentLeagueName}  |  {CurrentTitle}";
     public string TelemetryHealthText => _telemetryFeed.ConnectionState switch
     {
         TelemetryConnectionState.Monitoring => "HEALTHY",
@@ -1011,6 +1026,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaisePropertyChanged(nameof(RecentResultsHeaderText));
         RaisePropertyChanged(nameof(RaceHistoryHeaderText));
         RaisePropertyChanged(nameof(SeasonSummaryText));
+        RaisePropertyChanged(nameof(ChallengeSummaryText));
         UpdateRaceDeskFlowState();
     }
 
@@ -1063,6 +1079,11 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaisePropertyChanged(nameof(NextEventRewardXpText));
         RaisePropertyChanged(nameof(NextEventHeroMetaText));
         RaisePropertyChanged(nameof(NextEventHeroNotesText));
+        RaisePropertyChanged(nameof(CurrentLeagueDescriptionText));
+        RaisePropertyChanged(nameof(CareerProgressSummaryText));
+        RaisePropertyChanged(nameof(ChallengeSummaryText));
+        RaisePropertyChanged(nameof(GarageEligibleEventText));
+        RaisePropertyChanged(nameof(GarageDetailSummaryText));
         UpdateProfileSummary();
     }
 

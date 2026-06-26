@@ -980,16 +980,48 @@
                                                 <TextBlock Style="{StaticResource SectionTitleStyle}" Text="{Binding CurrentLeagueName}" />
                                                 <TextBlock Margin="0,10,0,0"
                                                            Style="{StaticResource BodyTextStyle}"
-                                                           Text="This panel is bound to the current career state and acts as the series detail anchor for the designed Career screen." />
-                                                <TextBlock Margin="0,18,0,0" Style="{StaticResource CaptionTextStyle}" Text="ACTIVE PROFILE" />
-                                                <TextBlock Margin="0,6,0,0" FontSize="18" FontWeight="SemiBold" Text="{Binding Profile.Name}" />
+                                                           Text="{Binding CurrentLeagueDescriptionText}" />
+                                                <Border Margin="0,18,0,0"
+                                                        Style="{StaticResource CardBorderStyle}"
+                                                        Background="#101821">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel>
+                                                            <TextBlock Style="{StaticResource CaptionTextStyle}" Text="ACTIVE PROFILE" />
+                                                            <TextBlock Margin="0,6,0,0" FontSize="18" FontWeight="SemiBold" Text="{Binding Profile.Name}" />
+                                                            <TextBlock Margin="0,10,0,0" Style="{StaticResource CaptionTextStyle}" Text="CURRENT TITLE" />
+                                                            <TextBlock Margin="0,6,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding CurrentTitle}" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="1">
+                                                            <TextBlock Style="{StaticResource CaptionTextStyle}" Text="CAREER PROGRESS" />
+                                                            <TextBlock Margin="0,6,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding CareerProgressSummaryText}" />
+                                                            <TextBlock Margin="0,10,0,0" Style="{StaticResource CaptionTextStyle}" Text="ACTIVE CHALLENGE" />
+                                                            <TextBlock Margin="0,6,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding ChallengeSummaryText}" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
                                             </StackPanel>
                                             <Border Grid.Column="1"
                                                     Margin="24,0,0,0"
                                                     Background="#16212C"
                                                     BorderBrush="#243445"
                                                     BorderThickness="1"
-                                                    CornerRadius="16" />
+                                                    CornerRadius="16">
+                                                <StackPanel VerticalAlignment="Bottom"
+                                                            Margin="18">
+                                                    <TextBlock Style="{StaticResource CaptionTextStyle}" Text="SERIES FOCUS" />
+                                                    <TextBlock Margin="0,8,0,0"
+                                                               FontSize="22"
+                                                               FontWeight="SemiBold"
+                                                               Text="{Binding CurrentStarterCar}" />
+                                                    <TextBlock Margin="0,8,0,0"
+                                                               Style="{StaticResource BodyTextStyle}"
+                                                               Text="{Binding StandingText}" />
+                                                </StackPanel>
+                                            </Border>
                                         </Grid>
                                     </Border>
 
@@ -1001,10 +1033,14 @@
                                             <TextBlock Margin="0,14,0,0"
                                                        FontSize="18"
                                                        FontWeight="Bold"
-                                                       Text="{Binding RaceDesk.EventPlan.Headline}" />
+                                                       TextWrapping="Wrap"
+                                                       Text="{Binding NextEventDisplayTitle}" />
                                             <TextBlock Margin="0,10,0,0"
                                                        Style="{StaticResource BodyTextStyle}"
-                                                       Text="{Binding RaceDesk.EventPlan.Details}" />
+                                                       Text="{Binding NextEventHeroMetaText}" />
+                                            <TextBlock Margin="0,12,0,0"
+                                                       Style="{StaticResource CaptionTextStyle}"
+                                                       Text="{Binding NextEventHeroNotesText}" />
                                             <Button Margin="0,22,0,0"
                                                     Style="{StaticResource PrimaryButtonStyle}"
                                                     Content="GO TO RACE DESK"
@@ -1166,13 +1202,25 @@
                                 <Border Margin="0,16,0,0"
                                         Height="190"
                                         Background="#1A2530"
-                                        CornerRadius="16" />
+                                        CornerRadius="16">
+                                    <StackPanel VerticalAlignment="Bottom"
+                                                Margin="18">
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="CAR PROFILE" />
+                                        <TextBlock Margin="0,8,0,0"
+                                                   FontSize="22"
+                                                   FontWeight="SemiBold"
+                                                   Text="{Binding CurrentStarterCar}" />
+                                        <TextBlock Margin="0,8,0,0"
+                                                   Style="{StaticResource BodyTextStyle}"
+                                                   Text="{Binding GarageDetailSummaryText}" />
+                                    </StackPanel>
+                                </Border>
                                 <Border Margin="0,18,0,0"
                                         Style="{StaticResource StatusPillStyle}">
                                     <TextBlock FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" Text="Condition: Good" />
                                 </Border>
                                 <TextBlock Margin="0,18,0,0" Style="{StaticResource SectionTitleStyle}" Text="ELIGIBLE EVENTS" />
-                                <TextBlock Margin="0,10,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding RaceDesk.EventPlan.Headline}" />
+                                <TextBlock Margin="0,10,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding GarageEligibleEventText}" />
                                 <Button Margin="0,22,0,0"
                                         Style="{StaticResource PrimaryButtonStyle}"
                                         Content="REPAIR CAR"
