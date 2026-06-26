@@ -66,5 +66,6 @@ public sealed class CareerSummary
     public DateTime CreatedUtc { get; init; }
     public int Level { get; init; }
     public string ActiveLeagueId { get; init; } = string.Empty;
+    public bool IsCurrent { get; init; }
     public string DisplayLabel => $"{Name}  |  Level {Level}  |  {CreatedUtc:yyyy-MM-dd}";
 }

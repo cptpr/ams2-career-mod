@@ -11,7 +11,7 @@ public sealed class Ams2SharedMemoryFeed : IGameTelemetryFeed
 {
     private const int SharedMemoryVersion = 14;
     private const int StoredParticipantsMax = 64;
-    private const int ParticipantInfoSize = 96;
+    private const int ParticipantInfoSize = 100;
     private const int OffsetVersion = 0;
     private const int OffsetGameState = 8;
     private const int OffsetSessionState = 12;
@@ -19,25 +19,28 @@ public sealed class Ams2SharedMemoryFeed : IGameTelemetryFeed
     private const int OffsetViewedParticipantIndex = 20;
     private const int OffsetNumParticipants = 24;
     private const int OffsetParticipantInfo = 28;
-    private const int OffsetCarName = 6188;
-    private const int OffsetCarClassName = 6252;
-    private const int OffsetLapsInEvent = 6316;
-    private const int OffsetTrackLocation = 6320;
-    private const int OffsetTrackVariation = 6384;
-    private const int OffsetLapInvalidated = 6456;
-    private const int OffsetLastLapTime = 6464;
-    private const int OffsetCurrentTime = 6468;
-    private const int OffsetEventTimeRemaining = 6484;
-    private const int OffsetPitMode = 6552;
-    private const int OffsetFuelLevel = 6584;
-    private const int OffsetFuelCapacity = 6588;
-    private const int OffsetSequenceNumber = 7064;
-    private const int OffsetLastLapTimesByParticipant = 8944;
-    private const int OffsetLapsInvalidatedByParticipant = 9200;
-    private const int OffsetRaceStatesByParticipant = 9264;
-    private const int OffsetPitModesByParticipant = 9520;
-    private const int OffsetCarClassNamesByParticipant = 14896;
-    private const int MinimumBufferSize = 19124;
+    private const int ParticipantOffsetRacePosition = 84;
+    private const int ParticipantOffsetLapsCompleted = 88;
+    private const int ParticipantOffsetCurrentLap = 92;
+    private const int OffsetCarName = 6444;
+    private const int OffsetCarClassName = 6508;
+    private const int OffsetLapsInEvent = 6572;
+    private const int OffsetTrackLocation = 6576;
+    private const int OffsetTrackVariation = 6640;
+    private const int OffsetLapInvalidated = 6712;
+    private const int OffsetLastLapTime = 6720;
+    private const int OffsetCurrentTime = 6724;
+    private const int OffsetEventTimeRemaining = 6740;
+    private const int OffsetPitMode = 6808;
+    private const int OffsetFuelLevel = 6840;
+    private const int OffsetFuelCapacity = 6844;
+    private const int OffsetSequenceNumber = 7320;
+    private const int OffsetLastLapTimesByParticipant = 9456;
+    private const int OffsetLapsInvalidatedByParticipant = 9520;
+    private const int OffsetRaceStatesByParticipant = 9584;
+    private const int OffsetPitModesByParticipant = 9840;
+    private const int OffsetCarClassNamesByParticipant = 19312;
+    private const int MinimumBufferSize = 23408;
 
     private static readonly string[] MapNames = ["$pcars2$", @"Local\$pcars2$", @"Global\$pcars2$"];
 
@@ -243,8 +246,8 @@ public sealed class Ams2SharedMemoryFeed : IGameTelemetryFeed
         {
             1 => SessionType.Practice,
             3 => SessionType.Qualifying,
-            4 => SessionType.Race,
             5 => SessionType.Race,
+            4 => SessionType.Race,
             _ => SessionType.None
         };
 
@@ -284,9 +287,9 @@ public sealed class Ams2SharedMemoryFeed : IGameTelemetryFeed
         var safeViewedIndex = viewedIndex >= 0 && viewedIndex < participantCount ? viewedIndex : 0;
         var participantOffset = OffsetParticipantInfo + safeViewedIndex * ParticipantInfoSize;
 
-        var lapsCompleted = BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(participantOffset + 84, 4));
-        var currentLap = BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(participantOffset + 88, 4));
-        var overallPosition = BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(participantOffset + 80, 4));
+        var lapsCompleted = BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(participantOffset + ParticipantOffsetLapsCompleted, 4));
+        var currentLap = BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(participantOffset + ParticipantOffsetCurrentLap, 4));
+        var overallPosition = BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(participantOffset + ParticipantOffsetRacePosition, 4));
         var pitMode = BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(OffsetPitMode, 4));
         var lapInvalidated = buffer[OffsetLapInvalidated] != 0;
 
@@ -344,7 +347,7 @@ public sealed class Ams2SharedMemoryFeed : IGameTelemetryFeed
                 continue;
             }
 
-            var position = BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(OffsetParticipantInfo + i * ParticipantInfoSize + 80, 4));
+            var position = BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(OffsetParticipantInfo + i * ParticipantInfoSize + ParticipantOffsetRacePosition, 4));
             if (position == 0)
             {
                 continue;

@@ -16,12 +16,19 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly IGameTelemetryFeed _telemetryFeed;
     private readonly IMockRaceSimulator _mockRaceSimulator;
     private readonly Ams2LaunchService _launchService;
+    private readonly Ams2SessionPresetService _sessionPresetService;
     private readonly CareerFactory _careerFactory;
+    private readonly CareerEventPlanner _eventPlanner;
     private readonly CareerProgressionEngine _progressionEngine;
     private readonly RelayCommand _createCareerCommand;
     private readonly RelayCommand _launchAms2Command;
     private readonly RelayCommand _launchAms2VrCommand;
+    private readonly RelayCommand _launchWithPresetCommand;
+    private readonly RelayCommand _capturePresetCommand;
+    private readonly RelayCommand _applyPresetCommand;
+    private readonly RelayCommand _deletePresetCommand;
     private readonly RelayCommand _loadSelectedCareerCommand;
+    private readonly RelayCommand _deleteSelectedCareerCommand;
     private readonly RelayCommand _simulateRaceCommand;
     private readonly RelayCommand _simulateUncertainRaceCommand;
     private readonly RelayCommand _confirmPendingResultCommand;
@@ -32,6 +39,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private RaceHistoryEntry? _selectedRecentResult;
     private RaceResultDraft? _pendingDraft;
     private StarterCarDefinition? _selectedStarterCar;
+    private SessionPresetInfo? _selectedSessionPreset;
+    private string _sessionPresetNameInput = "rookie-cup";
     private string _careerNameInput = "New Career";
     private string _connectionStateText = "Disconnected";
     private string _sessionSummary = "AMS2 not connected yet.";
@@ -40,6 +49,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private string _featuredRivalText = "No rival selected yet.";
     private string _launcherStatusText = "AMS2 launcher not checked yet.";
     private string _installPathText = "Not detected yet.";
+    private string _nextEventHeadlineText = "No next event available.";
+    private string _nextEventDetailsText = "Create or load a career to generate the next event plan.";
     private bool _developerToolsEnabled;
 
     public MainViewModel(
@@ -48,6 +59,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         IGameTelemetryFeed telemetryFeed,
         IMockRaceSimulator mockRaceSimulator,
         Ams2LaunchService launchService,
+        Ams2SessionPresetService sessionPresetService,
         ResultReconstructionService resultReconstructionService,
         CareerFactory careerFactory,
         CareerProgressionEngine progressionEngine)
@@ -57,7 +69,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _telemetryFeed = telemetryFeed;
         _mockRaceSimulator = mockRaceSimulator;
         _launchService = launchService;
+        _sessionPresetService = sessionPresetService;
         _careerFactory = careerFactory;
+        _eventPlanner = new CareerEventPlanner();
         _progressionEngine = progressionEngine;
 
         StarterCars = new ObservableCollection<StarterCarDefinition>(_content.StarterCars);
@@ -66,11 +80,18 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         Challenges = new ObservableCollection<string>();
         Rivals = new ObservableCollection<string>();
         RecentResults = new ObservableCollection<RaceHistoryEntry>();
+        RaceHistory = new ObservableCollection<RaceHistoryEntry>();
+        SessionPresets = new ObservableCollection<SessionPresetInfo>();
 
         _createCareerCommand = new RelayCommand(CreateCareerAsync, () => SelectedStarterCar is not null && !string.IsNullOrWhiteSpace(CareerNameInput));
         _launchAms2Command = new RelayCommand(LaunchAms2Async);
         _launchAms2VrCommand = new RelayCommand(LaunchAms2VrAsync);
+        _launchWithPresetCommand = new RelayCommand(LaunchWithPresetAsync, () => SelectedSessionPreset is not null);
+        _capturePresetCommand = new RelayCommand(CapturePresetAsync, () => !string.IsNullOrWhiteSpace(SessionPresetNameInput));
+        _applyPresetCommand = new RelayCommand(ApplyPresetAsync, () => SelectedSessionPreset is not null);
+        _deletePresetCommand = new RelayCommand(DeletePresetAsync, () => SelectedSessionPreset is not null && SelectedSessionPreset.CanDelete);
         _loadSelectedCareerCommand = new RelayCommand(LoadSelectedCareerAsync, () => SelectedCareerSummary is not null);
+        _deleteSelectedCareerCommand = new RelayCommand(DeleteSelectedCareerAsync, () => SelectedCareerSummary is not null);
         _simulateRaceCommand = new RelayCommand(() => SimulateRaceAsync(false), () => _career is not null);
         _simulateUncertainRaceCommand = new RelayCommand(() => SimulateRaceAsync(true), () => _career is not null);
         _confirmPendingResultCommand = new RelayCommand(ConfirmPendingResultAsync, () => PendingDraft is not null);
@@ -86,11 +107,18 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public ObservableCollection<string> Challenges { get; }
     public ObservableCollection<string> Rivals { get; }
     public ObservableCollection<RaceHistoryEntry> RecentResults { get; }
+    public ObservableCollection<RaceHistoryEntry> RaceHistory { get; }
+    public ObservableCollection<SessionPresetInfo> SessionPresets { get; }
 
     public RelayCommand CreateCareerCommand => _createCareerCommand;
     public RelayCommand LaunchAms2Command => _launchAms2Command;
     public RelayCommand LaunchAms2VrCommand => _launchAms2VrCommand;
+    public RelayCommand LaunchWithPresetCommand => _launchWithPresetCommand;
+    public RelayCommand CapturePresetCommand => _capturePresetCommand;
+    public RelayCommand ApplyPresetCommand => _applyPresetCommand;
+    public RelayCommand DeletePresetCommand => _deletePresetCommand;
     public RelayCommand LoadSelectedCareerCommand => _loadSelectedCareerCommand;
+    public RelayCommand DeleteSelectedCareerCommand => _deleteSelectedCareerCommand;
     public RelayCommand SimulateRaceCommand => _simulateRaceCommand;
     public RelayCommand SimulateUncertainRaceCommand => _simulateUncertainRaceCommand;
     public RelayCommand ConfirmPendingResultCommand => _confirmPendingResultCommand;
@@ -127,6 +155,34 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
+    public string SessionPresetNameInput
+    {
+        get => _sessionPresetNameInput;
+        set
+        {
+            if (SetProperty(ref _sessionPresetNameInput, value))
+            {
+                _capturePresetCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public SessionPresetInfo? SelectedSessionPreset
+    {
+        get => _selectedSessionPreset;
+        set
+        {
+            if (SetProperty(ref _selectedSessionPreset, value))
+            {
+                _launchWithPresetCommand.RaiseCanExecuteChanged();
+                _applyPresetCommand.RaiseCanExecuteChanged();
+                _deletePresetCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged(nameof(SelectedSessionPresetSummaryText));
+                RaisePropertyChanged(nameof(CanDeleteSelectedSessionPreset));
+            }
+        }
+    }
+
     public CareerSummary? SelectedCareerSummary
     {
         get => _selectedCareerSummary;
@@ -135,11 +191,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             if (SetProperty(ref _selectedCareerSummary, value))
             {
                 _loadSelectedCareerCommand.RaiseCanExecuteChanged();
-
-                if (value is not null && (_career is null || value.Id != _career.Id))
-                {
-                    _ = LoadSelectedCareerAsync();
-                }
+                _deleteSelectedCareerCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged(nameof(SelectedCareerSummaryText));
             }
         }
     }
@@ -199,6 +252,18 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         private set => SetProperty(ref _featuredRivalText, value);
     }
 
+    public string NextEventHeadlineText
+    {
+        get => _nextEventHeadlineText;
+        private set => SetProperty(ref _nextEventHeadlineText, value);
+    }
+
+    public string NextEventDetailsText
+    {
+        get => _nextEventDetailsText;
+        private set => SetProperty(ref _nextEventDetailsText, value);
+    }
+
     public bool DeveloperToolsEnabled
     {
         get => _developerToolsEnabled;
@@ -214,6 +279,19 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public string DeveloperToolsVisibilityText => DeveloperToolsEnabled ? "Developer tools are visible." : "Developer tools are hidden.";
     public string AvailableCareersText => Careers.Count == 0 ? "No saved careers yet." : $"{Careers.Count} saved career profile(s).";
     public string RecentResultsHeaderText => RecentResults.Count == 0 ? "No past races logged yet." : $"{RecentResults.Count} logged race result(s).";
+    public string RaceHistoryHeaderText => RaceHistory.Count == 0 ? "No season log yet." : $"{RaceHistory.Count} total logged race(s).";
+    public string ActiveCareerSummaryText => _career is null
+        ? "No active career loaded."
+        : $"Active profile: {_career.Name}  |  Level {_career.Progression.Level}  |  {CurrentLeagueName}";
+    public string SelectedCareerSummaryText => SelectedCareerSummary is null
+        ? "No profile selected."
+        : $"Selected profile: {SelectedCareerSummary.Name}  |  Level {SelectedCareerSummary.Level}";
+    public string SeasonSummaryText => BuildSeasonSummary();
+    public string SessionPresetStatusText => BuildSessionPresetStatusText();
+    public string SelectedSessionPresetSummaryText => SelectedSessionPreset is null
+        ? "No session preset selected."
+        : $"{SelectedSessionPreset.SourceLabel}: {SelectedSessionPreset.Name}\n{SelectedSessionPreset.Description}";
+    public bool CanDeleteSelectedSessionPreset => SelectedSessionPreset?.CanDelete == true;
 
     public string CurrentCareerName => _career?.Name ?? "No active career";
     public string CurrentStarterCar => _career?.PlayerProfile.StarterCarName ?? "Choose a starter car";
@@ -261,6 +339,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RefreshLauncherState();
         ConnectionStateText = BuildConnectionStateText();
         await RefreshCareerListAsync();
+        RefreshSessionPresetList();
 
         if (_career is null)
         {
@@ -271,10 +350,11 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             return;
         }
 
-        var results = await _repository.LoadRecentResultsAsync(_career.Id, 12);
+        var results = await _repository.LoadRaceHistoryAsync(_career.Id);
         RefreshCollections(results);
         RaiseCareerProperties();
-        StatusMessage = $"Active league: {CurrentLeagueName}. Launch AMS2 and run a race to capture a real result.";
+        RefreshNextEventPlan(results);
+        StatusMessage = $"Active league: {CurrentLeagueName}. {NextEventHeadlineText}";
         RaiseCommandStates();
     }
 
@@ -300,7 +380,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         ConnectionStateText = BuildConnectionStateText();
         StatusMessage = launchResult.Message;
         SessionSummary = launchResult.Success
-            ? "AMS2 launch requested. Start a short race manually in-game for now."
+            ? NextEventDetailsText
             : "AMS2 launch could not be started. Check the detected install path in Settings.";
         await Task.CompletedTask;
     }
@@ -312,8 +392,88 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         ConnectionStateText = BuildConnectionStateText();
         StatusMessage = launchResult.Message;
         SessionSummary = launchResult.Success
-            ? "Experimental VR launch requested. If AMS2 still opens flat, Steam or game-side VR launch preference may need adjustment."
+            ? NextEventDetailsText
             : "VR launch could not be started. Check the detected install path in Settings.";
+        await Task.CompletedTask;
+    }
+
+    private async Task LaunchWithPresetAsync()
+    {
+        if (SelectedSessionPreset is null)
+        {
+            return;
+        }
+
+        var presetResult = _sessionPresetService.ApplyPreset(SelectedSessionPreset);
+        if (!presetResult.Success)
+        {
+            StatusMessage = presetResult.Message;
+            return;
+        }
+
+        var launchResult = _launchService.Launch();
+        RefreshLauncherState();
+        StatusMessage = launchResult.Success
+            ? $"Applied preset '{SelectedSessionPreset.Name}' and launched AMS2. This prepares the game state without menu macros."
+            : $"{presetResult.Message} {launchResult.Message}";
+        SessionSummary = launchResult.Success
+            ? "AMS2 launched with a restored championship/custom-event editor state. Verify the prepared event in-game and start when ready."
+            : "Preset was applied, but AMS2 launch failed.";
+        await Task.CompletedTask;
+    }
+
+    private async Task CapturePresetAsync()
+    {
+        var result = _sessionPresetService.CaptureCurrentPreset(SessionPresetNameInput);
+        StatusMessage = result.Message;
+        RefreshSessionPresetList();
+
+        if (result.Success && !string.IsNullOrWhiteSpace(result.PresetName))
+        {
+            SelectedSessionPreset = SessionPresets.FirstOrDefault(x =>
+                x.Source == SessionPresetSource.User &&
+                string.Equals(x.Slug, result.PresetName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private async Task ApplyPresetAsync()
+    {
+        var result = _sessionPresetService.ApplyPreset(SelectedSessionPreset);
+        StatusMessage = result.Message;
+        await Task.CompletedTask;
+    }
+
+    private async Task DeletePresetAsync()
+    {
+        if (SelectedSessionPreset is null)
+        {
+            return;
+        }
+
+        if (!SelectedSessionPreset.CanDelete)
+        {
+            StatusMessage = "Built-in presets cannot be deleted.";
+            return;
+        }
+
+        var selected = SelectedSessionPreset;
+        var confirm = MessageBox.Show(
+            $"Delete session preset '{selected.Name}'?",
+            "Delete Session Preset",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        var result = _sessionPresetService.DeletePreset(selected);
+        StatusMessage = result.Message;
+        RefreshSessionPresetList();
+        SelectedSessionPreset = SessionPresets.FirstOrDefault();
         await Task.CompletedTask;
     }
 
@@ -327,6 +487,31 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         await _repository.SetCurrentCareerAsync(SelectedCareerSummary.Id);
         _career = await _repository.LoadCurrentCareerAsync();
         StatusMessage = $"Loaded career: {SelectedCareerSummary.Name}.";
+        await RefreshAsync();
+    }
+
+    private async Task DeleteSelectedCareerAsync()
+    {
+        if (SelectedCareerSummary is null)
+        {
+            return;
+        }
+
+        var selected = SelectedCareerSummary;
+        var confirm = MessageBox.Show(
+            $"Delete career profile '{selected.Name}' and all of its logged race history?",
+            "Delete Career Profile",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        await _repository.DeleteCareerAsync(selected.Id);
+        _career = await _repository.LoadCurrentCareerAsync();
+        StatusMessage = $"Deleted career: {selected.Name}.";
         await RefreshAsync();
     }
 
@@ -447,7 +632,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             ? "Race committed automatically."
             : $"Race committed. Next recommended league: {update.RewardBreakdown.NewlyActiveLeagueName}.";
 
-        var results = await _repository.LoadRecentResultsAsync(_career.Id, 12);
+        var results = await _repository.LoadRaceHistoryAsync(_career.Id);
         RefreshCollections(results);
         RaiseCareerProperties();
         RaiseCommandStates();
@@ -459,11 +644,14 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         Challenges.Clear();
         Rivals.Clear();
         RecentResults.Clear();
+        RaceHistory.Clear();
         SelectedRecentResult = null;
 
         if (_career is null)
         {
             RaisePropertyChanged(nameof(RecentResultsHeaderText));
+            RaisePropertyChanged(nameof(RaceHistoryHeaderText));
+            RaisePropertyChanged(nameof(SeasonSummaryText));
             return;
         }
 
@@ -488,9 +676,14 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             Rivals.Add($"{rival.Name}  |  {rival.Specialty}  |  Rating {rival.DriverRating:n0}  |  Rivalry {rival.RivalryIntensity}");
         }
 
-        foreach (var result in results)
+        foreach (var result in results.Take(12))
         {
             RecentResults.Add(RaceHistoryEntry.From(result));
+        }
+
+        foreach (var result in results)
+        {
+            RaceHistory.Add(RaceHistoryEntry.From(result));
         }
 
         SelectedRecentResult = RecentResults.FirstOrDefault();
@@ -498,7 +691,10 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         FeaturedRivalText = _career.Rivals.Count == 0
             ? "No rival selected yet."
             : $"{_career.Rivals.OrderByDescending(x => x.RivalryIntensity).First().Name} is your current featured rival.";
+        RefreshNextEventPlan(results);
         RaisePropertyChanged(nameof(RecentResultsHeaderText));
+        RaisePropertyChanged(nameof(RaceHistoryHeaderText));
+        RaisePropertyChanged(nameof(SeasonSummaryText));
     }
 
     private static string BuildRewardSummary(RewardBreakdown reward)
@@ -538,6 +734,10 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaisePropertyChanged(nameof(CurrentLeagueName));
         RaisePropertyChanged(nameof(ProgressText));
         RaisePropertyChanged(nameof(StandingText));
+        RaisePropertyChanged(nameof(ActiveCareerSummaryText));
+        RaisePropertyChanged(nameof(SeasonSummaryText));
+        RaisePropertyChanged(nameof(NextEventHeadlineText));
+        RaisePropertyChanged(nameof(NextEventDetailsText));
     }
 
     private void RaiseCommandStates()
@@ -545,7 +745,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _createCareerCommand.RaiseCanExecuteChanged();
         _launchAms2Command.RaiseCanExecuteChanged();
         _launchAms2VrCommand.RaiseCanExecuteChanged();
+        _launchWithPresetCommand.RaiseCanExecuteChanged();
+        _capturePresetCommand.RaiseCanExecuteChanged();
+        _applyPresetCommand.RaiseCanExecuteChanged();
+        _deletePresetCommand.RaiseCanExecuteChanged();
         _loadSelectedCareerCommand.RaiseCanExecuteChanged();
+        _deleteSelectedCareerCommand.RaiseCanExecuteChanged();
         _simulateRaceCommand.RaiseCanExecuteChanged();
         _simulateUncertainRaceCommand.RaiseCanExecuteChanged();
         _confirmPendingResultCommand.RaiseCanExecuteChanged();
@@ -566,6 +771,75 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         }
 
         RaisePropertyChanged(nameof(AvailableCareersText));
+        RaisePropertyChanged(nameof(SelectedCareerSummaryText));
+    }
+
+    private void RefreshSessionPresetList()
+    {
+        var presets = _sessionPresetService.ListPresets();
+        SessionPresets.Clear();
+        foreach (var preset in presets)
+        {
+            SessionPresets.Add(preset);
+        }
+
+        if (SelectedSessionPreset is not null && SessionPresets.Any(x => x.Key == SelectedSessionPreset.Key))
+        {
+            SelectedSessionPreset = SessionPresets.First(x => x.Key == SelectedSessionPreset.Key);
+            RaisePropertyChanged(nameof(SelectedSessionPresetSummaryText));
+        }
+        else
+        {
+            SelectedSessionPreset = SessionPresets.FirstOrDefault();
+        }
+
+        RaisePropertyChanged(nameof(SessionPresetStatusText));
+    }
+
+    private string BuildSessionPresetStatusText()
+    {
+        var profileText = _sessionPresetService.ProfileDirectory is null
+            ? "AMS2 profile directory not detected yet."
+            : $"AMS2 profile detected at {_sessionPresetService.ProfileDirectory}.";
+
+        var builtInCount = SessionPresets.Count(x => x.Source == SessionPresetSource.Bundled);
+        var userCount = SessionPresets.Count(x => x.Source == SessionPresetSource.User);
+        return $"{profileText} {builtInCount} built-in preset(s), {userCount} user preset(s).";
+    }
+
+    private string BuildSeasonSummary()
+    {
+        if (RaceHistory.Count == 0)
+        {
+            return "No races logged for this career yet.";
+        }
+
+        var wins = RaceHistory.Count(x => x.OverallPosition == 1);
+        var podiums = RaceHistory.Count(x => x.OverallPosition <= 3);
+        var cleanRaces = RaceHistory.Count(x => x.IsCleanRace);
+        var reviewed = RaceHistory.Count(x => x.WasReviewed);
+        var averageFinish = RaceHistory.Average(x => x.OverallPosition);
+        var bestFinish = RaceHistory.Min(x => x.OverallPosition);
+        var totalLaps = RaceHistory.Sum(x => x.LapsCompleted);
+
+        return $"Wins {wins}  |  Podiums {podiums}  |  Best finish P{bestFinish}  |  Avg finish P{averageFinish:0.0}  |  Clean races {cleanRaces}/{RaceHistory.Count}  |  Manual reviews {reviewed}  |  Total laps {totalLaps}";
+    }
+
+    private void RefreshNextEventPlan(IReadOnlyList<RaceResultConfirmed> results)
+    {
+        if (_career is null)
+        {
+            NextEventHeadlineText = "No next event available.";
+            NextEventDetailsText = "Create or load a career to generate the next event plan.";
+            return;
+        }
+
+        var plan = _eventPlanner.BuildNextEvent(_career, _content, results);
+        NextEventHeadlineText = $"Next Event: {plan.LeagueName} at {plan.TrackDisplayName}  |  Round {plan.EventNumber}/{plan.EventCount}";
+        NextEventDetailsText =
+            $"{plan.PlayerCarClassName}  |  {plan.Country}  |  Grid {plan.RecommendedGridSize}  |  " +
+            $"Reward {plan.BaseXpReward} XP / {plan.BaseCreditReward:n0} credits  |  " +
+            $"Preset target: {plan.SuggestedPresetSlug}\n{plan.SetupNotes}";
     }
 
     private string ResolveSessionLeagueName(SessionStatusSnapshot snapshot)
@@ -650,9 +924,17 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public sealed class RaceHistoryEntry
     {
         public required Guid Id { get; init; }
+        public required int OverallPosition { get; init; }
+        public required int ClassPosition { get; init; }
+        public required int Entrants { get; init; }
+        public required int LapsCompleted { get; init; }
+        public required bool IsCleanRace { get; init; }
+        public required bool WasReviewed { get; init; }
         public required string Headline { get; init; }
         public required string Subtitle { get; init; }
         public required string ResultTag { get; init; }
+        public required string CleanlinessTag { get; init; }
+        public required string ReviewTag { get; init; }
         public required string DetailLine { get; init; }
         public required string Details { get; init; }
 
@@ -679,9 +961,17 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             return new RaceHistoryEntry
             {
                 Id = result.Id,
+                OverallPosition = draft.OverallPosition,
+                ClassPosition = draft.ClassPosition,
+                Entrants = draft.Entrants,
+                LapsCompleted = draft.LapsCompleted,
+                IsCleanRace = draft.IsCleanRace,
+                WasReviewed = result.WasReviewed,
                 Headline = $"{draft.LeagueName} at {draft.TrackName}",
                 Subtitle = completedLocal,
                 ResultTag = resultTag,
+                CleanlinessTag = cleanTag,
+                ReviewTag = reviewTag,
                 DetailLine = $"Overall P{draft.OverallPosition}/{draft.Entrants}  |  Class P{draft.ClassPosition}  |  {draft.LapsCompleted} laps",
                 Details =
                     $"League: {draft.LeagueName}\n" +

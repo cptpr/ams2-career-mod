@@ -46,6 +46,7 @@ public sealed class SqliteCareerRepository : ICareerRepository
 
         await using var connection = CreateConnection();
         await connection.OpenAsync(cancellationToken);
+        var currentCareerId = await ReadAppStateAsync(connection, CurrentCareerKey, cancellationToken);
 
         await using var command = connection.CreateCommand();
         command.CommandText =
@@ -71,7 +72,8 @@ public sealed class SqliteCareerRepository : ICareerRepository
                 Name = career.Name,
                 CreatedUtc = career.CreatedUtc,
                 Level = career.Progression.Level,
-                ActiveLeagueId = career.ActiveLeagueId
+                ActiveLeagueId = career.ActiveLeagueId,
+                IsCurrent = string.Equals(currentCareerId, career.Id.ToString("D"), StringComparison.OrdinalIgnoreCase)
             });
         }
 
@@ -116,6 +118,51 @@ public sealed class SqliteCareerRepository : ICareerRepository
         await WriteAppStateAsync(connection, CurrentCareerKey, careerId.ToString("D"), cancellationToken);
     }
 
+    public async Task DeleteCareerAsync(Guid careerId, CancellationToken cancellationToken = default)
+    {
+        await using var connection = CreateConnection();
+        await connection.OpenAsync(cancellationToken);
+
+        var currentCareerId = await ReadAppStateAsync(connection, CurrentCareerKey, cancellationToken);
+
+        await using (var deleteResults = connection.CreateCommand())
+        {
+            deleteResults.CommandText = "DELETE FROM race_results WHERE career_id = $careerId";
+            deleteResults.Parameters.AddWithValue("$careerId", careerId.ToString("D"));
+            await deleteResults.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        await using (var deleteCareer = connection.CreateCommand())
+        {
+            deleteCareer.CommandText = "DELETE FROM careers WHERE id = $careerId";
+            deleteCareer.Parameters.AddWithValue("$careerId", careerId.ToString("D"));
+            await deleteCareer.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        if (!string.Equals(currentCareerId, careerId.ToString("D"), StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        await using var nextCareerCommand = connection.CreateCommand();
+        nextCareerCommand.CommandText =
+            """
+            SELECT id
+            FROM careers
+            ORDER BY created_utc DESC
+            LIMIT 1;
+            """;
+
+        var nextCareerId = await nextCareerCommand.ExecuteScalarAsync(cancellationToken) as string;
+        if (string.IsNullOrWhiteSpace(nextCareerId))
+        {
+            await WriteAppStateAsync(connection, CurrentCareerKey, string.Empty, cancellationToken);
+            return;
+        }
+
+        await WriteAppStateAsync(connection, CurrentCareerKey, nextCareerId, cancellationToken);
+    }
+
     public async Task AppendRaceResultAsync(Guid careerId, RaceResultConfirmed result, CancellationToken cancellationToken = default)
     {
         var payload = JsonSerializer.Serialize(result, _jsonOptions);
@@ -126,10 +173,11 @@ public sealed class SqliteCareerRepository : ICareerRepository
         await using var command = connection.CreateCommand();
         command.CommandText =
             """
-            INSERT INTO race_results (id, career_id, completed_utc, data_json)
-            VALUES ($id, $careerId, $completedUtc, $data);
+            INSERT OR IGNORE INTO race_results (id, draft_id, career_id, completed_utc, data_json)
+            VALUES ($id, $draftId, $careerId, $completedUtc, $data);
             """;
         command.Parameters.AddWithValue("$id", result.Id.ToString("D"));
+        command.Parameters.AddWithValue("$draftId", result.Draft.Id.ToString("D"));
         command.Parameters.AddWithValue("$careerId", careerId.ToString("D"));
         command.Parameters.AddWithValue("$completedUtc", result.Draft.CompletedUtc.ToString("O"));
         command.Parameters.AddWithValue("$data", payload);
@@ -169,6 +217,37 @@ public sealed class SqliteCareerRepository : ICareerRepository
         return items;
     }
 
+    public async Task<IReadOnlyList<RaceResultConfirmed>> LoadRaceHistoryAsync(Guid careerId, CancellationToken cancellationToken = default)
+    {
+        var items = new List<RaceResultConfirmed>();
+
+        await using var connection = CreateConnection();
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            SELECT data_json
+            FROM race_results
+            WHERE career_id = $careerId
+            ORDER BY completed_utc DESC;
+            """;
+        command.Parameters.AddWithValue("$careerId", careerId.ToString("D"));
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            var payload = reader.GetString(0);
+            var item = JsonSerializer.Deserialize<RaceResultConfirmed>(payload, _jsonOptions);
+            if (item is not null)
+            {
+                items.Add(item);
+            }
+        }
+
+        return items;
+    }
+
     private void InitializeDatabase()
     {
         using var connection = CreateConnection();
@@ -186,6 +265,7 @@ public sealed class SqliteCareerRepository : ICareerRepository
 
             CREATE TABLE IF NOT EXISTS race_results (
                 id TEXT PRIMARY KEY,
+                draft_id TEXT,
                 career_id TEXT NOT NULL,
                 completed_utc TEXT NOT NULL,
                 data_json TEXT NOT NULL
@@ -197,6 +277,17 @@ public sealed class SqliteCareerRepository : ICareerRepository
             );
             """;
         command.ExecuteNonQuery();
+
+        EnsureColumnExists(connection, "race_results", "draft_id", "TEXT");
+
+        using var indexCommand = connection.CreateCommand();
+        indexCommand.CommandText =
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_race_results_career_draft
+            ON race_results(career_id, draft_id)
+            WHERE draft_id IS NOT NULL;
+            """;
+        indexCommand.ExecuteNonQuery();
     }
 
     private SqliteConnection CreateConnection()
@@ -232,5 +323,24 @@ public sealed class SqliteCareerRepository : ICareerRepository
         command.Parameters.AddWithValue("$key", key);
         command.Parameters.AddWithValue("$value", value);
         await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    private static void EnsureColumnExists(SqliteConnection connection, string tableName, string columnName, string columnDefinition)
+    {
+        using var pragmaCommand = connection.CreateCommand();
+        pragmaCommand.CommandText = $"PRAGMA table_info({tableName});";
+
+        using var reader = pragmaCommand.ExecuteReader();
+        while (reader.Read())
+        {
+            if (string.Equals(reader.GetString(1), columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+        }
+
+        using var alterCommand = connection.CreateCommand();
+        alterCommand.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition};";
+        alterCommand.ExecuteNonQuery();
     }
 }

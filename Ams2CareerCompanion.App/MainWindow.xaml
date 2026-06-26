@@ -127,6 +127,26 @@
                                            Foreground="#9DAACC"
                                            Text="Launch AMS2, run the race manually in-game, and let the companion process the result when the session finishes." />
 
+                                <Border Margin="0,18,0,0"
+                                        Padding="14"
+                                        CornerRadius="12"
+                                        Background="#0F1630">
+                                    <StackPanel>
+                                        <TextBlock FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="#F3F6FF"
+                                                   Text="Next Event Plan" />
+                                        <TextBlock Margin="0,8,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#F3F6FF"
+                                                   Text="{Binding NextEventHeadlineText}" />
+                                        <TextBlock Margin="0,8,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#AFC0EA"
+                                                   Text="{Binding NextEventDetailsText}" />
+                                    </StackPanel>
+                                </Border>
+
                                 <Button Margin="0,18,0,0"
                                         Padding="14"
                                         FontSize="16"
@@ -185,6 +205,85 @@
                                                    TextWrapping="Wrap"
                                                    Foreground="#D5DDFC"
                                                    Text="The companion can launch AMS2, but it does not yet navigate AMS2 menus or auto-start a race. Start the event manually in-game for now." />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Margin="0,16,0,0"
+                                        Padding="14"
+                                        CornerRadius="12"
+                                        Background="#0F1630">
+                                    <StackPanel>
+                                        <TextBlock FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="#F3F6FF"
+                                                   Text="Prepared Event Presets" />
+                                        <TextBlock Margin="0,8,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#D5DDFC"
+                                                   Text="Non-macro path: ship built-in AMS2 event presets and allow optional user-captured presets, then reapply the selected preset before launch so the prepared event is already loaded in-game." />
+                                        <TextBlock Margin="0,10,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#8DA0CF"
+                                                   Text="{Binding SessionPresetStatusText}" />
+
+                                        <TextBlock Margin="0,14,0,6"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#F3F6FF"
+                                                   Text="New Preset Name" />
+                                        <TextBox Padding="10"
+                                                 FontSize="14"
+                                                 Text="{Binding SessionPresetNameInput, UpdateSourceTrigger=PropertyChanged}" />
+
+                                        <Button Margin="0,10,0,0"
+                                                Padding="12"
+                                                FontSize="15"
+                                                FontWeight="SemiBold"
+                                                Background="#2D63FF"
+                                                BorderThickness="0"
+                                                Command="{Binding CapturePresetCommand}"
+                                                Content="Capture Current AMS2 Event As Preset" />
+
+                                        <TextBlock Margin="0,16,0,6"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#F3F6FF"
+                                                   Text="Saved Presets" />
+                                        <ComboBox Padding="8"
+                                                  FontSize="14"
+                                                  ItemsSource="{Binding SessionPresets}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  SelectedItem="{Binding SelectedSessionPreset}" />
+                                        <TextBlock Margin="0,8,0,0"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#8DA0CF"
+                                                   Text="{Binding SelectedSessionPresetSummaryText}" />
+
+                                        <Button Margin="0,10,0,0"
+                                                Padding="12"
+                                                FontSize="15"
+                                                FontWeight="SemiBold"
+                                                Background="#2C7B57"
+                                                BorderThickness="0"
+                                                Command="{Binding ApplyPresetCommand}"
+                                                Content="Apply Selected Preset" />
+
+                                        <Button Margin="0,10,0,0"
+                                                Padding="12"
+                                                FontSize="15"
+                                                FontWeight="SemiBold"
+                                                Background="#0D96D8"
+                                                BorderThickness="0"
+                                                Command="{Binding LaunchWithPresetCommand}"
+                                                Content="Apply Preset + Launch AMS2" />
+
+                                        <Button Margin="0,10,0,0"
+                                                Padding="12"
+                                                FontSize="15"
+                                                FontWeight="SemiBold"
+                                                Background="#7A2941"
+                                                BorderThickness="0"
+                                                Command="{Binding DeletePresetCommand}"
+                                                IsEnabled="{Binding CanDeleteSelectedSessionPreset}"
+                                                Content="Delete Selected Preset" />
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -485,14 +584,78 @@
                                        FontSize="13"
                                        Foreground="#9DAACC"
                                        Text="{Binding AvailableCareersText}" />
+                            <TextBlock Margin="0,6,0,0"
+                                       FontSize="13"
+                                       Foreground="#D9E3FF"
+                                       Text="{Binding ActiveCareerSummaryText}" />
+                            <TextBlock Margin="0,6,0,0"
+                                       FontSize="13"
+                                       Foreground="#94A7D6"
+                                       Text="{Binding SelectedCareerSummaryText}" />
                             <ListBox Margin="0,12,0,0"
                                      Height="220"
                                      ItemsSource="{Binding Careers}"
                                      SelectedItem="{Binding SelectedCareerSummary}"
-                                     DisplayMemberPath="DisplayLabel"
                                      Background="#0F1630"
                                      BorderThickness="0"
-                                     Foreground="#F3F6FF" />
+                                     Foreground="#F3F6FF">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Margin" Value="0,0,0,8" />
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <Border x:Name="ItemBorder"
+                                                            Padding="12"
+                                                            CornerRadius="10"
+                                                            Background="#131D39"
+                                                            BorderBrush="#223761"
+                                                            BorderThickness="1">
+                                                        <ContentPresenter />
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#19305C" />
+                                                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#5C8CFF" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock FontWeight="SemiBold"
+                                                           Foreground="#F3F6FF"
+                                                           Text="{Binding Name}" />
+                                                <TextBlock Margin="0,4,0,0"
+                                                           Foreground="#9FB0D8"
+                                                           Text="{Binding DisplayLabel}" />
+                                            </StackPanel>
+                                            <Border Grid.Column="1"
+                                                    Margin="12,0,0,0"
+                                                    Padding="8,4"
+                                                    VerticalAlignment="Top"
+                                                    CornerRadius="999"
+                                                    Background="#21593E"
+                                                    Visibility="{Binding IsCurrent, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <TextBlock FontSize="11"
+                                                           FontWeight="Bold"
+                                                           Foreground="#E8FFF3"
+                                                           Text="ACTIVE" />
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
                             <Button Margin="0,12,0,0"
                                     Padding="12"
                                     FontSize="15"
@@ -501,6 +664,14 @@
                                     BorderThickness="0"
                                     Command="{Binding LoadSelectedCareerCommand}"
                                     Content="Load Selected Career" />
+                            <Button Margin="0,10,0,0"
+                                    Padding="12"
+                                    FontSize="15"
+                                    FontWeight="SemiBold"
+                                    Background="#7A2941"
+                                    BorderThickness="0"
+                                    Command="{Binding DeleteSelectedCareerCommand}"
+                                    Content="Delete Selected Career" />
                         </StackPanel>
                     </Border>
 
@@ -542,6 +713,110 @@
                                  Foreground="#F3F6FF" />
                     </DockPanel>
                 </Border>
+            </TabItem>
+
+            <TabItem Header="History">
+                <Grid Margin="0,16,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="16" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Padding="18"
+                            CornerRadius="16"
+                            Background="#11192F">
+                        <StackPanel>
+                            <TextBlock FontSize="22"
+                                       FontWeight="Bold"
+                                       Foreground="#F3F6FF"
+                                       Text="Season Log" />
+                            <TextBlock Margin="0,10,0,0"
+                                       Foreground="#D7E1FF"
+                                       Text="{Binding RaceHistoryHeaderText}" />
+                            <TextBlock Margin="0,8,0,0"
+                                       TextWrapping="Wrap"
+                                       Foreground="#97A8D3"
+                                       Text="{Binding SeasonSummaryText}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="2"
+                            Padding="18"
+                            CornerRadius="16"
+                            Background="#11192F">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock DockPanel.Dock="Top"
+                                       Margin="0,0,0,12"
+                                       FontSize="18"
+                                       FontWeight="Bold"
+                                       Foreground="#F3F6FF"
+                                       Text="Full Race History" />
+                            <ListBox ItemsSource="{Binding RaceHistory}"
+                                     Background="#0F1630"
+                                     BorderThickness="0"
+                                     Foreground="#F3F6FF">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Margin" Value="0,0,0,10" />
+                                        <Setter Property="Padding" Value="0" />
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="14"
+                                                CornerRadius="12"
+                                                Background="#131D39"
+                                                BorderBrush="#223761"
+                                                BorderThickness="1">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="2.3*" />
+                                                    <ColumnDefinition Width="1.2*" />
+                                                    <ColumnDefinition Width="1.1*" />
+                                                    <ColumnDefinition Width="0.9*" />
+                                                    <ColumnDefinition Width="0.9*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock FontSize="15"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#F3F6FF"
+                                                               Text="{Binding Headline}" />
+                                                    <TextBlock Margin="0,4,0,0"
+                                                               Foreground="#92A4D1"
+                                                               Text="{Binding Subtitle}" />
+                                                </StackPanel>
+
+                                                <TextBlock Grid.Column="1"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#E0E8FF"
+                                                           Text="{Binding DetailLine}" />
+
+                                                <TextBlock Grid.Column="2"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#D1DCF8"
+                                                           Text="{Binding ResultTag}" />
+
+                                                <TextBlock Grid.Column="3"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#D1DCF8"
+                                                           Text="{Binding CleanlinessTag}" />
+
+                                                <TextBlock Grid.Column="4"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#D1DCF8"
+                                                           Text="{Binding ReviewTag}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </DockPanel>
+                    </Border>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Rivals">
