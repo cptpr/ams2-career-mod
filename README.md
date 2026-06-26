@@ -10,6 +10,7 @@ External career companion app for `Automobilista 2`.
 
 ## Current Scope
 
+- Bundled official-content package for career classes, cars, tracks, layouts, leagues, titles, challenges, and rivals
 - Career profiles with starter car selection
 - AMS2 launcher with normal and VR launch buttons
 - Built-in and user-captured AMS2 event presets for non-macro event preparation
@@ -39,3 +40,8 @@ In AMS2, enable shared memory with:
 - Built-in presets can be applied directly from the `Race` tab
 - User presets can still be captured from the current AMS2 championship/custom-event editor state
 - Built-in presets are read-only in the UI; user-captured presets can be deleted
+
+## Career Content
+
+- Official career content is bundled in `Ams2CareerCompanion.App/content/official/official-content.json`
+- The app loads that package at startup and falls back to built-in defaults only if the content file fails validation

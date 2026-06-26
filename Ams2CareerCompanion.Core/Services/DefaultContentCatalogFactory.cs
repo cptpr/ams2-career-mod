@@ -7,11 +7,101 @@ public static class DefaultContentCatalogFactory
     public static CareerContentCatalog Create() =>
         new()
         {
+            CarClasses =
+            [
+                new OfficialCarClassDefinition
+                {
+                    Id = "rookie-cup",
+                    Name = "Rookie Cup",
+                    Family = "Entry",
+                    Tier = "Rookie",
+                    IsStarterEligible = true,
+                    Description = "Accessible rookie machinery for the first career branch."
+                },
+                new OfficialCarClassDefinition
+                {
+                    Id = "club-touring",
+                    Name = "Club Touring",
+                    Family = "Tin Top",
+                    Tier = "Club",
+                    Description = "Early club-racing touring and hatchback content."
+                },
+                new OfficialCarClassDefinition
+                {
+                    Id = "regional-gt",
+                    Name = "Regional GT",
+                    Family = "GT",
+                    Tier = "Regional",
+                    Description = "Faster regional GT content with stronger fields."
+                }
+            ],
+            Cars =
+            [
+                new OfficialCarDefinition
+                {
+                    Id = "ginetta-g40-junior",
+                    ClassId = "rookie-cup",
+                    Manufacturer = "Ginetta",
+                    Name = "G40 Junior"
+                },
+                new OfficialCarDefinition
+                {
+                    Id = "fiat-copa-uno",
+                    ClassId = "rookie-cup",
+                    Manufacturer = "Fiat",
+                    Name = "Uno"
+                },
+                new OfficialCarDefinition
+                {
+                    Id = "rental-kart",
+                    ClassId = "rookie-cup",
+                    Manufacturer = "Kart",
+                    Name = "Rental Kart"
+                }
+            ],
+            Tracks =
+            [
+                new OfficialTrackDefinition { Id = "goiania", Name = "Goiania", Country = "Brazil" },
+                new OfficialTrackDefinition { Id = "curvelo", Name = "Curvelo", Country = "Brazil" },
+                new OfficialTrackDefinition { Id = "cascavel", Name = "Cascavel", Country = "Brazil" }
+            ],
+            TrackLayouts =
+            [
+                new OfficialTrackLayoutDefinition
+                {
+                    Id = "goiania-short",
+                    TrackId = "goiania",
+                    Name = "Short",
+                    DisplayName = "Goiania Short",
+                    RecommendedGridSize = 12,
+                    Grade = "Club",
+                    SupportsKarts = true
+                },
+                new OfficialTrackLayoutDefinition
+                {
+                    Id = "curvelo-club",
+                    TrackId = "curvelo",
+                    Name = "Club",
+                    DisplayName = "Curvelo Club",
+                    RecommendedGridSize = 16,
+                    Grade = "Club"
+                },
+                new OfficialTrackLayoutDefinition
+                {
+                    Id = "cascavel-international",
+                    TrackId = "cascavel",
+                    Name = "International",
+                    DisplayName = "Cascavel",
+                    RecommendedGridSize = 20,
+                    Grade = "GT"
+                }
+            ],
             StarterCars =
             [
                 new StarterCarDefinition
                 {
                     Id = "starter-ginetta",
+                    CarId = "ginetta-g40-junior",
                     Name = "Ginetta G40 Junior",
                     ClassName = "Rookie Cup",
                     Description = "Balanced, forgiving, and ideal for learning clean racecraft."
@@ -19,6 +109,7 @@ public static class DefaultContentCatalogFactory
                 new StarterCarDefinition
                 {
                     Id = "starter-copa",
+                    CarId = "fiat-copa-uno",
                     Name = "Copa Uno",
                     ClassName = "Rookie Cup",
                     Description = "Momentum-focused hatchback with scrappy club-racing character."
@@ -26,6 +117,7 @@ public static class DefaultContentCatalogFactory
                 new StarterCarDefinition
                 {
                     Id = "starter-kart",
+                    CarId = "rental-kart",
                     Name = "Rental Kart",
                     ClassName = "Rookie Cup",
                     Description = "High-agility rookie option with lower payouts but faster XP flow."
@@ -39,6 +131,8 @@ public static class DefaultContentCatalogFactory
                     Name = "Rookie Cup",
                     TrackName = "Goiania Short",
                     ClassName = "Rookie Cup",
+                    TrackLayoutIds = ["goiania-short"],
+                    EligibleCarClassIds = ["rookie-cup"],
                     RequiredLevel = 1,
                     RequiredReputation = 0,
                     RecommendedDriverRating = 950,
@@ -51,6 +145,8 @@ public static class DefaultContentCatalogFactory
                     Name = "Club Tour",
                     TrackName = "Curvelo Club",
                     ClassName = "Club Touring",
+                    TrackLayoutIds = ["curvelo-club"],
+                    EligibleCarClassIds = ["club-touring"],
                     PrerequisiteLeagueIds = ["rookie-cup"],
                     RequiredLevel = 2,
                     RequiredReputation = 5,
@@ -64,6 +160,8 @@ public static class DefaultContentCatalogFactory
                     Name = "Regional GT Challenge",
                     TrackName = "Cascavel",
                     ClassName = "Regional GT",
+                    TrackLayoutIds = ["cascavel-international"],
+                    EligibleCarClassIds = ["regional-gt"],
                     PrerequisiteLeagueIds = ["club-tour"],
                     RequiredLevel = 4,
                     RequiredReputation = 12,

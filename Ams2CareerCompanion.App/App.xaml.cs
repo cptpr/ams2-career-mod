@@ -1,8 +1,10 @@
 using System.IO;
 using System.Windows;
 using Ams2CareerCompanion.App.ViewModels;
+using Ams2CareerCompanion.Core.Models;
 using Ams2CareerCompanion.Core.Services;
 using Ams2CareerCompanion.Infrastructure.Launch;
+using Ams2CareerCompanion.Infrastructure.OfficialContent;
 using Ams2CareerCompanion.Infrastructure.Persistence;
 using Ams2CareerCompanion.Infrastructure.Telemetry;
 
@@ -34,7 +36,8 @@ public partial class App : Application
         {
             base.OnStartup(e);
 
-            var content = DefaultContentCatalogFactory.Create();
+            var contentLoader = new FileCareerContentCatalogLoader(AppContext.BaseDirectory);
+            var content = TryLoadContentCatalog(contentLoader);
             var dataDirectory = ResolveWritableDataDirectory();
 
             var repository = new SqliteCareerRepository(dataDirectory);
@@ -42,6 +45,7 @@ public partial class App : Application
             var mockTelemetryFeed = new MockAms2TelemetryFeed();
             var telemetryFeed = new CompositeTelemetryFeed(liveTelemetryFeed, mockTelemetryFeed);
             var launchService = new Ams2LaunchService();
+            var sessionPresetService = new Ams2SessionPresetService(dataDirectory);
             var resultService = new ResultReconstructionService(telemetryFeed);
             var careerFactory = new CareerFactory();
             var progressionEngine = new CareerProgressionEngine();
@@ -52,6 +56,7 @@ public partial class App : Application
                 telemetryFeed,
                 telemetryFeed,
                 launchService,
+                sessionPresetService,
                 resultService,
                 careerFactory,
                 progressionEngine);
@@ -118,6 +123,21 @@ public partial class App : Application
         catch
         {
             // Ignore secondary logging failures.
+        }
+    }
+
+    private static CareerContentCatalog TryLoadContentCatalog(FileCareerContentCatalogLoader contentLoader)
+    {
+        try
+        {
+            return contentLoader.Load();
+        }
+        catch (Exception ex)
+        {
+            TryWriteFatalLog(new InvalidOperationException(
+                $"Official content catalog failed to load from '{contentLoader.ContentFilePath}'. Falling back to built-in defaults.",
+                ex));
+            return DefaultContentCatalogFactory.Create();
         }
     }
 }

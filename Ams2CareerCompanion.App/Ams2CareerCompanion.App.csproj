@@ -17,6 +17,12 @@
   <ItemGroup>
     <Resource Include="Assets\ams2-career.png" />
     <Content Include="Assets\ams2-career.ico" />
+    <Content Include="content\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PresetLibrary\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

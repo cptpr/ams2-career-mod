@@ -8,7 +8,17 @@ public sealed class CareerFactory
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(careerName);
 
-        var rookieLeague = content.Leagues.First();
+        var starterCarClassId = content.Cars
+            .FirstOrDefault(x => string.Equals(x.Id, starterCar.CarId, StringComparison.Ordinal))
+            ?.ClassId;
+
+        var rookieLeague = content.Leagues.FirstOrDefault(league =>
+                league.RequiredLevel <= 1 &&
+                (
+                    (!string.IsNullOrWhiteSpace(starterCarClassId) && league.EligibleCarClassIds.Contains(starterCarClassId, StringComparer.Ordinal)) ||
+                    string.Equals(league.ClassName, starterCar.ClassName, StringComparison.OrdinalIgnoreCase)
+                ))
+            ?? content.Leagues.First();
 
         var state = new CareerState
         {

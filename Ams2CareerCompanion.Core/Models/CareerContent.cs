@@ -10,7 +10,8 @@ public enum CareerPreset
 public enum ChallengeCadence
 {
     Daily,
-    Weekly
+    Weekly,
+    Monthly
 }
 
 public enum ChallengeKind
@@ -23,10 +24,52 @@ public enum ChallengeKind
 public sealed class StarterCarDefinition
 {
     public string Id { get; init; } = string.Empty;
+    public string CarId { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
     public string ClassName { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
     public string DisplayLabel => $"{Name} ({ClassName})";
+}
+
+public sealed class OfficialCarClassDefinition
+{
+    public string Id { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public string Family { get; init; } = string.Empty;
+    public string Tier { get; init; } = string.Empty;
+    public bool IsStarterEligible { get; init; }
+    public bool IsDlc { get; init; }
+    public string Description { get; init; } = string.Empty;
+}
+
+public sealed class OfficialCarDefinition
+{
+    public string Id { get; init; } = string.Empty;
+    public string ClassId { get; init; } = string.Empty;
+    public string Manufacturer { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public string TeamName { get; init; } = string.Empty;
+    public bool HasLights { get; init; }
+    public bool IsDlc { get; init; }
+}
+
+public sealed class OfficialTrackDefinition
+{
+    public string Id { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public string Country { get; init; } = string.Empty;
+    public bool IsDlc { get; init; }
+}
+
+public sealed class OfficialTrackLayoutDefinition
+{
+    public string Id { get; init; } = string.Empty;
+    public string TrackId { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public string DisplayName { get; init; } = string.Empty;
+    public int RecommendedGridSize { get; init; }
+    public string Grade { get; init; } = string.Empty;
+    public bool SupportsKarts { get; init; }
 }
 
 public sealed class LeagueDefinition
@@ -35,6 +78,8 @@ public sealed class LeagueDefinition
     public string Name { get; init; } = string.Empty;
     public string TrackName { get; init; } = string.Empty;
     public string ClassName { get; init; } = string.Empty;
+    public IReadOnlyList<string> TrackLayoutIds { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> EligibleCarClassIds { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> PrerequisiteLeagueIds { get; init; } = Array.Empty<string>();
     public int RequiredLevel { get; init; }
     public int RequiredReputation { get; init; }
@@ -74,6 +119,10 @@ public sealed class RivalArchetype
 
 public sealed class CareerContentCatalog
 {
+    public IReadOnlyList<OfficialCarClassDefinition> CarClasses { get; init; } = Array.Empty<OfficialCarClassDefinition>();
+    public IReadOnlyList<OfficialCarDefinition> Cars { get; init; } = Array.Empty<OfficialCarDefinition>();
+    public IReadOnlyList<OfficialTrackDefinition> Tracks { get; init; } = Array.Empty<OfficialTrackDefinition>();
+    public IReadOnlyList<OfficialTrackLayoutDefinition> TrackLayouts { get; init; } = Array.Empty<OfficialTrackLayoutDefinition>();
     public IReadOnlyList<StarterCarDefinition> StarterCars { get; init; } = Array.Empty<StarterCarDefinition>();
     public IReadOnlyList<LeagueDefinition> Leagues { get; init; } = Array.Empty<LeagueDefinition>();
     public IReadOnlyList<CareerTitleDefinition> Titles { get; init; } = Array.Empty<CareerTitleDefinition>();
