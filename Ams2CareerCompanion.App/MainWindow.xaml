@@ -1249,7 +1249,7 @@
                             <TextBlock Style="{StaticResource PageTitleStyle}" Text="TEAM HQ" />
                             <TextBlock Margin="0,8,0,0"
                                        Style="{StaticResource BodyTextStyle}"
-                                       Text="Permanent upgrades that improve the career operation. The screen is ready for the future Team HQ backend without hardcoding final balancing now." />
+                                       Text="Permanent upgrades that improve the career operation. The structure is in place now so future upgrade systems can bind without redesigning the screen." />
 
                             <UniformGrid Margin="0,22,0,0" Columns="3">
                                 <Border Margin="0,0,14,14" Style="{StaticResource CardBorderStyle}">
@@ -1276,6 +1276,30 @@
                                         <Button Margin="0,18,0,0" Style="{StaticResource PrimaryButtonStyle}" Content="UPGRADE" IsEnabled="False" />
                                     </StackPanel>
                                 </Border>
+                                <Border Margin="0,0,14,14" Style="{StaticResource CardBorderStyle}" Background="#0D151D">
+                                    <StackPanel>
+                                        <TextBlock FontSize="20" FontWeight="SemiBold" Foreground="#B8C0CA" Text="LOGISTICS" />
+                                        <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="Future rental, insurance, and flexibility bonuses." />
+                                        <TextBlock Margin="0,10,0,0" Style="{StaticResource CaptionTextStyle}" Text="{Binding TeamHqNextUnlockText}" />
+                                        <Button Margin="0,18,0,0" Style="{StaticResource SecondaryButtonStyle}" Content="LOCKED" IsEnabled="False" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Margin="0,0,14,14" Style="{StaticResource CardBorderStyle}" Background="#0D151D">
+                                    <StackPanel>
+                                        <TextBlock FontSize="20" FontWeight="SemiBold" Foreground="#B8C0CA" Text="SIMULATOR" />
+                                        <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="Future preparation, track-learning, and support systems." />
+                                        <TextBlock Margin="0,10,0,0" Style="{StaticResource CaptionTextStyle}" Text="{Binding TeamHqNextUnlockText}" />
+                                        <Button Margin="0,18,0,0" Style="{StaticResource SecondaryButtonStyle}" Content="LOCKED" IsEnabled="False" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Margin="0,0,0,14" Style="{StaticResource CardBorderStyle}" Background="#0D151D">
+                                    <StackPanel>
+                                        <TextBlock FontSize="20" FontWeight="SemiBold" Foreground="#B8C0CA" Text="MEDIA OFFICE" />
+                                        <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="Future reputation, invitations, and visibility bonuses." />
+                                        <TextBlock Margin="0,10,0,0" Style="{StaticResource CaptionTextStyle}" Text="{Binding TeamHqNextUnlockText}" />
+                                        <Button Margin="0,18,0,0" Style="{StaticResource SecondaryButtonStyle}" Content="LOCKED" IsEnabled="False" />
+                                    </StackPanel>
+                                </Border>
                             </UniformGrid>
                         </StackPanel>
 
@@ -1284,7 +1308,16 @@
                                 Style="{StaticResource CardBorderStyle}">
                             <StackPanel>
                                 <TextBlock Style="{StaticResource SectionTitleStyle}" Text="TEAM HQ SUMMARY" />
-                                <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="The shell is in place. Permanent bonuses, focus, and efficiency metrics will bind here when the Team HQ model is implemented." />
+                                <TextBlock Margin="0,14,0,0" FontSize="20" FontWeight="SemiBold" Text="{Binding TeamHqSummaryText}" />
+                                <TextBlock Margin="0,12,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding TeamHqEfficiencyText}" />
+                                <Border Margin="0,18,0,0"
+                                        Style="{StaticResource CardBorderStyle}"
+                                        Background="#101821">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource CaptionTextStyle}" Text="NEXT UNLOCK" />
+                                        <TextBlock Margin="0,8,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding TeamHqNextUnlockText}" />
+                                    </StackPanel>
+                                </Border>
                                 <Border Margin="0,18,0,0" Style="{StaticResource StatusPillStyle}">
                                     <TextBlock FontWeight="SemiBold" Foreground="{StaticResource AccentAmberBrush}" Text="Future backend integration pending" />
                                 </Border>
@@ -1314,6 +1347,9 @@
                             <TextBlock Margin="0,8,0,0"
                                        Style="{StaticResource BodyTextStyle}"
                                        Text="Track rivalries, compare performance, and expose the most relevant competitor for the current event flow." />
+                            <TextBlock Margin="0,16,0,0"
+                                       Style="{StaticResource CaptionTextStyle}"
+                                       Text="CURRENT RIVAL BOARD" />
                             <ItemsControl Margin="0,20,0,0"
                                           ItemsSource="{Binding Rivals}">
                                 <ItemsControl.ItemTemplate>
@@ -1333,18 +1369,44 @@
                             <StackPanel>
                                 <TextBlock Style="{StaticResource SectionTitleStyle}" Text="ACTIVE RIVAL" />
                                 <TextBlock Margin="0,16,0,0"
-                                           FontSize="28"
+                                           FontSize="26"
                                            FontWeight="Bold"
-                                           Text="{Binding FeaturedRivalText}" />
+                                           TextWrapping="Wrap"
+                                           Text="{Binding FeaturedRivalName}" />
+                                <TextBlock Margin="0,10,0,0"
+                                           Foreground="{StaticResource AccentRedBrush}"
+                                           FontWeight="SemiBold"
+                                           Text="{Binding FeaturedRivalMetaText}" />
                                 <TextBlock Margin="0,12,0,0"
                                            Style="{StaticResource BodyTextStyle}"
-                                           Text="The current backend rival model is lightweight but stable enough to drive spotlight, overlap, and reward flavor in the designed screen." />
+                                           Text="{Binding FeaturedRivalDetailText}" />
                                 <Border Margin="0,20,0,0"
                                         Height="260"
                                         Background="#151E27"
                                         BorderBrush="#243443"
                                         BorderThickness="1"
-                                        CornerRadius="16" />
+                                        CornerRadius="16">
+                                    <Grid Margin="18">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="NEXT OVERLAP" />
+                                                <TextBlock Margin="0,8,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding NextEventDisplayTitle}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="CAREER CONTEXT" />
+                                                <TextBlock Margin="0,8,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding CurrentLeagueName}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
                             </StackPanel>
                         </Border>
 
@@ -1352,15 +1414,16 @@
                             <Border Style="{StaticResource CardBorderStyle}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="NEXT POSSIBLE OVERLAP" />
-                                    <TextBlock Margin="0,14,0,0" FontSize="18" FontWeight="SemiBold" Text="{Binding RaceDesk.EventPlan.Headline}" />
-                                    <TextBlock Margin="0,8,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding RaceDesk.EventPlan.Details}" />
+                                    <TextBlock Margin="0,14,0,0" FontSize="18" FontWeight="SemiBold" Text="{Binding NextEventDisplayTitle}" />
+                                    <TextBlock Margin="0,8,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding NextEventHeroMetaText}" />
+                                    <TextBlock Margin="0,12,0,0" Style="{StaticResource CaptionTextStyle}" Text="{Binding NextEventHeroNotesText}" />
                                 </StackPanel>
                             </Border>
                             <Border Margin="0,18,0,0"
                                     Style="{StaticResource CardBorderStyle}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="REWARDS PREVIEW" />
-                                    <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="Rival showdown rewards and heat thresholds will attach here when the deeper rivalry systems are implemented." />
+                                    <TextBlock Margin="0,14,0,0" Style="{StaticResource BodyTextStyle}" Text="Rival spotlight, showdown rewards, and heat thresholds will expand here when the deeper rivalry systems are implemented." />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -1454,9 +1517,16 @@
                                     <StackPanel>
                                         <TextBlock Style="{StaticResource SectionTitleStyle}" Text="RESULT SUMMARY" />
                                         <TextBlock Margin="0,16,0,0"
-                                                   FontSize="24"
-                                                   FontWeight="Bold"
-                                                   Text="{Binding SelectedRecentResultHeadline}" />
+                                               FontSize="24"
+                                               FontWeight="Bold"
+                                               Text="{Binding SelectedRecentResultHeadline}" />
+                                        <TextBlock Margin="0,10,0,0"
+                                                   Foreground="{StaticResource AccentGreenBrush}"
+                                                   FontWeight="SemiBold"
+                                                   Text="{Binding SelectedRecentResultStatusLine}" />
+                                        <TextBlock Margin="0,10,0,0"
+                                                   Style="{StaticResource BodyTextStyle}"
+                                                   Text="{Binding SelectedRecentResultCompactDetails}" />
                                         <TextBlock Margin="0,10,0,0"
                                                    Style="{StaticResource BodyTextStyle}"
                                                    Text="{Binding SelectedRecentResultDetails}" />

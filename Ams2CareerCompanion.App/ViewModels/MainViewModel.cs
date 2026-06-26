@@ -503,6 +503,29 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public string GarageDetailSummaryText => _career is null
         ? "No active car profile."
         : $"{CurrentStarterCar}  |  {CurrentLeagueName}  |  {CurrentTitle}";
+    public string FeaturedRivalName => _career?.Rivals.OrderByDescending(x => x.RivalryIntensity).FirstOrDefault()?.Name ?? "No featured rival";
+    public string FeaturedRivalMetaText
+    {
+        get
+        {
+            var rival = _career?.Rivals.OrderByDescending(x => x.RivalryIntensity).FirstOrDefault();
+            return rival is null
+                ? "Potential rival data will appear after more committed events."
+                : $"{rival.Specialty}  |  Rating {rival.DriverRating:n0}  |  Rivalry {rival.RivalryIntensity}";
+        }
+    }
+    public string FeaturedRivalDetailText => _career?.Rivals.Count > 0
+        ? "This competitor is currently the strongest overlap in your career path. Future rivalry heat, head-to-head, and showdown systems will build on this record."
+        : "No rivalry data is active yet. Keep racing to establish recurring competitors and featured overlap.";
+    public string TeamHqSummaryText => _career is null
+        ? "No career operation summary available yet."
+        : $"Current operation focus: {_career.Progression.Level switch { >= 10 => "National expansion", >= 5 => "Club growth", _ => "Rookie efficiency" }}";
+    public string TeamHqEfficiencyText => _career is null
+        ? "Efficiency metrics unavailable."
+        : $"Driver Rating {_career.Progression.DriverRating:n0}  |  Credits {_career.Progression.Credits:n0}  |  Reputation {_career.Progression.Reputation}";
+    public string TeamHqNextUnlockText => _career is null
+        ? "Unlocks unavailable."
+        : _career.Progression.Level >= 5 ? "Logistics, Simulator, and Media Office can bind next." : "Reach Club-tier progression to unlock more departments.";
     public string TelemetryHealthText => _telemetryFeed.ConnectionState switch
     {
         TelemetryConnectionState.Monitoring => "HEALTHY",
@@ -1084,6 +1107,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaisePropertyChanged(nameof(ChallengeSummaryText));
         RaisePropertyChanged(nameof(GarageEligibleEventText));
         RaisePropertyChanged(nameof(GarageDetailSummaryText));
+        RaisePropertyChanged(nameof(FeaturedRivalName));
+        RaisePropertyChanged(nameof(FeaturedRivalMetaText));
+        RaisePropertyChanged(nameof(FeaturedRivalDetailText));
+        RaisePropertyChanged(nameof(TeamHqSummaryText));
+        RaisePropertyChanged(nameof(TeamHqEfficiencyText));
+        RaisePropertyChanged(nameof(TeamHqNextUnlockText));
         UpdateProfileSummary();
     }
 
