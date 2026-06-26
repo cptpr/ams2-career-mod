@@ -30,6 +30,17 @@ public sealed class ResultReconstructionService
     {
         if (status.SessionType == SessionType.Race && status.SessionPhase is SessionPhase.Grid or SessionPhase.Running)
         {
+            if (_raceSessionActive &&
+                !_resultEmittedForCurrentSession &&
+                _sawRunningPhase &&
+                _lastStatus.SessionType == SessionType.Race &&
+                _lastStatus.SessionPhase == SessionPhase.Running &&
+                status.SessionPhase == SessionPhase.Grid)
+            {
+                _resultEmittedForCurrentSession = true;
+                DraftCreated?.Invoke(this, BuildDraft(_lastStatus, _lastTelemetry, RaceOutcome.Restarted, _runContext.CurrentRunId));
+            }
+
             _raceSessionActive = true;
             _sawRunningPhase |= status.SessionPhase == SessionPhase.Running;
         }
@@ -38,6 +49,17 @@ public sealed class ResultReconstructionService
         {
             _resultEmittedForCurrentSession = true;
             DraftCreated?.Invoke(this, BuildDraft(status, _lastTelemetry, RaceOutcome.Finished, _runContext.CurrentRunId));
+        }
+
+        if (_raceSessionActive &&
+            !_resultEmittedForCurrentSession &&
+            _sawRunningPhase &&
+            _lastStatus.SessionType == SessionType.Race &&
+            _lastStatus.SessionPhase == SessionPhase.Running &&
+            status.SessionType != SessionType.Race)
+        {
+            _resultEmittedForCurrentSession = true;
+            DraftCreated?.Invoke(this, BuildDraft(_lastStatus, _lastTelemetry, RaceOutcome.Abandoned, _runContext.CurrentRunId));
         }
 
         if (status.SessionType == SessionType.None && status.SessionPhase == SessionPhase.Idle)
@@ -86,7 +108,9 @@ public sealed class ResultReconstructionService
         var actionText = outcome switch
         {
             RaceOutcome.Finished => "finished",
+            RaceOutcome.Disqualified => "was disqualified",
             RaceOutcome.Retired => "retired",
+            RaceOutcome.Restarted => "was restarted before completion",
             RaceOutcome.Abandoned => "abandoned",
             _ => "ended"
         };
@@ -119,7 +143,17 @@ public sealed class ResultReconstructionService
             return RaceOutcome.Abandoned;
         }
 
-        if (telemetry.ParticipantRaceState is >= 4)
+        if (fallbackOutcome == RaceOutcome.Restarted)
+        {
+            return RaceOutcome.Restarted;
+        }
+
+        if (telemetry.ParticipantRaceState >= 5)
+        {
+            return RaceOutcome.Disqualified;
+        }
+
+        if (telemetry.ParticipantRaceState == 4)
         {
             return RaceOutcome.Retired;
         }

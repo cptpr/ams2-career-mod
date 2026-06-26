@@ -72,14 +72,17 @@ public sealed class CareerProgressionEngine
 
     private static RewardBreakdown BuildBaseReward(RaceResultDraft draft, LeagueDefinition league)
     {
-        if (draft.Outcome is RaceOutcome.Abandoned or RaceOutcome.Retired)
+        if (draft.Outcome is not RaceOutcome.Finished)
         {
+            var ratingPenalty = draft.Outcome == RaceOutcome.Disqualified ? -18 : -10;
+            var reputationPenalty = draft.Outcome == RaceOutcome.Disqualified ? -2 : 0;
+
             return new RewardBreakdown
             {
                 XpDelta = Math.Max(15, league.BaseXpReward / 6),
                 CreditsDelta = Math.Max(0, league.BaseCreditReward / 10),
-                DriverRatingDelta = -10,
-                ReputationDelta = 0
+                DriverRatingDelta = ratingPenalty,
+                ReputationDelta = reputationPenalty
             };
         }
 

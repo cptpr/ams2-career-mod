@@ -119,7 +119,9 @@ public sealed class RaceAutomationCoordinator : IDisposable
             return;
         }
 
-        var run = _runContext.EnsureRun("live-session-detected");
+        var run = snapshot.SessionPhase == SessionPhase.Grid && _currentStatus.Stage == RaceAutomationStage.RaceRunning
+            ? _runContext.StartNewRun("session-restart")
+            : _runContext.EnsureRun("live-session-detected");
         status = snapshot.SessionPhase switch
         {
             SessionPhase.Grid => new RaceAutomationStatus

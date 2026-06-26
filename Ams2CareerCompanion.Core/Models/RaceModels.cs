@@ -26,7 +26,9 @@ public enum ResultConfidence
 public enum RaceOutcome
 {
     Finished,
+    Disqualified,
     Retired,
+    Restarted,
     Abandoned,
     Unknown
 }

@@ -1057,6 +1057,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
             var resultTag = draft.OverallPosition switch
             {
+                _ when draft.Outcome == RaceOutcome.Disqualified => "Disqualified",
+                _ when draft.Outcome == RaceOutcome.Restarted => "Restarted",
                 _ when draft.Outcome == RaceOutcome.Abandoned => "Abandoned",
                 _ when draft.Outcome == RaceOutcome.Retired => "Retired",
                 1 => "Win",
