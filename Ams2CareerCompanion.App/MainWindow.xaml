@@ -464,10 +464,12 @@
                 </Grid>
             </Border>
 
-            <ScrollViewer Grid.Column="2"
+            <ScrollViewer x:Name="PageHostScrollViewer"
+                          Grid.Column="2"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
                           CanContentScroll="False"
+                          PreviewMouseWheel="PageHostScrollViewer_OnPreviewMouseWheel"
                           Padding="0,0,6,0">
                 <TabControl SelectedIndex="{Binding SelectedPageIndex}"
                             Background="Transparent">
