@@ -488,6 +488,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public string NextEventHeroNotesText => _nextEventPlan is null
         ? "Generate an event to receive setup guidance."
         : _nextEventPlan.SetupNotes;
+    public string NextEventOverlapGuidanceText => _nextEventPlan is null
+        ? "No overlap event is planned yet."
+        : $"{_nextEventPlan.TrackDisplayName}  |  Grid {_nextEventPlan.RecommendedGridSize}  |  {_nextEventPlan.PlayerCarClassName}";
     public string CurrentLeagueDescriptionText => _career is null
         ? "Create a career to begin the motorsport ladder."
         : $"Progress through {CurrentLeagueName} by completing committed races, improving driver rating, and unlocking the next branch.";
@@ -1102,6 +1105,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaisePropertyChanged(nameof(NextEventRewardXpText));
         RaisePropertyChanged(nameof(NextEventHeroMetaText));
         RaisePropertyChanged(nameof(NextEventHeroNotesText));
+        RaisePropertyChanged(nameof(NextEventOverlapGuidanceText));
         RaisePropertyChanged(nameof(CurrentLeagueDescriptionText));
         RaisePropertyChanged(nameof(CareerProgressSummaryText));
         RaisePropertyChanged(nameof(ChallengeSummaryText));

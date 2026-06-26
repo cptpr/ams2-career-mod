@@ -1308,7 +1308,11 @@
                                 Style="{StaticResource CardBorderStyle}">
                             <StackPanel>
                                 <TextBlock Style="{StaticResource SectionTitleStyle}" Text="TEAM HQ SUMMARY" />
-                                <TextBlock Margin="0,14,0,0" FontSize="20" FontWeight="SemiBold" Text="{Binding TeamHqSummaryText}" />
+                                <TextBlock Margin="0,14,0,0"
+                                           FontSize="20"
+                                           FontWeight="SemiBold"
+                                           TextWrapping="Wrap"
+                                           Text="{Binding TeamHqSummaryText}" />
                                 <TextBlock Margin="0,12,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding TeamHqEfficiencyText}" />
                                 <Border Margin="0,18,0,0"
                                         Style="{StaticResource CardBorderStyle}"
@@ -1416,7 +1420,7 @@
                                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="NEXT POSSIBLE OVERLAP" />
                                     <TextBlock Margin="0,14,0,0" FontSize="18" FontWeight="SemiBold" Text="{Binding NextEventDisplayTitle}" />
                                     <TextBlock Margin="0,8,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding NextEventHeroMetaText}" />
-                                    <TextBlock Margin="0,12,0,0" Style="{StaticResource CaptionTextStyle}" Text="{Binding NextEventHeroNotesText}" />
+                                    <TextBlock Margin="0,12,0,0" Style="{StaticResource CaptionTextStyle}" Text="{Binding NextEventOverlapGuidanceText}" />
                                 </StackPanel>
                             </Border>
                             <Border Margin="0,18,0,0"
@@ -1472,6 +1476,7 @@
                                              SelectedItem="{Binding SelectedRecentResult}"
                                              Background="Transparent"
                                              BorderThickness="0"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                              Foreground="{StaticResource TextMainBrush}">
                                         <ListBox.ItemContainerStyle>
                                             <Style TargetType="ListBoxItem">
@@ -1487,23 +1492,31 @@
                                                         BorderBrush="#243545"
                                                         BorderThickness="1"
                                                         CornerRadius="14">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="2*" />
-                                                            <ColumnDefinition Width="1.1*" />
-                                                            <ColumnDefinition Width="0.9*" />
-                                                            <ColumnDefinition Width="0.8*" />
-                                                            <ColumnDefinition Width="0.8*" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <StackPanel Grid.Column="0">
+                                                    <StackPanel>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
                                                             <TextBlock FontSize="15" FontWeight="SemiBold" Text="{Binding Headline}" />
-                                                            <TextBlock Margin="0,4,0,0" Style="{StaticResource CaptionTextStyle}" Text="{Binding Subtitle}" />
-                                                        </StackPanel>
-                                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource BodyTextStyle}" Text="{Binding DetailLine}" />
-                                                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="{StaticResource AccentGreenBrush}" Text="{Binding ResultTag}" />
-                                                        <TextBlock Grid.Column="3" VerticalAlignment="Center" Style="{StaticResource BodyTextStyle}" Text="{Binding CleanlinessTag}" />
-                                                        <TextBlock Grid.Column="4" VerticalAlignment="Center" Style="{StaticResource BodyTextStyle}" Text="{Binding ReviewTag}" />
-                                                    </Grid>
+                                                            <TextBlock Grid.Column="1"
+                                                                       Margin="12,0,0,0"
+                                                                       VerticalAlignment="Center"
+                                                                       Foreground="{StaticResource AccentGreenBrush}"
+                                                                       FontWeight="SemiBold"
+                                                                       Text="{Binding ResultTag}" />
+                                                        </Grid>
+                                                        <TextBlock Margin="0,4,0,0" Style="{StaticResource CaptionTextStyle}" Text="{Binding Subtitle}" />
+                                                        <TextBlock Margin="0,10,0,0" Style="{StaticResource BodyTextStyle}" Text="{Binding DetailLine}" />
+                                                        <WrapPanel Margin="0,10,0,0">
+                                                            <Border Style="{StaticResource ReadinessBadgeStyle}" Margin="0,0,8,8">
+                                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding CleanlinessTag}" />
+                                                            </Border>
+                                                            <Border Style="{StaticResource ReadinessBadgeStyle}" Margin="0,0,8,8">
+                                                                <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{Binding ReviewTag}" />
+                                                            </Border>
+                                                        </WrapPanel>
+                                                    </StackPanel>
                                                 </Border>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
@@ -1519,6 +1532,7 @@
                                         <TextBlock Margin="0,16,0,0"
                                                FontSize="24"
                                                FontWeight="Bold"
+                                               TextWrapping="Wrap"
                                                Text="{Binding SelectedRecentResultHeadline}" />
                                         <TextBlock Margin="0,10,0,0"
                                                    Foreground="{StaticResource AccentGreenBrush}"
@@ -1649,7 +1663,32 @@
                                              Background="#0D151D"
                                              BorderBrush="#243545"
                                              BorderThickness="1"
-                                             Foreground="{StaticResource TextMainBrush}" />
+                                             Foreground="{StaticResource TextMainBrush}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                                                        <TextBlock Margin="0,2,0,0"
+                                                                   Style="{StaticResource CaptionTextStyle}"
+                                                                   Text="{Binding DisplayLabel}" />
+                                                    </StackPanel>
+                                                    <Border Grid.Column="1"
+                                                            Margin="12,0,0,0"
+                                                            Style="{StaticResource ReadinessBadgeStyle}"
+                                                            Visibility="{Binding IsCurrent, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <TextBlock Style="{StaticResource CaptionTextStyle}"
+                                                                   Foreground="{StaticResource AccentGreenBrush}"
+                                                                   Text="ACTIVE" />
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
                                     <StackPanel Margin="0,16,0,0"
                                                 Orientation="Horizontal">
                                         <Button Width="180"
