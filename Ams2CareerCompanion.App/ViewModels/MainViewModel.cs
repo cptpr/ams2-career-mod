@@ -41,6 +41,13 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly RelayCommand _confirmPendingResultCommand;
     private readonly RelayCommand _dismissPendingResultCommand;
     private readonly RelayCommand _refreshCommand;
+    private readonly RelayCommand _showRaceDeskPageCommand;
+    private readonly RelayCommand _showCareerPageCommand;
+    private readonly RelayCommand _showGaragePageCommand;
+    private readonly RelayCommand _showTeamHqPageCommand;
+    private readonly RelayCommand _showRivalsPageCommand;
+    private readonly RelayCommand _showHistoryPageCommand;
+    private readonly RelayCommand _showSettingsPageCommand;
 
     private CareerState? _career;
     private CareerSummary? _selectedCareerSummary;
@@ -65,6 +72,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private string _automationDetailText = "Generate or load a career event to prepare the next race.";
     private string _automationTelemetryText = string.Empty;
     private bool _developerToolsEnabled;
+    private int _selectedPageIndex;
 
     public MainViewModel(
         CareerContentCatalog content,
@@ -119,6 +127,13 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _confirmPendingResultCommand = new RelayCommand(ConfirmPendingResultAsync, () => PendingDraft is not null);
         _dismissPendingResultCommand = new RelayCommand(DismissPendingResultAsync, () => PendingDraft is not null);
         _refreshCommand = new RelayCommand(RefreshAsync);
+        _showRaceDeskPageCommand = new RelayCommand(() => SetSelectedPageAsync(0));
+        _showCareerPageCommand = new RelayCommand(() => SetSelectedPageAsync(1));
+        _showGaragePageCommand = new RelayCommand(() => SetSelectedPageAsync(2));
+        _showTeamHqPageCommand = new RelayCommand(() => SetSelectedPageAsync(3));
+        _showRivalsPageCommand = new RelayCommand(() => SetSelectedPageAsync(4));
+        _showHistoryPageCommand = new RelayCommand(() => SetSelectedPageAsync(5));
+        _showSettingsPageCommand = new RelayCommand(() => SetSelectedPageAsync(6));
 
         RaceDesk = new RaceDeskViewModel(
             SessionPresets,
@@ -171,6 +186,13 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public RelayCommand ConfirmPendingResultCommand => _confirmPendingResultCommand;
     public RelayCommand DismissPendingResultCommand => _dismissPendingResultCommand;
     public RelayCommand RefreshCommand => _refreshCommand;
+    public RelayCommand ShowRaceDeskPageCommand => _showRaceDeskPageCommand;
+    public RelayCommand ShowCareerPageCommand => _showCareerPageCommand;
+    public RelayCommand ShowGaragePageCommand => _showGaragePageCommand;
+    public RelayCommand ShowTeamHqPageCommand => _showTeamHqPageCommand;
+    public RelayCommand ShowRivalsPageCommand => _showRivalsPageCommand;
+    public RelayCommand ShowHistoryPageCommand => _showHistoryPageCommand;
+    public RelayCommand ShowSettingsPageCommand => _showSettingsPageCommand;
     public RaceDeskViewModel RaceDesk { get; }
     public DiagnosticsSummaryViewModel Diagnostics { get; }
     public ProfileSummaryViewModel Profile { get; } = new();
@@ -389,7 +411,32 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
+    public int SelectedPageIndex
+    {
+        get => _selectedPageIndex;
+        set
+        {
+            if (SetProperty(ref _selectedPageIndex, value))
+            {
+                RaisePropertyChanged(nameof(IsRaceDeskPageSelected));
+                RaisePropertyChanged(nameof(IsCareerPageSelected));
+                RaisePropertyChanged(nameof(IsGaragePageSelected));
+                RaisePropertyChanged(nameof(IsTeamHqPageSelected));
+                RaisePropertyChanged(nameof(IsRivalsPageSelected));
+                RaisePropertyChanged(nameof(IsHistoryPageSelected));
+                RaisePropertyChanged(nameof(IsSettingsPageSelected));
+            }
+        }
+    }
+
     public string DeveloperToolsVisibilityText => DeveloperToolsEnabled ? "Developer tools are visible." : "Developer tools are hidden.";
+    public bool IsRaceDeskPageSelected => SelectedPageIndex == 0;
+    public bool IsCareerPageSelected => SelectedPageIndex == 1;
+    public bool IsGaragePageSelected => SelectedPageIndex == 2;
+    public bool IsTeamHqPageSelected => SelectedPageIndex == 3;
+    public bool IsRivalsPageSelected => SelectedPageIndex == 4;
+    public bool IsHistoryPageSelected => SelectedPageIndex == 5;
+    public bool IsSettingsPageSelected => SelectedPageIndex == 6;
     public string AvailableCareersText => Careers.Count == 0 ? "No saved careers yet." : $"{Careers.Count} saved career profile(s).";
     public string RecentResultsHeaderText => RecentResults.Count == 0 ? "No past races logged yet." : $"{RecentResults.Count} logged race result(s).";
     public string RaceHistoryHeaderText => RaceHistory.Count == 0 ? "No season log yet." : $"{RaceHistory.Count} total logged race(s).";
@@ -488,6 +535,12 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         StatusMessage = $"Active league: {CurrentLeagueName}. {NextEventHeadlineText}";
         UpdateRaceDeskFlowState();
         RaiseCommandStates();
+    }
+
+    private Task SetSelectedPageAsync(int pageIndex)
+    {
+        SelectedPageIndex = pageIndex;
+        return Task.CompletedTask;
     }
 
     private async Task CreateCareerAsync()
