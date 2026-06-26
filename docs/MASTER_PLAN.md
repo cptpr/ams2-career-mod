@@ -22,6 +22,37 @@ This is not an in-game mod. It is a `Windows companion platform` that:
 - reconstructs and validates race results
 - runs a persistent career simulation with leagues, unlocks, rivals, economy, prestige, and long-form progression
 
+## Current Execution Mode
+
+This plan is being executed in two parallel tracks:
+
+- `Core implementation track`
+- `Gameplay-loop and UX/UI design track`
+
+The core implementation track is the priority right now.
+
+That means the immediate focus is:
+
+- event preparation and export reliability
+- restart-aware launch orchestration
+- telemetry stability
+- race monitoring output
+- result reconstruction and validation
+- persistence and diagnostics
+
+Gameplay-loop refinement and UI/UX direction are being iterated in parallel and will be integrated later.
+
+That affects implementation priority in an important way:
+
+- do `not` spend core engineering time overproducing temporary presets
+- do `not` spend core engineering time polishing intermediate UI states beyond what is needed to exercise the backend
+- do `not` block backend progress on unresolved visual or loop-design decisions
+
+The backend should be built so that:
+
+- the future UX layer can plug into it cleanly
+- the future gameplay-loop decisions can be expressed through data and orchestration instead of requiring rewrites
+
 ## Reality Check
 
 The plan must respect what AMS2 and ApexRivals actually prove.
@@ -286,6 +317,12 @@ The goal is that the user always knows:
 - what still must be done in AMS2
 - what they get for completing it
 
+Important execution note:
+
+- the `Race Desk` concept stays in the plan
+- its final interaction design is intentionally deferred until the automation core is stable
+- current implementation work should expose backend state needed by the future Race Desk, not try to finalize its presentation yet
+
 ## Career Design
 
 ### Career Pillars
@@ -486,6 +523,10 @@ V1 story should be `systemic narrative`:
 V2 can add authored narrative wrappers if the systems already feel strong.
 
 ## UX Plan
+
+UX and gameplay-loop shaping are active parallel workstreams, but they are not the gating implementation priority right now.
+
+That means this section remains directional while the backend is hardened first.
 
 ### Core Screens
 
@@ -713,6 +754,8 @@ Goal:
 
 Tasks:
 
+- add structured automation coordination
+- add structured automation diagnostics and traces
 - finish settings persistence
 - fix remaining UI state clarity gaps
 - improve DNF/DQ/quit handling
@@ -861,12 +904,12 @@ The mod is winning when a player can:
 
 The next implementation sequence should be:
 
-1. finish app-state polish and settings persistence
-2. replace hardcoded content with schema-backed official content files
-3. define league tree and event-template model
-4. build the event generation engine
-5. formalize export adapters around the current preset flow
-6. redesign the `Race` workflow into a true `Race Desk`
+1. persist automation traces and session diagnostics
+2. harden restart-aware launch and event-apply orchestration
+3. improve finish classification and non-happy-path result handling
+4. continue expanding the official-content and event-template data model
+5. formalize more export adapters only when the target path is proven
+6. integrate the parallel gameplay-loop and UX work onto the stabilized backend
 
 ## Final Strategic Call
 
