@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\ams2-career.png" />
+    <Resource Include="Assets\ams2-career-brand.png" />
     <Content Include="Assets\ams2-career.ico" />
     <Content Include="content\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

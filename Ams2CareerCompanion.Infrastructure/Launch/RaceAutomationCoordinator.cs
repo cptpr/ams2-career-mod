@@ -10,7 +10,7 @@ public sealed class RaceAutomationCoordinator : IDisposable
     private readonly RaceAutomationRunContext _runContext;
     private readonly IGameTelemetryFeed _telemetryFeed;
     private readonly Ams2LaunchService _launchService;
-    private readonly ChampionshipEditorPresetExportAdapter _exportAdapter;
+    private readonly IEventExportAdapter _exportAdapter;
     private readonly RaceAutomationTraceWriter? _traceWriter;
     private RaceAutomationStatus _currentStatus = new()
     {
@@ -22,7 +22,7 @@ public sealed class RaceAutomationCoordinator : IDisposable
     public RaceAutomationCoordinator(
         IGameTelemetryFeed telemetryFeed,
         Ams2LaunchService launchService,
-        ChampionshipEditorPresetExportAdapter exportAdapter,
+        IEventExportAdapter exportAdapter,
         RaceAutomationRunContext runContext,
         RaceAutomationTraceWriter? traceWriter = null)
     {

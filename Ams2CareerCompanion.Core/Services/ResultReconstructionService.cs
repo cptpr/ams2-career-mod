@@ -92,23 +92,28 @@ public sealed class ResultReconstructionService
                 CompletedUtc = DateTime.UtcNow,
                 Outcome = fallbackOutcome,
                 Confidence = ResultConfidence.Low,
+                ValidationNotes = [fallbackOutcome == RaceOutcome.Abandoned
+                    ? "Session ended before a finish state was confirmed."
+                    : "Telemetry was missing at session end."],
                 Summary = fallbackOutcome == RaceOutcome.Abandoned
-                    ? "Session ended before a finish state was confirmed. Manual confirmation required."
-                    : "Telemetry was missing at session end. Manual confirmation required."
+                    ? "Manual review needed. Result could not be confirmed automatically."
+                    : "Manual review needed. Result could not be confirmed automatically."
             };
         }
 
         var outcome = ResolveOutcome(telemetry, fallbackOutcome);
         var validationNotes = BuildValidationNotes(telemetry);
-        var confidence = status.ForceManualReview || outcome != RaceOutcome.Finished || validationNotes.Count > 0
-            ? ResultConfidence.Medium
-            : telemetry.CompletedLaps >= 3
-                ? ResultConfidence.High
-                : ResultConfidence.Low;
+        var confidence = validationNotes.Count > 0 || telemetry.OverallPosition <= 0 || telemetry.ClassPosition <= 0
+            ? ResultConfidence.Low
+            : outcome == RaceOutcome.Finished
+                ? telemetry.CompletedLaps >= 3
+                    ? ResultConfidence.High
+                    : ResultConfidence.Medium
+                : ResultConfidence.Medium;
 
-        if (validationNotes.Count > 0)
+        if (status.ForceManualReview && confidence == ResultConfidence.High)
         {
-            confidence = ResultConfidence.Low;
+            confidence = ResultConfidence.Medium;
         }
 
         var actionText = outcome switch
@@ -117,16 +122,32 @@ public sealed class ResultReconstructionService
             RaceOutcome.Disqualified => "was disqualified",
             RaceOutcome.Retired => "retired",
             RaceOutcome.Restarted => "was restarted before completion",
-            RaceOutcome.Abandoned => "abandoned",
+            RaceOutcome.Abandoned => "was abandoned before completion",
             _ => "ended"
         };
 
-        var summary = $"{status.LeagueName} {actionText} at {status.TrackName}: P{telemetry.OverallPosition}/{telemetry.Entrants}, " +
+        var summaryPrefix = outcome == RaceOutcome.Finished
+            ? string.Empty
+            : outcome == RaceOutcome.Disqualified
+                ? "Incident flagged. "
+                : outcome == RaceOutcome.Retired
+                    ? "Incident flagged. "
+                    : outcome == RaceOutcome.Restarted
+                        ? "Session restarted before completion. "
+                        : outcome == RaceOutcome.Abandoned
+                            ? "Session ended early. "
+                            : string.Empty;
+
+        var summary = $"{summaryPrefix}{status.LeagueName} {actionText} at {status.TrackName}: P{telemetry.OverallPosition}/{telemetry.Entrants}, " +
                       $"class P{telemetry.ClassPosition}, {telemetry.CompletedLaps}/{Math.Max(telemetry.TotalLaps, telemetry.CompletedLaps)} laps.";
 
         if (validationNotes.Count > 0)
         {
-            summary = $"{summary} Telemetry validation: {string.Join("; ", validationNotes)}.";
+            summary = $"Manual review needed. {summary} Telemetry validation: {string.Join("; ", validationNotes)}.";
+        }
+        else if (status.ForceManualReview && outcome == RaceOutcome.Finished)
+        {
+            summary = $"Manual review needed. {summary}";
         }
 
         return new RaceResultDraft
@@ -143,6 +164,7 @@ public sealed class ResultReconstructionService
             LapsCompleted = telemetry.CompletedLaps,
             IsCleanRace = telemetry.WasCleanLap,
             Confidence = confidence,
+            ValidationNotes = validationNotes,
             Summary = summary
         };
     }

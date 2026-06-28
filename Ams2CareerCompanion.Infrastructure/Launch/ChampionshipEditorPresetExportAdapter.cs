@@ -2,8 +2,10 @@ using Ams2CareerCompanion.Core.Models;
 
 namespace Ams2CareerCompanion.Infrastructure.Launch;
 
-public sealed class ChampionshipEditorPresetExportAdapter
+public sealed class ChampionshipEditorPresetExportAdapter : IEventExportAdapter
 {
+    public string AdapterId => "championship-editor-preset";
+
     private readonly Ams2SessionPresetService _sessionPresetService;
 
     public ChampionshipEditorPresetExportAdapter(Ams2SessionPresetService sessionPresetService)
@@ -23,7 +25,10 @@ public sealed class ChampionshipEditorPresetExportAdapter
             return new EventExportPreview(false, $"Unsupported export adapter '{eventPlan.ExportAdapterId}'.", Readiness: BuildUnavailableReadiness($"Unsupported export adapter '{eventPlan.ExportAdapterId}'."));
         }
 
-        var environment = _sessionPresetService.GetEnvironmentReport();
+        var customChampionshipEnvironment = _sessionPresetService.GetCustomChampionshipEnvironmentReport();
+        var championshipEditorEnvironment = _sessionPresetService.GetEnvironmentReport();
+        var environment = customChampionshipEnvironment.IsReady ? customChampionshipEnvironment : championshipEditorEnvironment;
+
         if (!environment.IsReady)
         {
             return new EventExportPreview(false, environment.Message, Readiness: ToReadiness(environment, null));
@@ -38,9 +43,13 @@ public sealed class ChampionshipEditorPresetExportAdapter
                 Readiness: ToReadiness(environment, null, $"Preset slug '{eventPlan.SuggestedPresetSlug}' is not available in the preset library."));
         }
 
+        var destinationName = IsCustomChampionshipTarget(environment.TargetFilePath)
+            ? "custom championship slot"
+            : "championship editor save";
+
         return new EventExportPreview(
             true,
-            $"Preset '{preset.Name}' is ready for {eventPlan.EventTemplateName}.",
+            $"Preset '{preset.Name}' is ready for {eventPlan.EventTemplateName} via the {destinationName}.",
             preset,
             eventPlan.RequiresGameRestart,
             ToReadiness(environment, preset));
@@ -54,7 +63,9 @@ public sealed class ChampionshipEditorPresetExportAdapter
             return new EventExportResult(false, preview.Message, Readiness: preview.Readiness);
         }
 
-        var applyResult = _sessionPresetService.ApplyPreset(preview.Preset);
+        var applyResult = IsCustomChampionshipTarget(preview.Readiness?.TargetFilePath)
+            ? _sessionPresetService.ApplyPresetToCustomChampionship(preview.Preset)
+            : _sessionPresetService.ApplyPreset(preview.Preset);
         if (!applyResult.Success)
         {
             return new EventExportResult(false, applyResult.Message, preview.Preset, preview.RequiresGameRestart, preview.Readiness);
@@ -103,6 +114,12 @@ public sealed class ChampionshipEditorPresetExportAdapter
             environment.TargetFilePath,
             blockingIssues,
             environment.Guidance);
+    }
+
+    private static bool IsCustomChampionshipTarget(string? targetFilePath)
+    {
+        return !string.IsNullOrWhiteSpace(targetFilePath) &&
+               targetFilePath.Contains("singlechamps", StringComparison.OrdinalIgnoreCase);
     }
 }
 

@@ -79,6 +79,19 @@ public partial class App : Application
             MainWindow = window;
             window.Show();
             await viewModel.InitializeAsync();
+
+            var exportScreenshots = e.Args.Any(arg => string.Equals(arg, "--export-screenshots", StringComparison.OrdinalIgnoreCase));
+            var screenshotDirectory = Environment.GetEnvironmentVariable("AMS2_UI_SCREENSHOT_DIR")
+                ?? Path.Combine(Path.GetTempPath(), "ams2-ui-export");
+
+            if (exportScreenshots)
+            {
+                Directory.CreateDirectory(screenshotDirectory);
+                File.WriteAllText(Path.Combine(screenshotDirectory, "_started.txt"), DateTime.UtcNow.ToString("O"));
+                await window.ExportScreenshotsAsync(screenshotDirectory);
+                Shutdown();
+                return;
+            }
         }
         catch (Exception ex)
         {

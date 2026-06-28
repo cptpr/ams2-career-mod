@@ -1,401 +1,860 @@
-{
-  "carClasses": [
-    {
-      "id": "rookie-karts",
-      "name": "Rookie Karts",
-      "family": "Kart",
-      "tier": "Rookie",
-      "isStarterEligible": true,
-      "description": "Low-power kart racing for clean, short rookie events."
-    },
-    {
-      "id": "rookie-cup",
-      "name": "Rookie Cup",
-      "family": "Tin Top",
-      "tier": "Rookie",
-      "isStarterEligible": true,
-      "description": "Accessible rookie tin-top machinery."
-    },
-    {
-      "id": "club-touring",
-      "name": "Club Touring",
-      "family": "Touring",
-      "tier": "Club",
-      "description": "Entry touring and club hatchback content."
-    },
-    {
-      "id": "formula-trainer",
-      "name": "Formula Trainer",
-      "family": "Formula",
-      "tier": "Club",
-      "description": "Lightweight open-wheel progression branch."
-    },
-    {
-      "id": "regional-gt",
-      "name": "Regional GT",
-      "family": "GT",
-      "tier": "Regional",
-      "description": "Regional GT ladder with stronger field pace."
-    },
-    {
-      "id": "stock-car",
-      "name": "Stock Car",
-      "family": "Touring",
-      "tier": "National",
-      "description": "High-power national touring category."
-    }
-  ],
-  "cars": [
-    {
-      "id": "rental-kart",
-      "classId": "rookie-karts",
-      "manufacturer": "Rental Kart",
-      "name": "Rental Kart"
-    },
-    {
-      "id": "ginetta-g40-junior",
-      "classId": "rookie-cup",
-      "manufacturer": "Ginetta",
-      "name": "G40 Junior"
-    },
-    {
-      "id": "fiat-copa-uno",
-      "classId": "rookie-cup",
-      "manufacturer": "Fiat",
-      "name": "Uno"
-    },
-    {
-      "id": "mini-cooper",
-      "classId": "club-touring",
-      "manufacturer": "Mini",
-      "name": "Cooper S"
-    },
-    {
-      "id": "formula-trainer-basic",
-      "classId": "formula-trainer",
-      "manufacturer": "Formula Trainer",
-      "name": "Trainer"
-    },
-    {
-      "id": "gt4-entry",
-      "classId": "regional-gt",
-      "manufacturer": "GT4",
-      "name": "GT4 Entry"
-    },
-    {
-      "id": "stock-car-pro",
-      "classId": "stock-car",
-      "manufacturer": "Stock Car",
-      "name": "Pro Series"
-    }
-  ],
-  "tracks": [
-    { "id": "goiania", "name": "Goiania", "country": "Brazil" },
-    { "id": "curvelo", "name": "Curvelo", "country": "Brazil" },
-    { "id": "cascavel", "name": "Cascavel", "country": "Brazil" },
-    { "id": "interlagos", "name": "Interlagos", "country": "Brazil" },
-    { "id": "velocitta", "name": "Velocitta", "country": "Brazil" },
-    { "id": "brands-hatch", "name": "Brands Hatch", "country": "United Kingdom", "isDlc": true }
-  ],
-  "trackLayouts": [
-    {
-      "id": "goiania-short",
-      "trackId": "goiania",
-      "name": "Short",
-      "displayName": "Goiania Short",
-      "recommendedGridSize": 12,
-      "grade": "Club",
-      "supportsKarts": true
-    },
-    {
-      "id": "curvelo-club",
-      "trackId": "curvelo",
-      "name": "Club",
-      "displayName": "Curvelo Club",
-      "recommendedGridSize": 16,
-      "grade": "Club"
-    },
-    {
-      "id": "cascavel-international",
-      "trackId": "cascavel",
-      "name": "International",
-      "displayName": "Cascavel",
-      "recommendedGridSize": 20,
-      "grade": "GT"
-    },
-    {
-      "id": "interlagos-short",
-      "trackId": "interlagos",
-      "name": "Short",
-      "displayName": "Interlagos Short",
-      "recommendedGridSize": 24,
-      "grade": "Touring"
-    },
-    {
-      "id": "interlagos-grand-prix",
-      "trackId": "interlagos",
-      "name": "Grand Prix",
-      "displayName": "Interlagos Grand Prix",
-      "recommendedGridSize": 28,
-      "grade": "Formula"
-    },
-    {
-      "id": "velocitta-club",
-      "trackId": "velocitta",
-      "name": "Club",
-      "displayName": "Velocitta Club",
-      "recommendedGridSize": 18,
-      "grade": "Club"
-    },
-    {
-      "id": "brands-hatch-indy",
-      "trackId": "brands-hatch",
-      "name": "Indy",
-      "displayName": "Brands Hatch Indy",
-      "recommendedGridSize": 18,
-      "grade": "Club"
-    }
-  ],
-  "starterCars": [
-    {
-      "id": "starter-ginetta",
-      "carId": "ginetta-g40-junior",
-      "name": "Ginetta G40 Junior",
-      "className": "Rookie Cup",
-      "description": "Balanced, forgiving, and ideal for learning clean racecraft."
-    },
-    {
-      "id": "starter-copa",
-      "carId": "fiat-copa-uno",
-      "name": "Copa Uno",
-      "className": "Rookie Cup",
-      "description": "Momentum-focused hatchback with scrappy club-racing character."
-    },
-    {
-      "id": "starter-kart",
-      "carId": "rental-kart",
-      "name": "Rental Kart",
-      "className": "Rookie Karts",
-      "description": "High-agility rookie option with fast sessions and a sharper learning curve."
-    }
-  ],
-  "leagues": [
-    {
-      "id": "rookie-kart-cup",
-      "name": "Rookie Kart Cup",
-      "trackName": "Goiania Short",
-      "className": "Rookie Karts",
-      "trackLayoutIds": [ "goiania-short", "curvelo-club" ],
-      "eligibleCarClassIds": [ "rookie-karts" ],
-      "requiredLevel": 1,
-      "requiredReputation": 0,
-      "gridSize": 12,
-      "requiredCompletionPosition": 4,
-      "recommendedDriverRating": 930,
-      "baseXpReward": 140,
-      "baseCreditReward": 1000
-    },
-    {
-      "id": "rookie-cup",
-      "name": "Rookie Cup",
-      "trackName": "Goiania Short",
-      "className": "Rookie Cup",
-      "trackLayoutIds": [ "goiania-short", "velocitta-club" ],
-      "eligibleCarClassIds": [ "rookie-cup" ],
-      "requiredLevel": 1,
-      "requiredReputation": 0,
-      "gridSize": 12,
-      "requiredCompletionPosition": 3,
-      "recommendedDriverRating": 950,
-      "baseXpReward": 150,
-      "baseCreditReward": 1200
-    },
-    {
-      "id": "club-tour",
-      "name": "Club Tour",
-      "trackName": "Curvelo Club",
-      "className": "Club Touring",
-      "trackLayoutIds": [ "curvelo-club", "interlagos-short", "brands-hatch-indy" ],
-      "eligibleCarClassIds": [ "club-touring" ],
-      "prerequisiteLeagueIds": [ "rookie-cup" ],
-      "requiredLevel": 2,
-      "requiredReputation": 5,
-      "gridSize": 16,
-      "requiredCompletionPosition": 3,
-      "recommendedDriverRating": 1000,
-      "baseXpReward": 225,
-      "baseCreditReward": 2200
-    },
-    {
-      "id": "formula-foundation",
-      "name": "Formula Foundation",
-      "trackName": "Interlagos Short",
-      "className": "Formula Trainer",
-      "trackLayoutIds": [ "interlagos-short", "velocitta-club" ],
-      "eligibleCarClassIds": [ "formula-trainer" ],
-      "prerequisiteLeagueIds": [ "rookie-cup" ],
-      "requiredLevel": 3,
-      "requiredReputation": 8,
-      "gridSize": 18,
-      "requiredCompletionPosition": 4,
-      "recommendedDriverRating": 1010,
-      "baseXpReward": 240,
-      "baseCreditReward": 2300
-    },
-    {
-      "id": "regional-gt",
-      "name": "Regional GT Challenge",
-      "trackName": "Cascavel",
-      "className": "Regional GT",
-      "trackLayoutIds": [ "cascavel-international", "interlagos-grand-prix" ],
-      "eligibleCarClassIds": [ "regional-gt" ],
-      "prerequisiteLeagueIds": [ "club-tour" ],
-      "requiredLevel": 4,
-      "requiredReputation": 12,
-      "gridSize": 20,
-      "requiredCompletionPosition": 3,
-      "recommendedDriverRating": 1050,
-      "baseXpReward": 325,
-      "baseCreditReward": 3600
-    },
-    {
-      "id": "national-stock",
-      "name": "National Stock Challenge",
-      "trackName": "Interlagos Grand Prix",
-      "className": "Stock Car",
-      "trackLayoutIds": [ "interlagos-grand-prix", "cascavel-international" ],
-      "eligibleCarClassIds": [ "stock-car" ],
-      "prerequisiteLeagueIds": [ "regional-gt" ],
-      "requiredLevel": 6,
-      "requiredReputation": 20,
-      "gridSize": 24,
-      "requiredCompletionPosition": 4,
-      "recommendedDriverRating": 1100,
-      "baseXpReward": 420,
-      "baseCreditReward": 5000
-    }
-  ],
-  "eventTemplates": [
-    {
-      "id": "rookie-kart-goiania",
-      "leagueId": "rookie-kart-cup",
-      "name": "Rookie Kart Sprint at Goiania",
-      "trackLayoutId": "goiania-short",
-      "eligibleCarClassIds": [ "rookie-karts" ],
-      "exportAdapterId": "championship-editor-preset",
-      "presetSlug": "bundled-rookie-event",
-      "requiresGameRestart": true,
-      "setupInstructions": "Apply the rookie preset, restart AMS2 if prompted, then select the kart branch equivalent in-game."
-    },
-    {
-      "id": "rookie-cup-goiania",
-      "leagueId": "rookie-cup",
-      "name": "Rookie Sprint at Goiania",
-      "trackLayoutId": "goiania-short",
-      "eligibleCarClassIds": [ "rookie-cup" ],
-      "exportAdapterId": "championship-editor-preset",
-      "presetSlug": "bundled-rookie-event",
-      "requiresGameRestart": true,
-      "setupInstructions": "Apply the rookie preset, restart AMS2 if prompted, then confirm the selected rookie tin-top and start the race."
-    },
-    {
-      "id": "club-tour-curvelo",
-      "leagueId": "club-tour",
-      "name": "Club Tour at Curvelo",
-      "trackLayoutId": "curvelo-club",
-      "eligibleCarClassIds": [ "club-touring" ],
-      "exportAdapterId": "championship-editor-preset",
-      "presetSlug": "bundled-rookie-event",
-      "requiresGameRestart": true,
-      "setupInstructions": "Temporary preset placeholder until the club touring preset set is added. Confirm the Curvelo event layout and touring class manually."
-    },
-    {
-      "id": "formula-foundation-interlagos",
-      "leagueId": "formula-foundation",
-      "name": "Formula Foundation at Interlagos",
-      "trackLayoutId": "interlagos-short",
-      "eligibleCarClassIds": [ "formula-trainer" ],
-      "exportAdapterId": "championship-editor-preset",
-      "presetSlug": "bundled-rookie-event",
-      "requiresGameRestart": true,
-      "setupInstructions": "Temporary preset placeholder until the formula trainer preset set is added. Confirm the formula branch manually."
-    },
-    {
-      "id": "regional-gt-cascavel",
-      "leagueId": "regional-gt",
-      "name": "Regional GT at Cascavel",
-      "trackLayoutId": "cascavel-international",
-      "eligibleCarClassIds": [ "regional-gt" ],
-      "exportAdapterId": "championship-editor-preset",
-      "presetSlug": "bundled-rookie-event",
-      "requiresGameRestart": true,
-      "setupInstructions": "Temporary preset placeholder until the GT preset set is added. Confirm the GT field and Cascavel layout manually."
-    },
-    {
-      "id": "national-stock-interlagos",
-      "leagueId": "national-stock",
-      "name": "National Stock at Interlagos",
-      "trackLayoutId": "interlagos-grand-prix",
-      "eligibleCarClassIds": [ "stock-car" ],
-      "exportAdapterId": "championship-editor-preset",
-      "presetSlug": "bundled-rookie-event",
-      "requiresGameRestart": true,
-      "setupInstructions": "Temporary preset placeholder until the stock car preset set is added. Confirm the national stock setup manually."
-    }
-  ],
-  "titles": [
-    { "id": "title-rookie", "name": "Rookie Initiate", "requiredLevel": 1 },
-    { "id": "title-club", "name": "Club Charger", "requiredLevel": 3 },
-    { "id": "title-regional", "name": "Regional Contender", "requiredLevel": 5 },
-    { "id": "title-national", "name": "National Threat", "requiredLevel": 7 }
-  ],
-  "challengeTemplates": [
-    {
-      "id": "daily-finish",
-      "name": "Daily Checkered Flag",
-      "description": "Finish one race today.",
-      "cadence": "Daily",
-      "kind": "FinishRace",
-      "target": 1,
-      "bonusXp": 60,
-      "bonusCredits": 450
-    },
-    {
-      "id": "daily-clean",
-      "name": "Daily Clean Hands",
-      "description": "Complete one clean race.",
-      "cadence": "Daily",
-      "kind": "CleanFinish",
-      "target": 1,
-      "bonusXp": 90,
-      "bonusCredits": 600
-    },
-    {
-      "id": "weekly-podium",
-      "name": "Weekly Podium Push",
-      "description": "Score two podium finishes this week.",
-      "cadence": "Weekly",
-      "kind": "PodiumFinish",
-      "target": 2,
-      "bonusXp": 180,
-      "bonusCredits": 1250
-    },
-    {
-      "id": "monthly-clean-sweep",
-      "name": "Monthly Clean Sweep",
-      "description": "Complete four clean races this month.",
-      "cadence": "Monthly",
-      "kind": "CleanFinish",
-      "target": 4,
-      "bonusXp": 420,
-      "bonusCredits": 2800
-    }
-  ],
-  "rivalArchetypes": [
-    { "name": "Marta Alves", "personality": "Calculated", "specialty": "Consistency", "baseRating": 1010 },
-    { "name": "Luca Moretti", "personality": "Aggressive", "specialty": "Late Braking", "baseRating": 995 },
-    { "name": "Tiago Rocha", "personality": "Opportunist", "specialty": "Wet Weather", "baseRating": 1005 },
-    { "name": "Helena Duarte", "personality": "Qualifier", "specialty": "One-lap Pace", "baseRating": 1000 },
-    { "name": "Noah Ferraz", "personality": "Endurance-minded", "specialty": "Long-run Stability", "baseRating": 1008 }
-  ]
+﻿{
+    "carClasses":  [
+                       {
+                           "id":  "rookie-karts",
+                           "name":  "Rookie Karts",
+                           "family":  "Kart",
+                           "tier":  "Rookie",
+                           "isStarterEligible":  true,
+                           "description":  "Low-power kart racing for clean, short rookie events."
+                       },
+                       {
+                           "id":  "rookie-cup",
+                           "name":  "Rookie Cup",
+                           "family":  "Tin Top",
+                           "tier":  "Rookie",
+                           "isStarterEligible":  true,
+                           "description":  "Accessible rookie tin-top machinery."
+                       },
+                       {
+                           "id":  "club-touring",
+                           "name":  "Club Touring",
+                           "family":  "Touring",
+                           "tier":  "Club",
+                           "description":  "Entry touring and club hatchback content."
+                       },
+                       {
+                           "id":  "formula-trainer",
+                           "name":  "Formula Trainer",
+                           "family":  "Formula",
+                           "tier":  "Club",
+                           "description":  "Lightweight open-wheel progression branch."
+                       },
+                       {
+                           "id":  "regional-gt",
+                           "name":  "Regional GT",
+                           "family":  "GT",
+                           "tier":  "Regional",
+                           "description":  "Regional GT ladder with stronger field pace."
+                       },
+                       {
+                           "id":  "stock-car",
+                           "name":  "Stock Car",
+                           "family":  "Touring",
+                           "tier":  "National",
+                           "description":  "High-power national touring category."
+                       }
+                   ],
+    "cars":  [
+                 {
+                     "id":  "rental-kart",
+                     "classId":  "rookie-karts",
+                     "manufacturer":  "Rental Kart",
+                     "name":  "Rental Kart"
+                 },
+                 {
+                     "id":  "ginetta-g40-junior",
+                     "classId":  "rookie-cup",
+                     "manufacturer":  "Ginetta",
+                     "name":  "G40 Junior"
+                 },
+                 {
+                     "id":  "fiat-copa-uno",
+                     "classId":  "rookie-cup",
+                     "manufacturer":  "Fiat",
+                     "name":  "Uno"
+                 },
+                 {
+                     "id":  "mini-cooper",
+                     "classId":  "club-touring",
+                     "manufacturer":  "Mini",
+                     "name":  "Cooper S"
+                 },
+                 {
+                     "id":  "formula-trainer-basic",
+                     "classId":  "formula-trainer",
+                     "manufacturer":  "Formula Trainer",
+                     "name":  "Trainer"
+                 },
+                 {
+                     "id":  "gt4-entry",
+                     "classId":  "regional-gt",
+                     "manufacturer":  "GT4",
+                     "name":  "GT4 Entry"
+                 },
+                 {
+                     "id":  "stock-car-pro",
+                     "classId":  "stock-car",
+                     "manufacturer":  "Stock Car",
+                     "name":  "Pro Series"
+                 }
+             ],
+    "tracks":  [
+                   {
+                       "id":  "goiania",
+                       "name":  "Goiania",
+                       "country":  "Brazil"
+                   },
+                   {
+                       "id":  "curvelo",
+                       "name":  "Curvelo",
+                       "country":  "Brazil"
+                   },
+                   {
+                       "id":  "cascavel",
+                       "name":  "Cascavel",
+                       "country":  "Brazil"
+                   },
+                   {
+                       "id":  "interlagos",
+                       "name":  "Interlagos",
+                       "country":  "Brazil"
+                   },
+                   {
+                       "id":  "velocitta",
+                       "name":  "Velocitta",
+                       "country":  "Brazil"
+                   },
+                   {
+                       "id":  "brands-hatch",
+                       "name":  "Brands Hatch",
+                       "country":  "United Kingdom",
+                       "isDlc":  true
+                   }
+               ],
+    "trackLayouts":  [
+                         {
+                             "id":  "goiania-short",
+                             "trackId":  "goiania",
+                             "name":  "Short",
+                             "displayName":  "Goiania Short",
+                             "recommendedGridSize":  12,
+                             "grade":  "Club",
+                             "supportsKarts":  true
+                         },
+                         {
+                             "id":  "curvelo-club",
+                             "trackId":  "curvelo",
+                             "name":  "Club",
+                             "displayName":  "Curvelo Club",
+                             "recommendedGridSize":  16,
+                             "grade":  "Club"
+                         },
+                         {
+                             "id":  "cascavel-international",
+                             "trackId":  "cascavel",
+                             "name":  "International",
+                             "displayName":  "Cascavel",
+                             "recommendedGridSize":  20,
+                             "grade":  "GT"
+                         },
+                         {
+                             "id":  "interlagos-short",
+                             "trackId":  "interlagos",
+                             "name":  "Short",
+                             "displayName":  "Interlagos Short",
+                             "recommendedGridSize":  24,
+                             "grade":  "Touring"
+                         },
+                         {
+                             "id":  "interlagos-grand-prix",
+                             "trackId":  "interlagos",
+                             "name":  "Grand Prix",
+                             "displayName":  "Interlagos Grand Prix",
+                             "recommendedGridSize":  28,
+                             "grade":  "Formula"
+                         },
+                         {
+                             "id":  "velocitta-club",
+                             "trackId":  "velocitta",
+                             "name":  "Club",
+                             "displayName":  "Velocitta Club",
+                             "recommendedGridSize":  18,
+                             "grade":  "Club"
+                         },
+                         {
+                             "id":  "brands-hatch-indy",
+                             "trackId":  "brands-hatch",
+                             "name":  "Indy",
+                             "displayName":  "Brands Hatch Indy",
+                             "recommendedGridSize":  18,
+                             "grade":  "Club"
+                         }
+                     ],
+    "starterCars":  [
+                        {
+                            "id":  "starter-ginetta",
+                            "carId":  "ginetta-g40-junior",
+                            "name":  "Ginetta G40 Junior",
+                            "className":  "Rookie Cup",
+                            "description":  "Balanced, forgiving, and ideal for learning clean racecraft."
+                        },
+                        {
+                            "id":  "starter-copa",
+                            "carId":  "fiat-copa-uno",
+                            "name":  "Copa Uno",
+                            "className":  "Rookie Cup",
+                            "description":  "Momentum-focused hatchback with scrappy club-racing character."
+                        },
+                        {
+                            "id":  "starter-kart",
+                            "carId":  "rental-kart",
+                            "name":  "Rental Kart",
+                            "className":  "Rookie Karts",
+                            "description":  "High-agility rookie option with fast sessions and a sharper learning curve."
+                        }
+                    ],
+    "leagues":  [
+                    {
+                        "id":  "rookie-kart-cup",
+                        "name":  "Rookie Kart Cup",
+                        "trackName":  "Goiania Short",
+                        "className":  "Rookie Karts",
+                        "trackLayoutIds":  [
+                                               "goiania-short",
+                                               "curvelo-club"
+                                           ],
+                        "eligibleCarClassIds":  [
+                                                    "rookie-karts"
+                                                ],
+                        "requiredLevel":  1,
+                        "requiredReputation":  0,
+                        "gridSize":  12,
+                        "requiredCompletionPosition":  4,
+                        "recommendedDriverRating":  930,
+                        "baseXpReward":  140,
+                        "baseCreditReward":  1000
+                    },
+                    {
+                        "id":  "rookie-cup",
+                        "name":  "Rookie Cup",
+                        "trackName":  "Goiania Short",
+                        "className":  "Rookie Cup",
+                        "trackLayoutIds":  [
+                                               "goiania-short",
+                                               "velocitta-club"
+                                           ],
+                        "eligibleCarClassIds":  [
+                                                    "rookie-cup"
+                                                ],
+                        "requiredLevel":  1,
+                        "requiredReputation":  0,
+                        "gridSize":  12,
+                        "requiredCompletionPosition":  3,
+                        "recommendedDriverRating":  950,
+                        "baseXpReward":  150,
+                        "baseCreditReward":  1200
+                    },
+                    {
+                        "id":  "club-tour",
+                        "name":  "Club Tour",
+                        "trackName":  "Curvelo Club",
+                        "className":  "Club Touring",
+                        "trackLayoutIds":  [
+                                               "curvelo-club",
+                                               "interlagos-short",
+                                               "brands-hatch-indy"
+                                           ],
+                        "eligibleCarClassIds":  [
+                                                    "club-touring"
+                                                ],
+                        "prerequisiteLeagueIds":  [
+                                                      "rookie-cup"
+                                                  ],
+                        "requiredLevel":  2,
+                        "requiredReputation":  5,
+                        "gridSize":  16,
+                        "requiredCompletionPosition":  3,
+                        "recommendedDriverRating":  1000,
+                        "baseXpReward":  225,
+                        "baseCreditReward":  2200
+                    },
+                    {
+                        "id":  "formula-foundation",
+                        "name":  "Formula Foundation",
+                        "trackName":  "Interlagos Short",
+                        "className":  "Formula Trainer",
+                        "trackLayoutIds":  [
+                                               "interlagos-short",
+                                               "velocitta-club"
+                                           ],
+                        "eligibleCarClassIds":  [
+                                                    "formula-trainer"
+                                                ],
+                        "prerequisiteLeagueIds":  [
+                                                      "rookie-cup"
+                                                  ],
+                        "requiredLevel":  3,
+                        "requiredReputation":  8,
+                        "gridSize":  18,
+                        "requiredCompletionPosition":  4,
+                        "recommendedDriverRating":  1010,
+                        "baseXpReward":  240,
+                        "baseCreditReward":  2300
+                    },
+                    {
+                        "id":  "regional-gt",
+                        "name":  "Regional GT Challenge",
+                        "trackName":  "Cascavel",
+                        "className":  "Regional GT",
+                        "trackLayoutIds":  [
+                                               "cascavel-international",
+                                               "interlagos-grand-prix"
+                                           ],
+                        "eligibleCarClassIds":  [
+                                                    "regional-gt"
+                                                ],
+                        "prerequisiteLeagueIds":  [
+                                                      "club-tour"
+                                                  ],
+                        "requiredLevel":  4,
+                        "requiredReputation":  12,
+                        "gridSize":  20,
+                        "requiredCompletionPosition":  3,
+                        "recommendedDriverRating":  1050,
+                        "baseXpReward":  325,
+                        "baseCreditReward":  3600
+                    },
+                    {
+                        "id":  "national-stock",
+                        "name":  "National Stock Challenge",
+                        "trackName":  "Interlagos Grand Prix",
+                        "className":  "Stock Car",
+                        "trackLayoutIds":  [
+                                               "interlagos-grand-prix",
+                                               "cascavel-international"
+                                           ],
+                        "eligibleCarClassIds":  [
+                                                    "stock-car"
+                                                ],
+                        "prerequisiteLeagueIds":  [
+                                                      "regional-gt"
+                                                  ],
+                        "requiredLevel":  6,
+                        "requiredReputation":  20,
+                        "gridSize":  24,
+                        "requiredCompletionPosition":  4,
+                        "recommendedDriverRating":  1100,
+                        "baseXpReward":  420,
+                        "baseCreditReward":  5000
+                    }
+                ],
+    "eventTemplates":  [
+                           {
+                               "id":  "rookie-kart-goiania",
+                               "leagueId":  "rookie-kart-cup",
+                               "name":  "Rookie Kart Sprint at Goiania",
+                               "trackLayoutId":  "goiania-short",
+                               "eligibleCarClassIds":  [
+                                                           "rookie-karts"
+                                                       ],
+                               "exportAdapterId":  "championship-editor-preset",
+                               "presetSlug":  "bundled-rookie-event",
+                               "requiresGameRestart":  true,
+                               "setupInstructions":  "Apply the rookie preset, restart AMS2 if prompted, then select the kart branch equivalent in-game."
+                           },
+                           {
+                               "id":  "rookie-cup-goiania",
+                               "leagueId":  "rookie-cup",
+                               "name":  "Rookie Sprint at Goiania",
+                               "trackLayoutId":  "goiania-short",
+                               "eligibleCarClassIds":  [
+                                                           "rookie-cup"
+                                                       ],
+                               "exportAdapterId":  "championship-editor-preset",
+                               "presetSlug":  "bundled-rookie-event",
+                               "requiresGameRestart":  true,
+                               "setupInstructions":  "Apply the rookie preset, restart AMS2 if prompted, then confirm the selected rookie tin-top and start the race."
+                           },
+                           {
+                               "id":  "club-tour-curvelo",
+                               "leagueId":  "club-tour",
+                               "name":  "Club Tour at Curvelo",
+                               "trackLayoutId":  "curvelo-club",
+                               "eligibleCarClassIds":  [
+                                                           "club-touring"
+                                                       ],
+                               "exportAdapterId":  "championship-editor-preset",
+                               "presetSlug":  "bundled-rookie-event",
+                               "requiresGameRestart":  true,
+                               "setupInstructions":  "Temporary preset placeholder until the club touring preset set is added. Confirm the Curvelo event layout and touring class manually."
+                           },
+                           {
+                               "id":  "formula-foundation-interlagos",
+                               "leagueId":  "formula-foundation",
+                               "name":  "Formula Foundation at Interlagos",
+                               "trackLayoutId":  "interlagos-short",
+                               "eligibleCarClassIds":  [
+                                                           "formula-trainer"
+                                                       ],
+                               "exportAdapterId":  "championship-editor-preset",
+                               "presetSlug":  "bundled-rookie-event",
+                               "requiresGameRestart":  true,
+                               "setupInstructions":  "Temporary preset placeholder until the formula trainer preset set is added. Confirm the formula branch manually."
+                           },
+                           {
+                               "id":  "regional-gt-cascavel",
+                               "leagueId":  "regional-gt",
+                               "name":  "Regional GT at Cascavel",
+                               "trackLayoutId":  "cascavel-international",
+                               "eligibleCarClassIds":  [
+                                                           "regional-gt"
+                                                       ],
+                               "exportAdapterId":  "championship-editor-preset",
+                               "presetSlug":  "bundled-rookie-event",
+                               "requiresGameRestart":  true,
+                               "setupInstructions":  "Temporary preset placeholder until the GT preset set is added. Confirm the GT field and Cascavel layout manually."
+                           },
+                           {
+                               "id":  "national-stock-interlagos",
+                               "leagueId":  "national-stock",
+                               "name":  "National Stock at Interlagos",
+                               "trackLayoutId":  "interlagos-grand-prix",
+                               "eligibleCarClassIds":  [
+                                                           "stock-car"
+                                                       ],
+                               "exportAdapterId":  "championship-editor-preset",
+                               "presetSlug":  "bundled-rookie-event",
+                               "requiresGameRestart":  true,
+                               "setupInstructions":  "Temporary preset placeholder until the stock car preset set is added. Confirm the national stock setup manually."
+                           }
+                       ],
+    "titles":  [
+                   {
+                       "id":  "title-rookie",
+                       "name":  "Rookie Initiate",
+                       "requiredLevel":  1
+                   },
+                   {
+                       "id":  "title-club",
+                       "name":  "Club Charger",
+                       "requiredLevel":  3
+                   },
+                   {
+                       "id":  "title-regional",
+                       "name":  "Regional Contender",
+                       "requiredLevel":  5
+                   },
+                   {
+                       "id":  "title-national",
+                       "name":  "National Threat",
+                       "requiredLevel":  7
+                   }
+               ],
+    "challengeTemplates":  [
+                               {
+                                   "id":  "daily-finish",
+                                   "name":  "Daily Checkered Flag",
+                                   "description":  "Finish one race today.",
+                                   "cadence":  "Daily",
+                                   "kind":  "FinishRace",
+                                   "target":  1,
+                                   "bonusXp":  60,
+                                   "bonusCredits":  450
+                               },
+                               {
+                                   "id":  "daily-clean",
+                                   "name":  "Daily Clean Hands",
+                                   "description":  "Complete one clean race.",
+                                   "cadence":  "Daily",
+                                   "kind":  "CleanFinish",
+                                   "target":  1,
+                                   "bonusXp":  90,
+                                   "bonusCredits":  600
+                               },
+                               {
+                                   "id":  "weekly-podium",
+                                   "name":  "Weekly Podium Push",
+                                   "description":  "Score two podium finishes this week.",
+                                   "cadence":  "Weekly",
+                                   "kind":  "PodiumFinish",
+                                   "target":  2,
+                                   "bonusXp":  180,
+                                   "bonusCredits":  1250
+                               },
+                               {
+                                   "id":  "monthly-clean-sweep",
+                                   "name":  "Monthly Clean Sweep",
+                                   "description":  "Complete four clean races this month.",
+                                   "cadence":  "Monthly",
+                                   "kind":  "CleanFinish",
+                                   "target":  4,
+                                   "bonusXp":  420,
+                                   "bonusCredits":  2800
+                               }
+                           ],
+    "rivalArchetypes":  [
+                            {
+                                "name":  "Marta Alves",
+                                "personality":  "Calculated",
+                                "specialty":  "Consistency",
+                                "baseRating":  1010
+                            },
+                            {
+                                "name":  "Luca Moretti",
+                                "personality":  "Aggressive",
+                                "specialty":  "Late Braking",
+                                "baseRating":  995
+                            },
+                            {
+                                "name":  "Tiago Rocha",
+                                "personality":  "Opportunist",
+                                "specialty":  "Wet Weather",
+                                "baseRating":  1005
+                            },
+                            {
+                                "name":  "Helena Duarte",
+                                "personality":  "Qualifier",
+                                "specialty":  "One-lap Pace",
+                                "baseRating":  1000
+                            },
+                            {
+                                "name":  "Noah Ferraz",
+                                "personality":  "Endurance-minded",
+                                "specialty":  "Long-run Stability",
+                                "baseRating":  1008
+                            }
+                        ],
+    "driverPortraits":  [
+                            {
+                                "id":  "portrait-placeholder",
+                                "assetPath":  "content/official/driver-portraits/placeholder.png",
+                                "displayLabel":  "Portrait Placeholder",
+                                "tags":  [
+                                             "placeholder",
+                                             "fallback"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-01",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-01.png",
+                                "displayLabel":  "Driver Portrait 01",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-02",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-02.png",
+                                "displayLabel":  "Driver Portrait 02",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-03",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-03.png",
+                                "displayLabel":  "Driver Portrait 03",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-04",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-04.png",
+                                "displayLabel":  "Driver Portrait 04",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-05",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-05.png",
+                                "displayLabel":  "Driver Portrait 05",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-06",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-06.png",
+                                "displayLabel":  "Driver Portrait 06",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-07",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-07.png",
+                                "displayLabel":  "Driver Portrait 07",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-08",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-08.png",
+                                "displayLabel":  "Driver Portrait 08",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-09",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-09.png",
+                                "displayLabel":  "Driver Portrait 09",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-10",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-10.png",
+                                "displayLabel":  "Driver Portrait 10",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-11",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-11.png",
+                                "displayLabel":  "Driver Portrait 11",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-12",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-12.png",
+                                "displayLabel":  "Driver Portrait 12",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-13",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-13.png",
+                                "displayLabel":  "Driver Portrait 13",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-14",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-14.png",
+                                "displayLabel":  "Driver Portrait 14",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-15",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-15.png",
+                                "displayLabel":  "Driver Portrait 15",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-16",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-16.png",
+                                "displayLabel":  "Driver Portrait 16",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-17",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-17.png",
+                                "displayLabel":  "Driver Portrait 17",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-18",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-18.png",
+                                "displayLabel":  "Driver Portrait 18",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-19",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-19.png",
+                                "displayLabel":  "Driver Portrait 19",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-20",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-20.png",
+                                "displayLabel":  "Driver Portrait 20",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-21",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-21.png",
+                                "displayLabel":  "Driver Portrait 21",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-22",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-22.png",
+                                "displayLabel":  "Driver Portrait 22",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-23",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-23.png",
+                                "displayLabel":  "Driver Portrait 23",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-24",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-24.png",
+                                "displayLabel":  "Driver Portrait 24",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-25",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-25.png",
+                                "displayLabel":  "Driver Portrait 25",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-26",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-26.png",
+                                "displayLabel":  "Driver Portrait 26",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-27",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-27.png",
+                                "displayLabel":  "Driver Portrait 27",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-28",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-28.png",
+                                "displayLabel":  "Driver Portrait 28",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-29",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-29.png",
+                                "displayLabel":  "Driver Portrait 29",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-30",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-30.png",
+                                "displayLabel":  "Driver Portrait 30",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-31",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-31.png",
+                                "displayLabel":  "Driver Portrait 31",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-32",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-32.png",
+                                "displayLabel":  "Driver Portrait 32",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            },
+                            {
+                                "id":  "portrait-33",
+                                "assetPath":  "content/official/driver-portraits/driver-portrait-33.png",
+                                "displayLabel":  "Driver Portrait 33",
+                                "tags":  [
+                                             "shared-pack",
+                                             "v1"
+                                         ],
+                                "availability":  "Both"
+                            }
+                        ]
 }

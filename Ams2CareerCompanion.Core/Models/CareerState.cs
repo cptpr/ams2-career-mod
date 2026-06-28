@@ -6,6 +6,7 @@ public sealed class PlayerProfile
     public string StarterCarName { get; set; } = string.Empty;
     public string StarterCarClass { get; set; } = string.Empty;
     public string SelectedCarClass { get; set; } = string.Empty;
+    public string PortraitId { get; set; } = string.Empty;
 }
 
 public sealed class ProgressionState
@@ -27,6 +28,22 @@ public sealed class RivalProfile
     public double DriverRating { get; set; }
     public int Reputation { get; set; }
     public int RivalryIntensity { get; set; }
+    public string PortraitId { get; set; } = string.Empty;
+    public List<RivalEncounterRecord> RecentEncounters { get; set; } = new();
+}
+
+public sealed class RivalEncounterRecord
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public DateTime CompletedUtc { get; set; }
+    public string LeagueId { get; set; } = string.Empty;
+    public string LeagueName { get; set; } = string.Empty;
+    public string TrackName { get; set; } = string.Empty;
+    public int PlayerPosition { get; set; }
+    public int RivalPosition { get; set; }
+    public bool PlayerFinishedAhead { get; set; }
+    public int RivalryDelta { get; set; }
+    public string Summary { get; set; } = string.Empty;
 }
 
 public sealed class ChallengeInstance
@@ -48,6 +65,7 @@ public sealed class CareerState
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = string.Empty;
     public DateTime CreatedUtc { get; set; }
+    public int CareerSeed { get; set; }
     public CareerPreset Preset { get; set; } = CareerPreset.Standard;
     public PlayerProfile PlayerProfile { get; set; } = new();
     public ProgressionState Progression { get; set; } = new();

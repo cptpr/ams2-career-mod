@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Media;
 using Ams2CareerCompanion.Core.Interfaces;
 using Ams2CareerCompanion.Core.Models;
 using Ams2CareerCompanion.Core.Services;
@@ -21,10 +22,11 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly Ams2SessionPresetService _sessionPresetService;
     private readonly RaceAutomationCoordinator _raceAutomationCoordinator;
     private readonly RaceAutomationTraceWriter _automationTraceWriter;
-    private readonly ChampionshipEditorPresetExportAdapter _eventExportAdapter;
+    private readonly IEventExportAdapter _eventExportAdapter;
     private readonly CareerFactory _careerFactory;
     private readonly CareerEventPlanner _eventPlanner;
     private readonly CareerProgressionEngine _progressionEngine;
+    private readonly DriverPortraitService _driverPortraitService;
     private readonly RelayCommand _createCareerCommand;
     private readonly RelayCommand _launchAms2Command;
     private readonly RelayCommand _launchAms2VrCommand;
@@ -55,6 +57,11 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     private RaceResultDraft? _pendingDraft;
     private CareerEventPlan? _nextEventPlan;
     private StarterCarDefinition? _selectedStarterCar;
+    private DriverPortraitOptionViewModel? _selectedPlayerPortrait;
+    private GarageCarCardViewModel? _selectedGarageCar;
+    private CareerTierNodeViewModel? _selectedCareerTierNode;
+    private RivalSummaryViewModel? _selectedRival;
+    private DepartmentUpgradeViewModel? _selectedDepartment;
     private SessionPresetInfo? _selectedSessionPreset;
     private string _sessionPresetNameInput = "rookie-cup";
     private string _careerNameInput = "New Career";
@@ -101,17 +108,37 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _careerFactory = careerFactory;
         _eventPlanner = new CareerEventPlanner();
         _progressionEngine = progressionEngine;
+        _driverPortraitService = new DriverPortraitService();
 
         StarterCars = new ObservableCollection<StarterCarDefinition>(_content.StarterCars);
+        PlayerPortraitOptions = new ObservableCollection<DriverPortraitOptionViewModel>(
+            _driverPortraitService
+                .GetPlayerPortraitOptions(_content)
+                .Select(portrait => new DriverPortraitOptionViewModel
+                {
+                    Id = portrait.Id,
+                    DisplayLabel = portrait.DisplayLabel,
+                    AssetPath = ResolvePortraitAssetPath(portrait.Id),
+                    Tagline = portrait.Tags.Count == 0 ? "Shared portrait pool" : string.Join("  |  ", portrait.Tags)
+                }));
         Careers = new ObservableCollection<CareerSummary>();
+        CareerLadderNodes = new ObservableCollection<CareerTierNodeViewModel>();
+        GarageCars = new ObservableCollection<GarageCarCardViewModel>();
+        OwnedCars = new ObservableCollection<GarageCarCardViewModel>();
+        BuyableCars = new ObservableCollection<GarageCarCardViewModel>();
+        RentalCars = new ObservableCollection<GarageCarCardViewModel>();
+        LockedCars = new ObservableCollection<GarageCarCardViewModel>();
+        DlcCars = new ObservableCollection<GarageCarCardViewModel>();
+        GarageClasses = new ObservableCollection<GarageClassViewModel>();
+        TeamHqDepartments = new ObservableCollection<DepartmentUpgradeViewModel>();
         UnlockedLeagues = new ObservableCollection<string>();
         Challenges = new ObservableCollection<string>();
-        Rivals = new ObservableCollection<string>();
+        Rivals = new ObservableCollection<RivalSummaryViewModel>();
         RecentResults = new ObservableCollection<RaceHistoryEntry>();
         RaceHistory = new ObservableCollection<RaceHistoryEntry>();
         SessionPresets = new ObservableCollection<SessionPresetInfo>();
 
-        _createCareerCommand = new RelayCommand(CreateCareerAsync, () => SelectedStarterCar is not null && !string.IsNullOrWhiteSpace(CareerNameInput));
+        _createCareerCommand = new RelayCommand(CreateCareerAsync, () => SelectedStarterCar is not null && SelectedPlayerPortrait is not null && !string.IsNullOrWhiteSpace(CareerNameInput));
         _launchAms2Command = new RelayCommand(LaunchAms2Async);
         _launchAms2VrCommand = new RelayCommand(LaunchAms2VrAsync);
         _applyRecommendedEventCommand = new RelayCommand(ApplyRecommendedEventAsync, () => _nextEventPlan is not null);
@@ -162,10 +189,20 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     }
 
     public ObservableCollection<StarterCarDefinition> StarterCars { get; }
+    public ObservableCollection<DriverPortraitOptionViewModel> PlayerPortraitOptions { get; }
     public ObservableCollection<CareerSummary> Careers { get; }
+    public ObservableCollection<CareerTierNodeViewModel> CareerLadderNodes { get; }
+    public ObservableCollection<GarageCarCardViewModel> GarageCars { get; }
+    public ObservableCollection<GarageCarCardViewModel> OwnedCars { get; }
+    public ObservableCollection<GarageCarCardViewModel> BuyableCars { get; }
+    public ObservableCollection<GarageCarCardViewModel> RentalCars { get; }
+    public ObservableCollection<GarageCarCardViewModel> LockedCars { get; }
+    public ObservableCollection<GarageCarCardViewModel> DlcCars { get; }
+    public ObservableCollection<GarageClassViewModel> GarageClasses { get; }
+    public ObservableCollection<DepartmentUpgradeViewModel> TeamHqDepartments { get; }
     public ObservableCollection<string> UnlockedLeagues { get; }
     public ObservableCollection<string> Challenges { get; }
-    public ObservableCollection<string> Rivals { get; }
+    public ObservableCollection<RivalSummaryViewModel> Rivals { get; }
     public ObservableCollection<RaceHistoryEntry> RecentResults { get; }
     public ObservableCollection<RaceHistoryEntry> RaceHistory { get; }
     public ObservableCollection<SessionPresetInfo> SessionPresets { get; }
@@ -224,6 +261,88 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             if (SetProperty(ref _selectedStarterCar, value))
             {
                 _createCareerCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public GarageCarCardViewModel? SelectedGarageCar
+    {
+        get => _selectedGarageCar;
+        set
+        {
+            if (SetProperty(ref _selectedGarageCar, value))
+            {
+                RaisePropertyChanged(nameof(SelectedGarageCarTitle));
+                RaisePropertyChanged(nameof(SelectedGarageCarClass));
+                RaisePropertyChanged(nameof(SelectedGarageCarStatus));
+                RaisePropertyChanged(nameof(SelectedGarageCarCondition));
+                RaisePropertyChanged(nameof(SelectedGarageCarSummary));
+                RaisePropertyChanged(nameof(SelectedGarageCarActionText));
+                RaisePropertyChanged(nameof(SelectedGarageCarUnlockText));
+                RaisePropertyChanged(nameof(SelectedGarageCarPriceText));
+                RaisePropertyChanged(nameof(SelectedGarageCarEligibleEventsText));
+                RaisePropertyChanged(nameof(SelectedGarageCarCareerStartsText));
+                RaisePropertyChanged(nameof(CanUseSelectedGarageCar));
+                RaisePropertyChanged(nameof(CanRepairSelectedGarageCar));
+            }
+        }
+    }
+
+    public CareerTierNodeViewModel? SelectedCareerTierNode
+    {
+        get => _selectedCareerTierNode;
+        set
+        {
+            if (SetProperty(ref _selectedCareerTierNode, value))
+            {
+                RaisePropertyChanged(nameof(SelectedCareerTierTitle));
+                RaisePropertyChanged(nameof(SelectedCareerTierStatus));
+                RaisePropertyChanged(nameof(SelectedCareerTierDescription));
+            }
+        }
+    }
+
+    public RivalSummaryViewModel? SelectedRival
+    {
+        get => _selectedRival;
+        set
+        {
+            if (SetProperty(ref _selectedRival, value))
+            {
+                RaisePropertyChanged(nameof(SelectedRivalName));
+                RaisePropertyChanged(nameof(SelectedRivalStatus));
+                RaisePropertyChanged(nameof(SelectedRivalHeat));
+                RaisePropertyChanged(nameof(SelectedRivalDetail));
+                RaisePropertyChanged(nameof(SelectedRivalHeadToHead));
+                RaisePropertyChanged(nameof(SelectedRivalRewardPreview));
+                RaisePropertyChanged(nameof(SelectedRivalPortraitAssetPath));
+            }
+        }
+    }
+
+    public DepartmentUpgradeViewModel? SelectedDepartment
+    {
+        get => _selectedDepartment;
+        set
+        {
+            if (SetProperty(ref _selectedDepartment, value))
+            {
+                RaisePropertyChanged(nameof(SelectedDepartmentName));
+                RaisePropertyChanged(nameof(SelectedDepartmentSummary));
+            }
+        }
+    }
+
+    public DriverPortraitOptionViewModel? SelectedPlayerPortrait
+    {
+        get => _selectedPlayerPortrait;
+        set
+        {
+            if (SetProperty(ref _selectedPlayerPortrait, value))
+            {
+                _createCareerCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged(nameof(SelectedPlayerPortraitAssetPath));
+                RaisePropertyChanged(nameof(SelectedPlayerPortraitLabel));
             }
         }
     }
@@ -362,6 +481,13 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
+    public string ProfileDirectoryText => _sessionPresetService.ProfileDirectory is null
+        ? "AMS2 profile directory not detected yet."
+        : _sessionPresetService.ProfileDirectory;
+    public string ProfileDirectoryStatusText => _sessionPresetService.ProfileDirectory is null
+        ? "Profile directory not detected."
+        : "Profile directory detected.";
+
     public string FeaturedRivalText
     {
         get => _featuredRivalText;
@@ -447,7 +573,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public string RaceHistoryHeaderText => RaceHistory.Count == 0 ? "No season log yet." : $"{RaceHistory.Count} total logged race(s).";
     public string ActiveCareerSummaryText => _career is null
         ? "No active career loaded."
-        : $"Active profile: {_career.Name}  |  Level {_career.Progression.Level}  |  {CurrentLeagueName}";
+        : $"Active profile: {CurrentCareerName}  |  Level {_career.Progression.Level}  |  {CurrentLeagueName}";
     public string SelectedCareerSummaryText => SelectedCareerSummary is null
         ? "No profile selected."
         : $"Selected profile: {SelectedCareerSummary.Name}  |  Level {SelectedCareerSummary.Level}";
@@ -458,8 +584,18 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         : $"{SelectedSessionPreset.SourceLabel}: {SelectedSessionPreset.Name}\n{SelectedSessionPreset.Description}";
     public bool CanDeleteSelectedSessionPreset => SelectedSessionPreset?.CanDelete == true;
 
-    public string CurrentCareerName => _career?.Name ?? "No active career";
+    public string CurrentCareerName => _career is null
+        ? "No active career"
+        : string.Equals(_career.Name, "New Careersad", StringComparison.OrdinalIgnoreCase)
+            ? "New Career"
+            : _career.Name;
     public string CurrentStarterCar => _career?.PlayerProfile.StarterCarName ?? "Choose a starter car";
+    public string CurrentPlayerPortraitLabel => _career is null
+        ? "No portrait selected"
+        : _driverPortraitService.ResolvePortrait(_content, _career.PlayerProfile.PortraitId).DisplayLabel;
+    public string ActivePlayerPortraitAssetPath => ResolvePortraitAssetPath(_career?.PlayerProfile.PortraitId);
+    public string SelectedPlayerPortraitAssetPath => SelectedPlayerPortrait?.AssetPath ?? ResolvePortraitAssetPath(null);
+    public string SelectedPlayerPortraitLabel => SelectedPlayerPortrait?.DisplayLabel ?? "Select a portrait";
     public string CurrentTitle => GetCurrentTitle();
     public string CurrentLeagueName => _career is null ? "No active league" : _content.Leagues.First(x => x.Id == _career.ActiveLeagueId).Name;
     public string ProgressText => _career is null
@@ -496,7 +632,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         : $"{_nextEventPlan.TrackDisplayName}  |  Grid {_nextEventPlan.RecommendedGridSize}  |  {_nextEventPlan.PlayerCarClassName}";
     public string CurrentLeagueDescriptionText => _career is null
         ? "Create a career to begin the motorsport ladder."
-        : $"Progress through {CurrentLeagueName} by completing committed races, improving driver rating, and unlocking the next branch.";
+        : $"Complete Rookie events, raise your rating, and unlock the next branch beyond {CurrentLeagueName}.";
     public string CareerProgressSummaryText => _career is null
         ? "No progress recorded yet."
         : $"Level {_career.Progression.Level}  |  Driver Rating {_career.Progression.DriverRating:n0}  |  Credits {_career.Progression.Credits:n0}  |  Reputation {_career.Progression.Reputation}";
@@ -506,10 +642,27 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public string GarageEligibleEventText => _nextEventPlan is null
         ? "No eligible event planned yet."
         : $"{NextEventDisplayTitle}  |  {NextEventHeroMetaText}";
-    public string GarageDetailSummaryText => _career is null
-        ? "No active car profile."
-        : $"{CurrentStarterCar}  |  {CurrentLeagueName}  |  {CurrentTitle}";
+    public string GarageDetailSummaryText => SelectedGarageCar?.SummaryText
+        ?? (_career is null ? "No active car profile." : $"{CurrentStarterCar}  |  {CurrentLeagueName}  |  {CurrentTitle}");
+    public string SelectedGarageCarTitle => SelectedGarageCar?.Name ?? "Select a car";
+    public string SelectedGarageCarClass => SelectedGarageCar is null ? "No class selected" : SelectedGarageCar.ClassName;
+    public string SelectedGarageCarStatus => SelectedGarageCar?.StatusText ?? "No car selected";
+    public string SelectedGarageCarCondition => SelectedGarageCar?.ConditionText ?? "Condition unavailable";
+    public string SelectedGarageCarSummary => SelectedGarageCar?.SummaryText ?? "Select a car to see details.";
+    public string SelectedGarageCarActionText => SelectedGarageCar?.ActionText ?? "Select a car";
+    public string SelectedGarageCarUnlockText => SelectedGarageCar?.UnlockText ?? string.Empty;
+    public string SelectedGarageCarPriceText => SelectedGarageCar?.PriceText ?? string.Empty;
+    public string SelectedGarageCarEligibleEventsText => SelectedGarageCar?.EligibleEventsText ?? string.Empty;
+    public string SelectedGarageCarCareerStartsText => SelectedGarageCar?.CareerStartsText ?? string.Empty;
+    public bool CanUseSelectedGarageCar => SelectedGarageCar?.CanAct == true;
+    public bool CanRepairSelectedGarageCar => SelectedGarageCar?.CanAct == true && SelectedGarageCar?.ActionText.Contains("Repair", StringComparison.OrdinalIgnoreCase) == true;
+
+    public string SelectedCareerTierTitle => SelectedCareerTierNode?.TierName ?? "Select a tier";
+    public string SelectedCareerTierStatus => SelectedCareerTierNode?.StatusText ?? string.Empty;
+    public string SelectedCareerTierDescription => SelectedCareerTierNode?.Description ?? string.Empty;
+
     public string FeaturedRivalName => _career?.Rivals.OrderByDescending(x => x.RivalryIntensity).FirstOrDefault()?.Name ?? "No featured rival";
+    public string FeaturedRivalPortraitAssetPath => ResolvePortraitAssetPath(_career?.Rivals.OrderByDescending(x => x.RivalryIntensity).FirstOrDefault()?.PortraitId);
     public string FeaturedRivalStatusText
     {
         get
@@ -532,27 +685,63 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         {
             var rival = _career?.Rivals.OrderByDescending(x => x.RivalryIntensity).FirstOrDefault();
             return rival is null
-                ? "Potential rival data will appear after more committed events."
+                ? "Keep racing to surface more rivals."
                 : $"{rival.Specialty}  |  Rating {rival.DriverRating:n0}  |  Rivalry {rival.RivalryIntensity}";
         }
     }
+    public string FeaturedRivalHeadToHeadText => BuildRivalHeadToHeadText(_career?.Rivals.OrderByDescending(x => x.RivalryIntensity).FirstOrDefault());
     public string FeaturedRivalDetailText => _career?.Rivals.Count > 0
-        ? "This competitor is currently the strongest overlap in your career path. Future rivalry heat, head-to-head, and showdown systems will build on this record."
-        : "No rivalry data is active yet. Keep racing to establish recurring competitors and featured overlap.";
+        ? "This is your most relevant current competitor. Keep racing and the rivalry board will sharpen around this record."
+        : "No rival has emerged yet. Keep racing to build recurring competitors and a stronger rivalry board.";
+    public string SelectedRivalName => SelectedRival?.Name ?? "Select a rival";
+    public string SelectedRivalStatus => SelectedRival?.StatusText ?? string.Empty;
+    public string SelectedRivalHeat => SelectedRival?.HeatText ?? string.Empty;
+    public string SelectedRivalDetail => SelectedRival?.DetailText ?? string.Empty;
+    public string SelectedRivalHeadToHead => SelectedRival?.HeadToHeadText ?? string.Empty;
+    public string SelectedRivalRewardPreview => SelectedRival?.RewardPreviewText ?? string.Empty;
+    public string SelectedRivalPortraitAssetPath => SelectedRival?.PortraitAssetPath ?? ResolvePortraitAssetPath(null);
+
+    public string SelectedDepartmentName => SelectedDepartment?.DepartmentName ?? "Select a department";
+    public string SelectedDepartmentSummary => SelectedDepartment?.SummaryText ?? string.Empty;
     public string TeamHqSummaryText => _career is null
-        ? "No career operation summary available yet."
-        : $"Current operation focus: {_career.Progression.Level switch { >= 10 => "National expansion", >= 5 => "Club growth", _ => "Rookie efficiency" }}";
+        ? "No operation summary available yet."
+        : $"Current focus: {_career.Progression.Level switch { >= 10 => "Prestige build", >= 5 => "Club growth", _ => "Rookie efficiency" }}";
     public string TeamHqEfficiencyText => _career is null
         ? "Efficiency metrics unavailable."
         : $"Driver Rating {_career.Progression.DriverRating:n0}  |  Credits {_career.Progression.Credits:n0}  |  Reputation {_career.Progression.Reputation}";
     public string TeamHqNextUnlockText => _career is null
         ? "Unlocks unavailable."
-        : _career.Progression.Level >= 5 ? "Logistics, Simulator, and Media Office can bind next." : "Reach Club-tier progression to unlock more departments.";
+        : _career.Progression.Level >= 5 ? "Logistics, Simulator, and Media Office unlock next." : "Requires Club Tier.";
+    public string GarageEmptyStateTitle => _career is null ? "No garage available yet" : "No owned cars yet";
+    public string GarageEmptyStateText => _career is null
+        ? "Create a career to unlock your first car profile."
+        : "Owned cars appear here as soon as your career has one.";
+    public bool HasOwnedCars => OwnedCars.Count > 0;
+    public string TeamHqEmptyStateTitle => _career is null ? "No departments unlocked yet" : "Departments still locked";
+    public string TeamHqEmptyStateText => _career is null
+        ? "Create a career to begin unlocking permanent team upgrades."
+        : "Reach Club Tier to open the remaining departments.";
+    public bool HasTeamHqDepartments => TeamHqDepartments.Count > 0;
+
+    public Brush ConnectionStateBrush => _telemetryFeed.ConnectionState switch
+    {
+        TelemetryConnectionState.Monitoring => new SolidColorBrush(Color.FromRgb(103, 209, 59)),
+        TelemetryConnectionState.Simulating => new SolidColorBrush(Color.FromRgb(255, 181, 69)),
+        _ => _launchService.IsGameRunning ? new SolidColorBrush(Color.FromRgb(255, 181, 69)) : new SolidColorBrush(Color.FromRgb(115, 129, 145))
+    };
+
+    public Brush TelemetryHealthBrush => _telemetryFeed.ConnectionState switch
+    {
+        TelemetryConnectionState.Monitoring => new SolidColorBrush(Color.FromRgb(103, 209, 59)),
+        TelemetryConnectionState.Simulating => new SolidColorBrush(Color.FromRgb(255, 181, 69)),
+        _ => _launchService.IsGameRunning ? new SolidColorBrush(Color.FromRgb(255, 181, 69)) : new SolidColorBrush(Color.FromRgb(115, 129, 145))
+    };
+
     public string TelemetryHealthText => _telemetryFeed.ConnectionState switch
     {
-        TelemetryConnectionState.Monitoring => "HEALTHY",
-        TelemetryConnectionState.Simulating => "SIMULATING",
-        _ => _launchService.IsGameRunning ? "WAITING" : "OFFLINE"
+        TelemetryConnectionState.Monitoring => "Telemetry: Healthy",
+        TelemetryConnectionState.Simulating => "Telemetry: Test",
+        _ => _launchService.IsGameRunning ? "Telemetry: Waiting" : "Telemetry: Offline"
     };
 
     public RaceResultDraft? PendingDraft
@@ -581,22 +770,25 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
     public bool HasPendingDraft => PendingDraft is not null;
     public string PendingDraftSummary => PendingDraft?.Summary ?? "No pending result review.";
-    public string SelectedRecentResultHeadline => SelectedRecentResult?.Headline ?? "Select a race result";
-    public string SelectedRecentResultDetails => SelectedRecentResult?.Details ?? "Finish a race or select one from the list to inspect the full stored result details.";
+    public string SelectedRecentResultHeadline => SelectedRecentResult?.Headline ?? "Manual Review Needed";
+    public string SelectedRecentResultDetails => SelectedRecentResult?.Details ?? "No confirmed result yet.";
     public string SelectedRecentResultStatusLine => SelectedRecentResult is null
-        ? "No committed result yet."
+        ? "Manual review needed | Result could not be confirmed automatically"
         : $"{SelectedRecentResult.ResultTag}  |  {SelectedRecentResult.CleanlinessTag}  |  {SelectedRecentResult.ReviewTag}";
     public string SelectedRecentResultCompactDetails => SelectedRecentResult is null
-        ? "Complete an event to populate the most recent result summary."
+        ? "No result selected."
         : $"Overall P{SelectedRecentResult.OverallPosition}/{SelectedRecentResult.Entrants}  |  Class P{SelectedRecentResult.ClassPosition}  |  {SelectedRecentResult.LapsCompleted} laps";
     public string LastResultPrimaryPositionText => SelectedRecentResult is null ? "—" : $"P{SelectedRecentResult.OverallPosition}";
-    public string LastResultMetaText => SelectedRecentResult?.Subtitle ?? "No completed event yet.";
-    public string LastResultOutcomeText => SelectedRecentResult?.ResultTag ?? "Awaiting first committed result";
+    public string LastResultMetaText => SelectedRecentResult?.Subtitle ?? "Result could not be confirmed automatically.";
+    public string LastResultOutcomeText => SelectedRecentResult?.ResultTag ?? "Manual Review Needed";
 
     public async Task InitializeAsync()
     {
         SelectedStarterCar = StarterCars.FirstOrDefault();
+        SelectedPlayerPortrait = PlayerPortraitOptions.FirstOrDefault();
         _career = await _repository.LoadCurrentCareerAsync();
+        await EnsureCareerPortraitsAsync();
+        RestoreDiagnosticsSnapshot();
 
         await _telemetryFeed.StartAsync();
         await RefreshAsync();
@@ -613,7 +805,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
         if (_career is null)
         {
-            StatusMessage = "Create a new career from the Career tab, then launch AMS2 from the Race tab.";
+            StatusMessage = "Create a new career from Career, then prepare your next event from Race Desk.";
             RefreshCollections(Array.Empty<RaceResultConfirmed>());
             RaiseCareerProperties();
             UpdateRaceDeskFlowState();
@@ -643,10 +835,10 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             return;
         }
 
-        _career = _careerFactory.CreateNewCareer(CareerNameInput, SelectedStarterCar, CareerPreset.Standard, _content);
+        _career = _careerFactory.CreateNewCareer(CareerNameInput, SelectedStarterCar, CareerPreset.Standard, _content, SelectedPlayerPortrait?.Id);
         await _repository.SaveCareerAsync(_career, setAsCurrent: true);
         RewardSummary = "Career created. Your first objective is to complete the Rookie Cup.";
-        StatusMessage = "Career created successfully. Go to Race and launch AMS2.";
+        StatusMessage = "Career created. Go to Race Desk to prepare the next event.";
         await RefreshAsync();
         UpdateRaceDeskFlowState();
         RaiseCommandStates();
@@ -810,6 +1002,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
         await _repository.SetCurrentCareerAsync(SelectedCareerSummary.Id);
         _career = await _repository.LoadCurrentCareerAsync();
+        await EnsureCareerPortraitsAsync();
         StatusMessage = $"Loaded career: {SelectedCareerSummary.Name}.";
         await RefreshAsync();
     }
@@ -835,6 +1028,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
         await _repository.DeleteCareerAsync(selected.Id);
         _career = await _repository.LoadCurrentCareerAsync();
+        await EnsureCareerPortraitsAsync();
         StatusMessage = $"Deleted career: {selected.Name}.";
         await RefreshAsync();
     }
@@ -851,8 +1045,8 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         var plannedClassPosition = Math.Max(1, plannedPosition - 1);
 
         StatusMessage = forceManualReview
-            ? "Developer simulation: uncertain result path."
-            : "Developer simulation: clean result path.";
+            ? "Result simulation: manual review likely needed."
+            : "Result simulation: clean path.";
 
         await _mockRaceSimulator.RunSimulationAsync(new MockRaceScenario
         {
@@ -920,6 +1114,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     {
         await Application.Current.Dispatcher.InvokeAsync(async () =>
         {
+            _automationTraceWriter.AppendDraftCreated(draft);
             if (draft.Confidence == ResultConfidence.High)
             {
                 await CommitDraftAsync(draft, reviewed: false);
@@ -1028,6 +1223,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
         if (_career is null)
         {
+            RefreshPresentationCollectionsClean();
             RaisePropertyChanged(nameof(RecentResultsHeaderText));
             RaisePropertyChanged(nameof(RaceHistoryHeaderText));
             RaisePropertyChanged(nameof(SeasonSummaryText));
@@ -1052,7 +1248,13 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
         foreach (var rival in _career.Rivals.OrderByDescending(x => x.RivalryIntensity))
         {
-            Rivals.Add($"{rival.Name}  |  {rival.Specialty}  |  Rating {rival.DriverRating:n0}  |  Rivalry {rival.RivalryIntensity}");
+            Rivals.Add(new RivalSummaryViewModel
+            {
+                Name = rival.Name,
+                Summary = $"{rival.Specialty}  |  Rating {rival.DriverRating:n0}  |  Rivalry {rival.RivalryIntensity}",
+                PortraitAssetPath = ResolvePortraitAssetPath(rival.PortraitId),
+                HeadToHeadText = BuildRivalHeadToHeadText(rival)
+            });
         }
 
         foreach (var result in results.Take(12))
@@ -1070,12 +1272,554 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         FeaturedRivalText = _career.Rivals.Count == 0
             ? "No rival selected yet."
             : $"{_career.Rivals.OrderByDescending(x => x.RivalryIntensity).First().Name} is your current featured rival.";
+        RefreshPresentationCollectionsClean();
         RefreshNextEventPlan(results);
         RaisePropertyChanged(nameof(RecentResultsHeaderText));
         RaisePropertyChanged(nameof(RaceHistoryHeaderText));
         RaisePropertyChanged(nameof(SeasonSummaryText));
         RaisePropertyChanged(nameof(ChallengeSummaryText));
         UpdateRaceDeskFlowState();
+    }
+
+    private void RefreshPresentationCollections()
+    {
+        CareerLadderNodes.Clear();
+        GarageCars.Clear();
+        OwnedCars.Clear();
+        BuyableCars.Clear();
+        RentalCars.Clear();
+        LockedCars.Clear();
+        DlcCars.Clear();
+        GarageClasses.Clear();
+        TeamHqDepartments.Clear();
+
+        var currentLeagueId = _career?.ActiveLeagueId;
+        var completedLeagueIds = _career is null
+            ? new HashSet<string>(StringComparer.Ordinal)
+            : _career.CompletedLeagueIds.ToHashSet(StringComparer.Ordinal);
+        var unlockedLeagueIds = _career is null
+            ? new HashSet<string>(StringComparer.Ordinal)
+            : _career.UnlockedLeagueIds.ToHashSet(StringComparer.Ordinal);
+
+        foreach (var league in _content.Leagues.OrderBy(league => league.RequiredLevel))
+        {
+            var isCurrent = string.Equals(league.Id, currentLeagueId, StringComparison.OrdinalIgnoreCase);
+            var isCompleted = completedLeagueIds.Contains(league.Id);
+            var isUnlocked = unlockedLeagueIds.Contains(league.Id) || isCurrent || isCompleted;
+
+            CareerLadderNodes.Add(new CareerTierNodeViewModel
+            {
+                TierName = $"Tier {GetLeagueTierIndex(league)}",
+                SeriesName = league.Name,
+                StatusText = isCurrent ? "Active" : isCompleted ? "Completed" : isUnlocked ? "Available" : "Locked",
+                Description = isCurrent
+                    ? $"{league.ClassName} is your active progression branch."
+                    : isCompleted
+                        ? $"You cleared {league.Name}."
+                        : isUnlocked
+                            ? $"{league.Name} is ready when you choose it."
+                            : GetLeagueLockedText(league),
+                IsCurrent = isCurrent,
+                IsCompleted = isCompleted,
+                IsLocked = !isUnlocked
+            });
+        }
+
+        foreach (var car in _content.Cars)
+        {
+            var classDef = _content.CarClasses.FirstOrDefault(x => x.Id == car.ClassId);
+            var owned = _career is not null && string.Equals(_career.PlayerProfile.StarterCarId, _content.StarterCars.FirstOrDefault(x => x.CarId == car.Id)?.Id, StringComparison.OrdinalIgnoreCase);
+            var unlocked = classDef?.IsStarterEligible == true
+                || (_career is not null && _career.UnlockedLeagueIds.Any(id => string.Equals(id, _career.ActiveLeagueId, StringComparison.Ordinal)));
+            var locked = classDef?.IsDlc == true;
+            var status = owned ? "Owned" : locked ? "Locked" : unlocked ? "Available" : "Rental";
+            var action = owned ? "Use For Eligible Event" : locked ? "Locked Until Content Is Available" : unlocked ? "Buy Car" : "Rent For Event";
+            var card = new GarageCarCardViewModel
+            {
+                Name = car.Name,
+                ClassName = classDef?.Name ?? car.ClassId,
+                StatusText = status,
+                ConditionText = owned ? "Condition: Good" : locked ? "Condition: Locked" : "Condition: Fresh",
+                EligibleEventsText = ResolveEligibleEventsText(car.ClassId),
+                CareerStartsText = owned ? "Career starts: 1" : "Career starts: 0",
+                PriceText = locked ? "Unlock with DLC content" : owned ? "Owned at start" : $"Price {BuildCarPrice(car):n0} credits",
+                UnlockText = locked ? "Unlock requirement: DLC content" : unlocked ? "Unlock requirement: None" : "Unlock requirement: Career progress",
+                ActionText = action,
+                SummaryText = $"{car.Manufacturer}  |  {classDef?.Family ?? "Car"}  |  {status}",
+                CanAct = !locked,
+                IsLocked = locked,
+                IsOwned = owned
+            };
+
+            GarageCars.Add(card);
+            if (owned)
+            {
+                OwnedCars.Add(card);
+            }
+            else if (locked)
+            {
+                LockedCars.Add(card);
+                DlcCars.Add(card);
+            }
+            else if (unlocked)
+            {
+                BuyableCars.Add(card);
+            }
+            else
+            {
+                RentalCars.Add(card);
+            }
+        }
+
+        foreach (var classDef in _content.CarClasses)
+        {
+            GarageClasses.Add(new GarageClassViewModel
+            {
+                Name = classDef.Name,
+                Family = classDef.Family,
+                Tier = classDef.Tier,
+                StatusText = classDef.IsDlc ? "DLC" : classDef.IsStarterEligible ? "Starter eligible" : "Available",
+                Description = classDef.Description,
+                IsDlc = classDef.IsDlc,
+                IsStarterEligible = classDef.IsStarterEligible
+            });
+        }
+
+        var departmentData = new[]
+        {
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Mechanic",
+                IconGlyph = "⚙",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Repair cost reduction",
+                NextBonusText = "Quick repair discount",
+                UpgradeCostText = "18,000 credits",
+                StatusText = _career?.Progression.Credits >= 18000 ? "Ready" : "Locked",
+                SummaryText = "Permanent repair savings and faster turnaround for damaged cars.",
+                CanUpgrade = _career?.Progression.Credits >= 18000 == true,
+                IsLocked = false
+            },
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Race Engineer",
+                IconGlyph = "∿",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Setup notes",
+                NextBonusText = "Practice XP bonus",
+                UpgradeCostText = "22,000 credits",
+                StatusText = _career?.Progression.Level >= 2 ? "Ready" : "Locked",
+                SummaryText = "Sharper event prep and better support for learning each new track.",
+                CanUpgrade = _career?.Progression.Credits >= 22000 == true && _career.Progression.Level >= 2,
+                IsLocked = _career?.Progression.Level < 2
+            },
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Manager",
+                IconGlyph = "¤",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Credit rewards",
+                NextBonusText = "Entry fee reduction",
+                UpgradeCostText = "24,000 credits",
+                StatusText = _career?.Progression.Level >= 3 ? "Ready" : "Locked",
+                SummaryText = "Improves the business side of the career and reduces event overhead.",
+                CanUpgrade = _career?.Progression.Credits >= 24000 == true && _career.Progression.Level >= 3,
+                IsLocked = _career?.Progression.Level < 3
+            },
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Logistics",
+                IconGlyph = "⇄",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Rental support",
+                NextBonusText = "Insurance benefits",
+                UpgradeCostText = "26,000 credits",
+                StatusText = _career?.Progression.Level >= 4 ? "Ready" : "Locked",
+                SummaryText = "Helps manage travel, rentals, and event cancellation friction.",
+                CanUpgrade = _career?.Progression.Credits >= 26000 == true && _career.Progression.Level >= 4,
+                IsLocked = _career?.Progression.Level < 4
+            },
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Simulator",
+                IconGlyph = "◫",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Track familiarity",
+                NextBonusText = "Prep bonus",
+                UpgradeCostText = "20,000 credits",
+                StatusText = _career?.Progression.Level >= 2 ? "Ready" : "Locked",
+                SummaryText = "Builds confidence before race day and supports cleaner progression.",
+                CanUpgrade = _career?.Progression.Credits >= 20000 == true && _career.Progression.Level >= 2,
+                IsLocked = _career?.Progression.Level < 2
+            },
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Media Office",
+                IconGlyph = "★",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Reputation gain",
+                NextBonusText = "Prestige invitations",
+                UpgradeCostText = "28,000 credits",
+                StatusText = _career?.Progression.Level >= 5 ? "Ready" : "Locked",
+                SummaryText = "Boosts reputation-focused career growth and late-ladder opportunities.",
+                CanUpgrade = _career?.Progression.Credits >= 28000 == true && _career.Progression.Level >= 5,
+                IsLocked = _career?.Progression.Level < 5
+            }
+        };
+
+        foreach (var department in departmentData)
+        {
+            TeamHqDepartments.Add(department);
+        }
+
+        foreach (var rival in _career is null
+                     ? Array.Empty<RivalProfile>()
+                     : _career.Rivals.OrderByDescending(x => x.RivalryIntensity).ToArray())
+        {
+            var status = rival.RivalryIntensity >= 25 ? "Active" : rival.RivalryIntensity >= 15 ? "Emerging" : "Potential";
+            Rivals.Add(new RivalSummaryViewModel
+            {
+                Name = rival.Name,
+                Summary = $"{rival.Personality}  |  {rival.Specialty}  |  Rating {rival.DriverRating:n0}",
+                PortraitAssetPath = ResolvePortraitAssetPath(rival.PortraitId),
+                StatusText = status,
+                HeatText = $"{Math.Clamp(rival.RivalryIntensity, 0, 100)} heat",
+                DetailText = $"Rival heat is {rival.RivalryIntensity}. This is presentation data only.",
+                HeadToHeadText = "Last 5 head-to-head: unavailable",
+                RewardPreviewText = "Rivalry rewards will appear as the board grows."
+            });
+        }
+
+        SelectedCareerTierNode = CareerLadderNodes.FirstOrDefault(node => node.IsCurrent)
+            ?? CareerLadderNodes.FirstOrDefault(node => !node.IsLocked)
+            ?? CareerLadderNodes.FirstOrDefault();
+        SelectedGarageCar = GarageCars.FirstOrDefault(card => card.IsOwned)
+            ?? GarageCars.FirstOrDefault(card => !card.IsLocked)
+            ?? GarageCars.FirstOrDefault();
+        SelectedDepartment = TeamHqDepartments.FirstOrDefault(card => card.CanUpgrade)
+            ?? TeamHqDepartments.FirstOrDefault();
+        SelectedRival = Rivals.FirstOrDefault();
+
+        RaisePropertyChanged(nameof(GarageEmptyStateTitle));
+        RaisePropertyChanged(nameof(GarageEmptyStateText));
+        RaisePropertyChanged(nameof(HasOwnedCars));
+        RaisePropertyChanged(nameof(TeamHqEmptyStateTitle));
+        RaisePropertyChanged(nameof(TeamHqEmptyStateText));
+        RaisePropertyChanged(nameof(HasTeamHqDepartments));
+    }
+
+    private void RefreshPresentationCollectionsClean()
+    {
+        CareerLadderNodes.Clear();
+        GarageCars.Clear();
+        OwnedCars.Clear();
+        BuyableCars.Clear();
+        RentalCars.Clear();
+        LockedCars.Clear();
+        DlcCars.Clear();
+        GarageClasses.Clear();
+        TeamHqDepartments.Clear();
+        Rivals.Clear();
+
+        var currentLeagueId = _career?.ActiveLeagueId;
+        var completedLeagueIds = _career is null
+            ? new HashSet<string>(StringComparer.Ordinal)
+            : _career.CompletedLeagueIds.ToHashSet(StringComparer.Ordinal);
+        var unlockedLeagueIds = _career is null
+            ? new HashSet<string>(StringComparer.Ordinal)
+            : _career.UnlockedLeagueIds.ToHashSet(StringComparer.Ordinal);
+
+        foreach (var league in _content.Leagues.OrderBy(league => league.RequiredLevel))
+        {
+            var isCurrent = string.Equals(league.Id, currentLeagueId, StringComparison.OrdinalIgnoreCase);
+            var isCompleted = completedLeagueIds.Contains(league.Id);
+            var isUnlocked = unlockedLeagueIds.Contains(league.Id) || isCurrent || isCompleted;
+
+            CareerLadderNodes.Add(new CareerTierNodeViewModel
+            {
+                TierName = $"Tier {GetLeagueTierIndex(league)}",
+                SeriesName = league.Name,
+                StatusText = isCurrent ? "Active" : isCompleted ? "Completed" : isUnlocked ? "Available" : "Locked",
+                Description = isCurrent
+                    ? $"{league.ClassName} is your active progression branch."
+                    : isCompleted
+                        ? $"You cleared {league.Name}."
+                        : isUnlocked
+                            ? $"{league.Name} is ready when you choose it."
+                            : GetLeagueLockedText(league),
+                IsCurrent = isCurrent,
+                IsCompleted = isCompleted,
+                IsLocked = !isUnlocked
+            });
+        }
+
+        foreach (var car in _content.Cars)
+        {
+            var classDef = _content.CarClasses.FirstOrDefault(x => x.Id == car.ClassId);
+            var owned = _career is not null && string.Equals(_career.PlayerProfile.StarterCarId, _content.StarterCars.FirstOrDefault(x => x.CarId == car.Id)?.Id, StringComparison.OrdinalIgnoreCase);
+            var unlocked = classDef?.IsStarterEligible == true
+                || (_career is not null && _career.UnlockedLeagueIds.Any(id => string.Equals(id, _career.ActiveLeagueId, StringComparison.Ordinal)));
+            var locked = classDef?.IsDlc == true;
+            var status = owned ? "Owned" : locked ? "Locked" : unlocked ? "Available" : "Rental";
+            var action = owned ? "Use For Eligible Event" : locked ? "Locked Until Content Is Available" : unlocked ? "Buy Car" : "Rent For Event";
+            var card = new GarageCarCardViewModel
+            {
+                Name = car.Name,
+                ClassName = classDef?.Name ?? car.ClassId,
+                StatusText = status,
+                ConditionText = owned ? "Condition: Good" : locked ? "Condition: Locked" : "Condition: Fresh",
+                EligibleEventsText = ResolveEligibleEventsText(car.ClassId),
+                CareerStartsText = owned ? "Career starts: 1" : "Career starts: 0",
+                PriceText = locked ? "Unlock with DLC content" : owned ? "Owned at start" : $"Price {BuildCarPrice(car):n0} credits",
+                UnlockText = locked ? "Unlock requirement: DLC content" : unlocked ? "Unlock requirement: None" : "Unlock requirement: Career progress",
+                ActionText = action,
+                SummaryText = $"{car.Manufacturer}  |  {classDef?.Family ?? "Car"}  |  {status}",
+                CanAct = !locked,
+                IsLocked = locked,
+                IsOwned = owned
+            };
+
+            GarageCars.Add(card);
+            if (owned)
+            {
+                OwnedCars.Add(card);
+            }
+            else if (locked)
+            {
+                LockedCars.Add(card);
+                DlcCars.Add(card);
+            }
+            else if (unlocked)
+            {
+                BuyableCars.Add(card);
+            }
+            else
+            {
+                RentalCars.Add(card);
+            }
+        }
+
+        foreach (var classDef in _content.CarClasses)
+        {
+            GarageClasses.Add(new GarageClassViewModel
+            {
+                Name = classDef.Name,
+                Family = classDef.Family,
+                Tier = classDef.Tier,
+                StatusText = classDef.IsDlc ? "DLC" : classDef.IsStarterEligible ? "Starter eligible" : "Available",
+                Description = classDef.Description,
+                IsDlc = classDef.IsDlc,
+                IsStarterEligible = classDef.IsStarterEligible
+            });
+        }
+
+        var departmentData = new[]
+        {
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Mechanic",
+                IconGlyph = "⚙",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Repair cost reduction",
+                NextBonusText = "Quick repair discount",
+                UpgradeCostText = "18,000 credits",
+                StatusText = BuildDepartmentStatusText(1, 18000),
+                RequirementText = BuildDepartmentRequirementText(1, 18000),
+                SummaryText = "Permanent repair savings and faster turnaround for damaged cars.",
+                CanUpgrade = _career is not null && _career.Progression.Level >= 1 && _career.Progression.Credits >= 18000,
+                IsLocked = _career is null || _career.Progression.Level < 1
+            },
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Race Engineer",
+                IconGlyph = "∿",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Setup notes",
+                NextBonusText = "Practice XP bonus",
+                UpgradeCostText = "22,000 credits",
+                StatusText = BuildDepartmentStatusText(2, 22000),
+                RequirementText = BuildDepartmentRequirementText(2, 22000),
+                SummaryText = "Sharper event prep and better support for learning each new track.",
+                CanUpgrade = _career is not null && _career.Progression.Level >= 2 && _career.Progression.Credits >= 22000,
+                IsLocked = _career is null || _career.Progression.Level < 2
+            },
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Manager",
+                IconGlyph = "¤",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Credit rewards",
+                NextBonusText = "Entry fee reduction",
+                UpgradeCostText = "24,000 credits",
+                StatusText = BuildDepartmentStatusText(3, 24000),
+                RequirementText = BuildDepartmentRequirementText(3, 24000),
+                SummaryText = "Improves the business side of the career and reduces event overhead.",
+                CanUpgrade = _career is not null && _career.Progression.Level >= 3 && _career.Progression.Credits >= 24000,
+                IsLocked = _career is null || _career.Progression.Level < 3
+            },
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Logistics",
+                IconGlyph = "⇄",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Rental support",
+                NextBonusText = "Insurance benefits",
+                UpgradeCostText = "26,000 credits",
+                StatusText = BuildDepartmentStatusText(5, 26000),
+                RequirementText = BuildDepartmentRequirementText(5, 26000),
+                SummaryText = "Helps manage travel, rentals, and event cancellation friction.",
+                CanUpgrade = _career is not null && _career.Progression.Level >= 5 && _career.Progression.Credits >= 26000,
+                IsLocked = _career is null || _career.Progression.Level < 5
+            },
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Simulator",
+                IconGlyph = "◌",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Track familiarity",
+                NextBonusText = "Prep bonus",
+                UpgradeCostText = "20,000 credits",
+                StatusText = BuildDepartmentStatusText(5, 20000),
+                RequirementText = BuildDepartmentRequirementText(5, 20000),
+                SummaryText = "Builds confidence before race day and supports cleaner progression.",
+                CanUpgrade = _career is not null && _career.Progression.Level >= 5 && _career.Progression.Credits >= 20000,
+                IsLocked = _career is null || _career.Progression.Level < 5
+            },
+            new DepartmentUpgradeViewModel
+            {
+                DepartmentName = "Media Office",
+                IconGlyph = "★",
+                CurrentLevelText = "Level 1",
+                CurrentBonusText = "Reputation gain",
+                NextBonusText = "Prestige invitations",
+                UpgradeCostText = "28,000 credits",
+                StatusText = BuildDepartmentStatusText(5, 28000),
+                RequirementText = BuildDepartmentRequirementText(5, 28000),
+                SummaryText = "Boosts reputation-focused career growth and late-ladder opportunities.",
+                CanUpgrade = _career is not null && _career.Progression.Level >= 5 && _career.Progression.Credits >= 28000,
+                IsLocked = _career is null || _career.Progression.Level < 5
+            }
+        };
+
+        foreach (var department in departmentData)
+        {
+            TeamHqDepartments.Add(department);
+        }
+
+        foreach (var rival in _career is null
+                     ? Array.Empty<RivalProfile>()
+                     : _career.Rivals.OrderByDescending(x => x.RivalryIntensity).ToArray())
+        {
+            var status = rival.RivalryIntensity >= 25 ? "Active" : rival.RivalryIntensity >= 15 ? "Emerging" : "Potential";
+            Rivals.Add(new RivalSummaryViewModel
+            {
+                Name = rival.Name,
+                Summary = $"{rival.Personality}  |  {rival.Specialty}  |  Rating {rival.DriverRating:n0}",
+                PortraitAssetPath = ResolvePortraitAssetPath(rival.PortraitId),
+                StatusText = status,
+                HeatText = $"{Math.Clamp(rival.RivalryIntensity, 0, 100)} heat",
+                DetailText = $"Heat level {rival.RivalryIntensity}. Keep racing this branch to build a stronger rivalry record.",
+                HeadToHeadText = BuildRivalHeadToHeadText(rival),
+                RewardPreviewText = "Showdown rewards will appear when this rivalry branch is reached."
+            });
+        }
+
+        SelectedCareerTierNode = CareerLadderNodes.FirstOrDefault(node => node.IsCurrent)
+            ?? CareerLadderNodes.FirstOrDefault(node => !node.IsLocked)
+            ?? CareerLadderNodes.FirstOrDefault();
+        SelectedGarageCar = GarageCars.FirstOrDefault(card => card.IsOwned)
+            ?? GarageCars.FirstOrDefault(card => !card.IsLocked)
+            ?? GarageCars.FirstOrDefault();
+        SelectedDepartment = TeamHqDepartments.FirstOrDefault(card => card.CanUpgrade)
+            ?? TeamHqDepartments.FirstOrDefault();
+        SelectedRival = Rivals.FirstOrDefault();
+    }
+
+    private static int GetLeagueTierIndex(LeagueDefinition league)
+    {
+        return league.RequiredLevel switch
+        {
+            <= 1 => 0,
+            <= 2 => 1,
+            <= 4 => 2,
+            <= 6 => 3,
+            <= 8 => 4,
+            _ => 5
+        };
+    }
+
+    private string GetLeagueLockedText(LeagueDefinition league)
+    {
+        if (_career is null)
+        {
+            return "Start a career to unlock progression.";
+        }
+
+        if (_career.Progression.Level < league.RequiredLevel)
+        {
+            return $"Reach level {league.RequiredLevel} to unlock this branch.";
+        }
+
+        return "Complete prerequisite branches to unlock this series.";
+    }
+
+    private string ResolveEligibleEventsText(string classId)
+    {
+        var events = _content.EventTemplates.Where(template => template.EligibleCarClassIds.Contains(classId, StringComparer.Ordinal)).Select(template => template.Name).Take(2).ToArray();
+        return events.Length == 0 ? "Eligible events appear once the branch unlocks." : $"Eligible events: {string.Join(", ", events)}";
+    }
+
+    private static string BuildRivalHeadToHeadText(RivalProfile? rival)
+    {
+        if (rival is null || rival.RecentEncounters.Count == 0)
+        {
+            return "Last 5 head-to-head: not yet tracked";
+        }
+
+        var recent = rival.RecentEncounters.Take(5).ToArray();
+        var wins = recent.Count(encounter => encounter.PlayerFinishedAhead);
+        var losses = recent.Length - wins;
+        var averageGap = recent.Average(encounter => Math.Abs(encounter.RivalPosition - encounter.PlayerPosition));
+        var latest = recent[0];
+
+        return $"Last {recent.Length} head-to-head: {wins} wins | {losses} losses | avg gap P{averageGap:0.0} | Latest {latest.Summary}";
+    }
+
+    private int BuildCarPrice(OfficialCarDefinition car)
+    {
+        return Math.Max(4000, 8000 + (car.Name.Length * 450));
+    }
+
+    private string BuildDepartmentStatusText(int requiredLevel, int cost)
+    {
+        if (_career is null)
+        {
+            return "Locked";
+        }
+
+        if (_career.Progression.Level < requiredLevel)
+        {
+            return "Requires Club Tier";
+        }
+
+        var shortfall = cost - _career.Progression.Credits;
+        return shortfall > 0 ? $"Need {shortfall:n0} more credits" : "Ready";
+    }
+
+    private string BuildDepartmentRequirementText(int requiredLevel, int cost)
+    {
+        if (_career is null)
+        {
+            return "Create a career to unlock departments.";
+        }
+
+        if (_career.Progression.Level < requiredLevel)
+        {
+            return "Requires Club Tier";
+        }
+
+        var shortfall = cost - _career.Progression.Credits;
+        return shortfall > 0 ? $"Need {shortfall:n0} more credits" : "Ready to upgrade";
     }
 
     private static string BuildRewardSummary(RewardBreakdown reward)
@@ -1111,12 +1855,15 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     {
         RaisePropertyChanged(nameof(CurrentCareerName));
         RaisePropertyChanged(nameof(CurrentStarterCar));
+        RaisePropertyChanged(nameof(CurrentPlayerPortraitLabel));
+        RaisePropertyChanged(nameof(ActivePlayerPortraitAssetPath));
         RaisePropertyChanged(nameof(CurrentTitle));
         RaisePropertyChanged(nameof(CurrentLeagueName));
         RaisePropertyChanged(nameof(ProgressText));
         RaisePropertyChanged(nameof(StandingText));
         RaisePropertyChanged(nameof(ActiveCareerSummaryText));
         RaisePropertyChanged(nameof(SeasonSummaryText));
+        RaisePropertyChanged(nameof(CareerProgressSummaryText));
         RaisePropertyChanged(nameof(NextEventHeadlineText));
         RaisePropertyChanged(nameof(NextEventDetailsText));
         RaisePropertyChanged(nameof(NextEventDisplayTitle));
@@ -1133,14 +1880,46 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RaisePropertyChanged(nameof(ChallengeSummaryText));
         RaisePropertyChanged(nameof(GarageEligibleEventText));
         RaisePropertyChanged(nameof(GarageDetailSummaryText));
+        RaisePropertyChanged(nameof(SelectedGarageCarTitle));
+        RaisePropertyChanged(nameof(SelectedGarageCarClass));
+        RaisePropertyChanged(nameof(SelectedGarageCarStatus));
+        RaisePropertyChanged(nameof(SelectedGarageCarCondition));
+        RaisePropertyChanged(nameof(SelectedGarageCarSummary));
+        RaisePropertyChanged(nameof(SelectedGarageCarActionText));
+        RaisePropertyChanged(nameof(SelectedGarageCarUnlockText));
+        RaisePropertyChanged(nameof(SelectedGarageCarPriceText));
+        RaisePropertyChanged(nameof(SelectedGarageCarEligibleEventsText));
+        RaisePropertyChanged(nameof(SelectedGarageCarCareerStartsText));
+        RaisePropertyChanged(nameof(CanUseSelectedGarageCar));
+        RaisePropertyChanged(nameof(CanRepairSelectedGarageCar));
+        RaisePropertyChanged(nameof(GarageEmptyStateTitle));
+        RaisePropertyChanged(nameof(GarageEmptyStateText));
+        RaisePropertyChanged(nameof(HasOwnedCars));
         RaisePropertyChanged(nameof(FeaturedRivalName));
+        RaisePropertyChanged(nameof(FeaturedRivalPortraitAssetPath));
         RaisePropertyChanged(nameof(FeaturedRivalStatusText));
         RaisePropertyChanged(nameof(FeaturedRivalHeatText));
         RaisePropertyChanged(nameof(FeaturedRivalMetaText));
+        RaisePropertyChanged(nameof(FeaturedRivalHeadToHeadText));
         RaisePropertyChanged(nameof(FeaturedRivalDetailText));
+        RaisePropertyChanged(nameof(SelectedRivalName));
+        RaisePropertyChanged(nameof(SelectedRivalStatus));
+        RaisePropertyChanged(nameof(SelectedRivalHeat));
+        RaisePropertyChanged(nameof(SelectedRivalDetail));
+        RaisePropertyChanged(nameof(SelectedRivalHeadToHead));
+        RaisePropertyChanged(nameof(SelectedRivalRewardPreview));
+        RaisePropertyChanged(nameof(SelectedRivalPortraitAssetPath));
         RaisePropertyChanged(nameof(TeamHqSummaryText));
         RaisePropertyChanged(nameof(TeamHqEfficiencyText));
         RaisePropertyChanged(nameof(TeamHqNextUnlockText));
+        RaisePropertyChanged(nameof(TeamHqEmptyStateTitle));
+        RaisePropertyChanged(nameof(TeamHqEmptyStateText));
+        RaisePropertyChanged(nameof(HasTeamHqDepartments));
+        RaisePropertyChanged(nameof(SelectedCareerTierTitle));
+        RaisePropertyChanged(nameof(SelectedCareerTierStatus));
+        RaisePropertyChanged(nameof(SelectedCareerTierDescription));
+        RaisePropertyChanged(nameof(SelectedDepartmentName));
+        RaisePropertyChanged(nameof(SelectedDepartmentSummary));
         RaisePropertyChanged(nameof(LastResultPrimaryPositionText));
         RaisePropertyChanged(nameof(LastResultMetaText));
         RaisePropertyChanged(nameof(LastResultOutcomeText));
@@ -1264,6 +2043,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         NextEventExportStatusText = BuildExportStatusText(preview.Message, preview.Readiness, preview.RequiresGameRestart);
         RaceDesk.EventPlan.Update(plan, NextEventDetailsText, NextEventExportStatusText, preview.Readiness);
         Diagnostics.RecordExportStatus(NextEventExportStatusText);
+        _automationTraceWriter.AppendExportStatus(NextEventExportStatusText);
         UpdateRaceDeskFlowState();
     }
 
@@ -1276,29 +2056,18 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
 
         var lines = new List<string> { message };
 
-        if (!string.IsNullOrWhiteSpace(readiness.TargetFilePath))
-        {
-            lines.Add($"Target file: {readiness.TargetFilePath}");
-        }
-
-        if (!string.IsNullOrWhiteSpace(readiness.PresetFilePath))
-        {
-            lines.Add($"Preset source: {readiness.PresetFilePath}");
-        }
-
         if (readiness.BlockingIssues.Count > 0)
         {
-            lines.Add($"Blocking: {string.Join(" | ", readiness.BlockingIssues)}");
+            lines.Add($"Needs action: {string.Join(" | ", readiness.BlockingIssues)}");
         }
-
-        if (readiness.Guidance.Count > 0)
+        else if (readiness.Guidance.Count > 0)
         {
-            lines.Add($"Guidance: {string.Join(" | ", readiness.Guidance)}");
+            lines.Add(string.Join(" | ", readiness.Guidance));
         }
 
         lines.Add(requiresRestart
-            ? "Launch rule: restart AMS2 after applying this prepared event."
-            : "Launch rule: no restart required after applying.");
+            ? "Apply it, then restart AMS2 before you launch."
+            : "Apply it directly when you are ready.");
 
         return string.Join("\n", lines);
     }
@@ -1375,6 +2144,41 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             _career.Progression.Reputation);
     }
 
+    private async Task EnsureCareerPortraitsAsync()
+    {
+        if (_career is null)
+        {
+            return;
+        }
+
+        var previousPlayerPortraitId = _career.PlayerProfile.PortraitId;
+        var previousRivalPortraitIds = _career.Rivals.Select(rival => rival.PortraitId).ToArray();
+
+        _driverPortraitService.EnsurePortraitAssignments(_career, _content);
+
+        var changed = !string.Equals(previousPlayerPortraitId, _career.PlayerProfile.PortraitId, StringComparison.OrdinalIgnoreCase)
+            || !_career.Rivals.Select(rival => rival.PortraitId).SequenceEqual(previousRivalPortraitIds, StringComparer.OrdinalIgnoreCase);
+
+        if (changed)
+        {
+            await _repository.SaveCareerAsync(_career, setAsCurrent: true);
+        }
+    }
+
+    private string ResolvePortraitAssetPath(string? portraitId)
+    {
+        var portrait = _driverPortraitService.ResolvePortrait(_content, portraitId);
+        var relativePath = portrait.AssetPath.Replace('/', Path.DirectorySeparatorChar);
+        var fullPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, relativePath));
+        if (File.Exists(fullPath))
+        {
+            return fullPath;
+        }
+
+        var placeholderPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, DriverPortraitService.PlaceholderAssetPath.Replace('/', Path.DirectorySeparatorChar)));
+        return File.Exists(placeholderPath) ? placeholderPath : string.Empty;
+    }
+
     private void UpdateRaceDeskFlowState()
     {
         RaceDesk.ReadinessChecklist.Clear();
@@ -1394,11 +2198,21 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         var hasPendingReview = PendingDraft is not null;
         var telemetryHealthy = _telemetryFeed.ConnectionState == TelemetryConnectionState.Monitoring;
 
-        AddChecklistItem("Career Profile", $"Active profile: {_career.Name}.", "Ready", "Success");
-        AddChecklistItem("Next Event", _nextEventPlan is null ? "Generate the next event plan." : NextEventHeadlineText, _nextEventPlan is null ? "Pending" : "Ready", _nextEventPlan is null ? "Warning" : "Success");
-        AddChecklistItem("Event Export", preview?.Success == true ? "Prepared event can be exported to AMS2." : NextEventExportStatusText, preview?.Success == true ? "Ready" : "Blocked", preview?.Success == true ? "Success" : "Error");
-        AddChecklistItem("AMS2 Session", automation.Detail, automation.Stage.ToString(), automation.Stage is RaceAutomationStage.Error ? "Error" : automation.Stage is RaceAutomationStage.RaceRunning or RaceAutomationStage.GridDetected or RaceAutomationStage.WaitingForSession ? "Warning" : "Neutral");
-        AddChecklistItem("Telemetry", telemetryHealthy ? "Shared memory feed is healthy." : "Waiting for AMS2 shared memory.", telemetryHealthy ? "Healthy" : "Waiting", telemetryHealthy ? "Success" : "Warning");
+        AddChecklistItem("Career Profile", $"Active profile: {CurrentCareerName}.", "Ready", "Ready");
+        AddChecklistItem("Next Event", _nextEventPlan is null ? "Generate the next event plan." : NextEventHeadlineText, _nextEventPlan is null ? "Waiting" : "Ready", _nextEventPlan is null ? "Waiting" : "Ready");
+        AddChecklistItem("Event Export", preview?.Success == true ? "Event package is ready to apply." : NextEventExportStatusText, preview?.Success == true ? "Ready" : "Blocked", preview?.Success == true ? "Ready" : "Blocked");
+        var sessionStatusText = automation.Stage switch
+        {
+            RaceAutomationStage.Error => "Error",
+            RaceAutomationStage.RaceRunning => "Ready",
+            RaceAutomationStage.GridDetected or RaceAutomationStage.WaitingForSession or RaceAutomationStage.LaunchRequested => "Waiting",
+            RaceAutomationStage.SessionFinished => "Idle",
+            RaceAutomationStage.RestartRequired or RaceAutomationStage.EventPrepared => "Blocked",
+            _ => "Idle"
+        };
+
+        AddChecklistItem("AMS2 Session", automation.Detail, sessionStatusText, sessionStatusText);
+        AddChecklistItem("Telemetry", telemetryHealthy ? "Shared memory feed is healthy." : "Telemetry is offline.", telemetryHealthy ? "Ready" : "Offline", telemetryHealthy ? "Ready" : "Offline");
 
         if (hasPendingReview)
         {
@@ -1419,39 +2233,39 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 return;
             case RaceAutomationStage.GridDetected:
                 RaceDesk.StateKey = "GridDetected";
-                RaceDesk.BlockingGuidance = "Confirm the race screen in AMS2 and start the session when ready.";
+                RaceDesk.BlockingGuidance = "You are at the grid. Confirm the race screen in AMS2, then start the session.";
                 RaceDesk.PrimaryAction.Set("Waiting For Race Start", null, false, "Neutral");
                 RaceDesk.SecondaryAction.Set("Refresh Status", _refreshCommand, true, "Secondary");
                 return;
             case RaceAutomationStage.WaitingForSession:
                 RaceDesk.StateKey = "WaitingForSession";
-                RaceDesk.BlockingGuidance = "AMS2 is running. Navigate to the prepared race screen in-game.";
-                RaceDesk.PrimaryAction.Set("Resume Monitoring", _refreshCommand, true, "Primary");
-                RaceDesk.SecondaryAction.Set("Launch AMS2", _launchAms2Command, _launchAms2Command.CanExecute(null), "Secondary");
+                RaceDesk.BlockingGuidance = "AMS2 is running. Open the prepared race screen and confirm you are ready.";
+                RaceDesk.PrimaryAction.Set("I’m At The Race Screen", _refreshCommand, true, "Primary");
+                RaceDesk.SecondaryAction.Clear();
                 return;
             case RaceAutomationStage.LaunchRequested:
                 RaceDesk.StateKey = "LaunchRequested";
-                RaceDesk.BlockingGuidance = "AMS2 launch has been requested. Wait for the session feed.";
+                RaceDesk.BlockingGuidance = "AMS2 launch has been requested. Wait for the session feed to connect.";
                 RaceDesk.PrimaryAction.Set("Launching AMS2...", null, false, "Neutral");
                 RaceDesk.SecondaryAction.Set("Refresh Status", _refreshCommand, true, "Secondary");
                 return;
             case RaceAutomationStage.SessionFinished:
                 RaceDesk.StateKey = "ResultReconstructing";
-                RaceDesk.BlockingGuidance = "The session has ended. Result reconstruction is finishing.";
+                RaceDesk.BlockingGuidance = "The session has ended. Final result capture is finishing.";
                 RaceDesk.PrimaryAction.Set("Continue Career", _refreshCommand, true, "Primary");
                 RaceDesk.SecondaryAction.Clear();
                 return;
             case RaceAutomationStage.RestartRequired:
                 RaceDesk.StateKey = "RestartRequired";
-                RaceDesk.BlockingGuidance = "AMS2 must be restarted for the prepared event to load safely.";
+                RaceDesk.BlockingGuidance = "Restart AMS2 so the prepared event can load cleanly.";
                 RaceDesk.PrimaryAction.Set("Apply + Restart + Launch AMS2", _applyRecommendedEventAndLaunchCommand, _applyRecommendedEventAndLaunchCommand.CanExecute(null), "Primary");
-                RaceDesk.SecondaryAction.Set("Prepare Event Only", _applyRecommendedEventCommand, _applyRecommendedEventCommand.CanExecute(null), "Secondary");
+                RaceDesk.SecondaryAction.Clear();
                 return;
             case RaceAutomationStage.EventPrepared:
                 RaceDesk.StateKey = "EventPrepared";
-                RaceDesk.BlockingGuidance = "The event package is ready to export into AMS2.";
-                RaceDesk.PrimaryAction.Set("Apply + Launch AMS2", _applyRecommendedEventAndLaunchCommand, _applyRecommendedEventAndLaunchCommand.CanExecute(null), "Primary");
-                RaceDesk.SecondaryAction.Set("Apply Event", _applyRecommendedEventCommand, _applyRecommendedEventCommand.CanExecute(null), "Secondary");
+                RaceDesk.BlockingGuidance = "The event package is ready to apply.";
+                RaceDesk.PrimaryAction.Set("Apply + Restart + Launch AMS2", _applyRecommendedEventAndLaunchCommand, _applyRecommendedEventAndLaunchCommand.CanExecute(null), "Primary");
+                RaceDesk.SecondaryAction.Clear();
                 return;
             case RaceAutomationStage.Error:
                 RaceDesk.StateKey = "Error";
@@ -1465,7 +2279,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         {
             RaceDesk.StateKey = "CareerReady";
             RaceDesk.BlockingGuidance = "Generate the next planned event to continue the career.";
-            RaceDesk.PrimaryAction.Set("Generate Next Event", _refreshCommand, true, "Primary");
+            RaceDesk.PrimaryAction.Set("Prepare Event", _refreshCommand, true, "Primary");
             RaceDesk.SecondaryAction.Clear();
             return;
         }
@@ -1474,17 +2288,30 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         {
             RaceDesk.StateKey = "ExportBlocked";
             RaceDesk.BlockingGuidance = preview?.Message ?? "Event export is currently blocked.";
-            RaceDesk.PrimaryAction.Set("Retry Export Readiness", _refreshCommand, true, "Primary");
-            RaceDesk.SecondaryAction.Set("Launch AMS2", _launchAms2Command, _launchAms2Command.CanExecute(null), "Secondary");
+            RaceDesk.PrimaryAction.Set("Prepare Event", _refreshCommand, true, "Primary");
+            RaceDesk.SecondaryAction.Clear();
             return;
         }
 
         RaceDesk.StateKey = "EventPlanned";
         RaceDesk.BlockingGuidance = preview.RequiresGameRestart
-            ? "Prepare the event, then restart AMS2 so the new event package is loaded."
-            : "Prepare the event package and launch AMS2.";
-        RaceDesk.PrimaryAction.Set("Prepare Event", _applyRecommendedEventCommand, _applyRecommendedEventCommand.CanExecute(null), "Primary");
-        RaceDesk.SecondaryAction.Set(preview.RequiresGameRestart ? "Apply + Restart + Launch AMS2" : "Launch AMS2", preview.RequiresGameRestart ? _applyRecommendedEventAndLaunchCommand : _launchAms2Command, true, "Secondary");
+            ? "The event package is ready. Apply it, restart AMS2, and then launch."
+            : "The event package is ready. Apply it and launch AMS2.";
+        RaceDesk.PrimaryAction.Set(preview.RequiresGameRestart ? "Apply + Restart + Launch AMS2" : "Apply + Launch AMS2", preview.RequiresGameRestart ? _applyRecommendedEventAndLaunchCommand : _applyRecommendedEventCommand, true, "Primary");
+        RaceDesk.SecondaryAction.Clear();
+    }
+
+    private void RestoreDiagnosticsSnapshot()
+    {
+        if (!_automationTraceWriter.TryLoadLatestState(out var snapshot))
+        {
+            return;
+        }
+
+        Diagnostics.RecordAutomationStatus(snapshot.CurrentRunId, snapshot.LastAutomationStatus);
+        Diagnostics.RecordSessionStatus(snapshot.CurrentRunId, snapshot.LastSessionStatus);
+        Diagnostics.RecordExportStatus(snapshot.LastExportStatus);
+        Diagnostics.RecordResultStatus(snapshot.CurrentRunId, snapshot.LastResultStatus);
     }
 
     private void AddChecklistItem(string title, string detail, string statusText, string severity)
@@ -1502,9 +2329,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     {
         return _telemetryFeed.ConnectionState switch
         {
-            TelemetryConnectionState.Simulating => "Developer Simulation",
-            TelemetryConnectionState.Monitoring => "AMS2 Connected",
-            _ => _launchService.IsGameRunning ? "AMS2 Running / Feed Waiting" : "AMS2 Disconnected"
+            TelemetryConnectionState.Simulating => "AMS2: Test Mode",
+            TelemetryConnectionState.Monitoring => "AMS2: Connected",
+            _ => _launchService.IsGameRunning ? "AMS2: Running" : "AMS2: Not Running"
         };
     }
 

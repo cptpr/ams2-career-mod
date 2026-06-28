@@ -14,10 +14,12 @@ public sealed class FileCareerContentCatalogLoader
         Converters = { new JsonStringEnumConverter() }
     };
 
+    private readonly string _baseDirectory;
     private readonly string _contentFilePath;
 
     public FileCareerContentCatalogLoader(string baseDirectory)
     {
+        _baseDirectory = baseDirectory;
         _contentFilePath = Path.Combine(baseDirectory, "content", "official", "official-content.json");
     }
 
@@ -34,16 +36,17 @@ public sealed class FileCareerContentCatalogLoader
         var catalog = JsonSerializer.Deserialize<CareerContentCatalog>(json, JsonOptions)
             ?? throw new InvalidOperationException("Official content file did not deserialize into a career catalog.");
 
-        Validate(catalog);
+        Validate(catalog, _baseDirectory);
         return catalog;
     }
 
-    private static void Validate(CareerContentCatalog catalog)
+    private static void Validate(CareerContentCatalog catalog, string baseDirectory)
     {
         EnsureCount(catalog.StarterCars, nameof(catalog.StarterCars), 3);
         EnsureCount(catalog.Leagues, nameof(catalog.Leagues), 1);
         EnsureCount(catalog.Titles, nameof(catalog.Titles), 1);
         EnsureCount(catalog.ChallengeTemplates, nameof(catalog.ChallengeTemplates), 1);
+        EnsureCount(catalog.DriverPortraits, nameof(catalog.DriverPortraits), 34);
         EnsureCount(catalog.RivalArchetypes, nameof(catalog.RivalArchetypes), 1);
         EnsureCount(catalog.EventTemplates, nameof(catalog.EventTemplates), 1);
         EnsureCount(catalog.CarClasses, nameof(catalog.CarClasses), 1);
@@ -60,6 +63,7 @@ public sealed class FileCareerContentCatalogLoader
         EnsureUniqueIds(catalog.EventTemplates.Select(x => x.Id), "event template");
         EnsureUniqueIds(catalog.Titles.Select(x => x.Id), "title");
         EnsureUniqueIds(catalog.ChallengeTemplates.Select(x => x.Id), "challenge");
+        EnsureUniqueIds(catalog.DriverPortraits.Select(x => x.Id), "driver portrait");
 
         var carClassIds = catalog.CarClasses.Select(x => x.Id).ToHashSet(StringComparer.Ordinal);
         var carIds = catalog.Cars.Select(x => x.Id).ToHashSet(StringComparer.Ordinal);
@@ -110,6 +114,13 @@ public sealed class FileCareerContentCatalogLoader
                 EnsureReference(classId, carClassIds, $"event template '{template.Id}' eligible car class");
             }
         }
+
+        foreach (var portrait in catalog.DriverPortraits)
+        {
+            EnsureValue(portrait.AssetPath, $"driver portrait '{portrait.Id}' asset path");
+            EnsureValue(portrait.DisplayLabel, $"driver portrait '{portrait.Id}' display label");
+            EnsureAssetExists(baseDirectory, portrait.AssetPath, $"driver portrait '{portrait.Id}' asset");
+        }
     }
 
     private static void EnsureCount<T>(IReadOnlyCollection<T> values, string label, int minimum)
@@ -144,6 +155,24 @@ public sealed class FileCareerContentCatalogLoader
         if (!knownIds.Contains(id))
         {
             throw new InvalidOperationException($"Official content reference '{label}' points to missing id '{id}'.");
+        }
+    }
+
+    private static void EnsureValue(string value, string label)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new InvalidOperationException($"Official content value '{label}' is required.");
+        }
+    }
+
+    private static void EnsureAssetExists(string baseDirectory, string relativePath, string label)
+    {
+        var normalizedPath = relativePath.Replace('/', Path.DirectorySeparatorChar);
+        var fullPath = Path.GetFullPath(Path.Combine(baseDirectory, normalizedPath));
+        if (!File.Exists(fullPath))
+        {
+            throw new InvalidOperationException($"Official content asset '{label}' was not found at '{fullPath}'.");
         }
     }
 }

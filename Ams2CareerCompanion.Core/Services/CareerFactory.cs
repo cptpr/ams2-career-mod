@@ -4,7 +4,15 @@ namespace Ams2CareerCompanion.Core.Services;
 
 public sealed class CareerFactory
 {
-    public CareerState CreateNewCareer(string careerName, StarterCarDefinition starterCar, CareerPreset preset, CareerContentCatalog content)
+    private readonly DriverPortraitService _driverPortraitService = new();
+
+    public CareerState CreateNewCareer(
+        string careerName,
+        StarterCarDefinition starterCar,
+        CareerPreset preset,
+        CareerContentCatalog content,
+        string? playerPortraitId = null,
+        int? careerSeed = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(careerName);
 
@@ -24,6 +32,7 @@ public sealed class CareerFactory
         {
             Name = careerName.Trim(),
             CreatedUtc = DateTime.UtcNow,
+            CareerSeed = careerSeed ?? Random.Shared.Next(1, int.MaxValue),
             Preset = preset,
             ActiveLeagueId = rookieLeague.Id,
             PlayerProfile = new PlayerProfile
@@ -31,7 +40,8 @@ public sealed class CareerFactory
                 StarterCarId = starterCar.Id,
                 StarterCarName = starterCar.Name,
                 StarterCarClass = starterCar.ClassName,
-                SelectedCarClass = starterCar.ClassName
+                SelectedCarClass = starterCar.ClassName,
+                PortraitId = playerPortraitId ?? string.Empty
             },
             Progression = new ProgressionState
             {
@@ -73,9 +83,13 @@ public sealed class CareerFactory
                 CurrentLeagueId = rookieLeague.Id,
                 DriverRating = archetype.BaseRating,
                 Reputation = 0,
-                RivalryIntensity = 12
+                RivalryIntensity = 12,
+                PortraitId = string.Empty,
+                RecentEncounters = new List<RivalEncounterRecord>()
             });
         }
+
+        _driverPortraitService.EnsurePortraitAssignments(state, content, playerPortraitId);
 
         return state;
     }

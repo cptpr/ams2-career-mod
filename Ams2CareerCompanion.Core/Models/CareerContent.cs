@@ -131,6 +131,22 @@ public sealed class RivalArchetype
     public double BaseRating { get; init; }
 }
 
+public enum DriverPortraitAvailability
+{
+    Player,
+    Rival,
+    Both
+}
+
+public sealed class DriverPortraitDefinition
+{
+    public string Id { get; init; } = string.Empty;
+    public string AssetPath { get; init; } = string.Empty;
+    public string DisplayLabel { get; init; } = string.Empty;
+    public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
+    public DriverPortraitAvailability Availability { get; init; } = DriverPortraitAvailability.Both;
+}
+
 public sealed class CareerContentCatalog
 {
     public IReadOnlyList<OfficialCarClassDefinition> CarClasses { get; init; } = Array.Empty<OfficialCarClassDefinition>();
@@ -142,5 +158,6 @@ public sealed class CareerContentCatalog
     public IReadOnlyList<EventTemplateDefinition> EventTemplates { get; init; } = Array.Empty<EventTemplateDefinition>();
     public IReadOnlyList<CareerTitleDefinition> Titles { get; init; } = Array.Empty<CareerTitleDefinition>();
     public IReadOnlyList<ChallengeTemplate> ChallengeTemplates { get; init; } = Array.Empty<ChallengeTemplate>();
+    public IReadOnlyList<DriverPortraitDefinition> DriverPortraits { get; init; } = Array.Empty<DriverPortraitDefinition>();
     public IReadOnlyList<RivalArchetype> RivalArchetypes { get; init; } = Array.Empty<RivalArchetype>();
 }

@@ -245,6 +245,10 @@ public static class DefaultContentCatalogFactory
                     BonusCredits = 1250
                 }
             ],
+            DriverPortraits =
+            [
+                DriverPortraitService.CreatePlaceholderDefinition()
+            ],
             RivalArchetypes =
             [
                 new RivalArchetype { Name = "Marta Alves", Personality = "Calculated", Specialty = "Consistency", BaseRating = 1010 },

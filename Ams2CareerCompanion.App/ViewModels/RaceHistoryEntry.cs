@@ -41,8 +41,21 @@ public sealed class RaceHistoryEntry
         };
 
         var cleanTag = draft.IsCleanRace ? "Clean race" : "Incident flagged";
-        var reviewTag = result.WasReviewed ? "Manual review" : "Auto logged";
-        var confidenceTag = $"{draft.Confidence} confidence";
+        var reviewTag = result.WasReviewed
+            ? "Manual review complete"
+            : draft.Confidence == ResultConfidence.Low
+                ? "Manual review needed"
+                : "Auto logged";
+        var confidenceTag = draft.Confidence switch
+        {
+            ResultConfidence.High => "High confidence capture",
+            ResultConfidence.Medium => "Capture confirmed",
+            _ => "Low confidence capture"
+        };
+
+        var reviewSummary = result.WasReviewed
+            ? "Manual review complete"
+            : "Result could not be confirmed automatically";
 
         return new RaceHistoryEntry
         {
@@ -54,25 +67,33 @@ public sealed class RaceHistoryEntry
             IsCleanRace = draft.IsCleanRace,
             WasReviewed = result.WasReviewed,
             AutomationRunId = draft.AutomationRunId,
-            Headline = $"{draft.LeagueName} at {draft.TrackName}",
+            Headline = $"{NormalizeDisplayName(draft.LeagueName)} at {NormalizeDisplayName(draft.TrackName)}",
             Subtitle = completedLocal,
             ResultTag = resultTag,
             CleanlinessTag = cleanTag,
             ReviewTag = reviewTag,
-            DetailLine = $"Outcome {draft.Outcome}  |  Overall P{draft.OverallPosition}/{draft.Entrants}  |  Class P{draft.ClassPosition}  |  {draft.LapsCompleted} laps",
+            DetailLine = $"{resultTag}  |  P{draft.OverallPosition}/{draft.Entrants}  |  Class P{draft.ClassPosition}  |  {draft.LapsCompleted} laps",
             Details =
-                $"League: {draft.LeagueName}\n" +
-                $"Track: {draft.TrackName}\n" +
+                $"{reviewSummary}\n" +
+                $"{cleanTag}\n" +
+                $"{confidenceTag}\n\n" +
+                $"League: {NormalizeDisplayName(draft.LeagueName)}\n" +
+                $"Track: {NormalizeDisplayName(draft.TrackName)}\n" +
                 $"Completed: {completedLocal}\n" +
-                $"Outcome: {draft.Outcome}\n" +
+                $"Result: {draft.Outcome}\n" +
                 $"Overall finish: P{draft.OverallPosition}/{draft.Entrants}\n" +
                 $"Class finish: P{draft.ClassPosition}\n" +
                 $"Laps completed: {draft.LapsCompleted}\n" +
-                $"Race cleanliness: {cleanTag}\n" +
-                $"Capture mode: {reviewTag}\n" +
-                $"Detection quality: {confidenceTag}\n" +
+                $"Validation notes: {(draft.ValidationNotes.Count == 0 ? "None" : string.Join("; ", draft.ValidationNotes))}\n" +
+                $"Capture status: {cleanTag}\n" +
+                $"Review status: {reviewTag}\n" +
                 $"Automation run: {(draft.AutomationRunId?.ToString("D") ?? "Not linked")}\n\n" +
                 $"Stored summary:\n{draft.Summary}"
         };
+    }
+
+    private static string NormalizeDisplayName(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? value : value.Replace('_', ' ');
     }
 }

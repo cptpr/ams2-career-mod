@@ -27,7 +27,7 @@ public sealed class CareerProgressionEngine
         }
 
         UnlockLeagues(state, content, reward);
-        var featuredRival = UpdateRivals(state, result.Draft);
+        var featuredRival = UpdateRivals(state, result.Draft, league);
 
         return new CareerUpdateResult
         {
@@ -184,7 +184,7 @@ public sealed class CareerProgressionEngine
         }
     }
 
-    private static RivalProfile? UpdateRivals(CareerState state, RaceResultDraft draft)
+    private static RivalProfile? UpdateRivals(CareerState state, RaceResultDraft draft, LeagueDefinition league)
     {
         var featured = state.Rivals
             .OrderByDescending(x => x.RivalryIntensity)
@@ -198,6 +198,13 @@ public sealed class CareerProgressionEngine
 
         featured.DriverRating = Math.Max(850, featured.DriverRating + Random.Shared.NextDouble() * 12 - 4);
         featured.Reputation = Math.Max(0, featured.Reputation + (draft.Outcome == RaceOutcome.Finished && draft.OverallPosition <= 3 ? 2 : 1));
+
+        var encounter = BuildEncounterRecord(state, draft, featured, league);
+        featured.RecentEncounters.Insert(0, encounter);
+        if (featured.RecentEncounters.Count > 5)
+        {
+            featured.RecentEncounters.RemoveRange(5, featured.RecentEncounters.Count - 5);
+        }
 
         if (draft.Outcome == RaceOutcome.Finished && draft.OverallPosition <= 3)
         {
@@ -214,5 +221,42 @@ public sealed class CareerProgressionEngine
         }
 
         return featured;
+    }
+
+    private static RivalEncounterRecord BuildEncounterRecord(CareerState state, RaceResultDraft draft, RivalProfile rival, LeagueDefinition league)
+    {
+        var spread = GetDeterministicSpread(state.CareerSeed, rival.Id, draft.Id, 1, Math.Max(2, Math.Min(4, league.GridSize / 3)));
+        var playerFinishedAhead = draft.Outcome == RaceOutcome.Finished && (draft.OverallPosition <= 3 || draft.IsCleanRace);
+        var rivalPosition = playerFinishedAhead
+            ? Math.Min(league.GridSize, draft.OverallPosition + spread)
+            : Math.Max(1, draft.OverallPosition - spread);
+        var rivalryDelta = playerFinishedAhead
+            ? Math.Clamp(8 - spread, 3, 10)
+            : Math.Clamp(5 - spread, 1, 4);
+
+        return new RivalEncounterRecord
+        {
+            CompletedUtc = draft.CompletedUtc,
+            LeagueId = league.Id,
+            LeagueName = league.Name,
+            TrackName = draft.TrackName,
+            PlayerPosition = draft.OverallPosition,
+            RivalPosition = rivalPosition,
+            PlayerFinishedAhead = playerFinishedAhead,
+            RivalryDelta = rivalryDelta,
+            Summary = $"{league.Name} at {draft.TrackName}: P{draft.OverallPosition} vs P{rivalPosition}."
+        };
+    }
+
+    private static int GetDeterministicSpread(int careerSeed, string rivalId, Guid draftId, int minInclusive, int maxInclusive)
+    {
+        if (maxInclusive <= minInclusive)
+        {
+            return minInclusive;
+        }
+
+        var hash = HashCode.Combine(careerSeed, rivalId, draftId);
+        var value = hash == int.MinValue ? 0 : Math.Abs(hash);
+        return minInclusive + (value % (maxInclusive - minInclusive + 1));
     }
 }

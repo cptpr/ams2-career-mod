@@ -94,6 +94,7 @@ public sealed class RaceResultDraft
     public int LapsCompleted { get; init; }
     public bool IsCleanRace { get; init; }
     public ResultConfidence Confidence { get; init; }
+    public List<string> ValidationNotes { get; init; } = new();
     public string Summary { get; init; } = string.Empty;
 }
 

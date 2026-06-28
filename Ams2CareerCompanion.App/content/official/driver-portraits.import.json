@@ -1,0 +1,370 @@
+﻿{
+    "packId":  "driver-portraits-v1",
+    "sourceDirectory":  "C:\\Users\\adamv\\Pictures\\ams2-career-media\\drivers",
+    "importedAtUtc":  "2026-06-27T20:18:32.0803866Z",
+    "portraits":  [
+                      {
+                          "id":  "portrait-01",
+                          "sourceFile":  "headshot (1).png",
+                          "importedFile":  "driver-portraits/driver-portrait-01.png",
+                          "displayLabel":  "Driver Portrait 01",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-02",
+                          "sourceFile":  "headshot (2).png",
+                          "importedFile":  "driver-portraits/driver-portrait-02.png",
+                          "displayLabel":  "Driver Portrait 02",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-03",
+                          "sourceFile":  "headshot (3).png",
+                          "importedFile":  "driver-portraits/driver-portrait-03.png",
+                          "displayLabel":  "Driver Portrait 03",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-04",
+                          "sourceFile":  "headshot (4).png",
+                          "importedFile":  "driver-portraits/driver-portrait-04.png",
+                          "displayLabel":  "Driver Portrait 04",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-05",
+                          "sourceFile":  "headshot (5).png",
+                          "importedFile":  "driver-portraits/driver-portrait-05.png",
+                          "displayLabel":  "Driver Portrait 05",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-06",
+                          "sourceFile":  "headshot (6).png",
+                          "importedFile":  "driver-portraits/driver-portrait-06.png",
+                          "displayLabel":  "Driver Portrait 06",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-07",
+                          "sourceFile":  "headshot (7).png",
+                          "importedFile":  "driver-portraits/driver-portrait-07.png",
+                          "displayLabel":  "Driver Portrait 07",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-08",
+                          "sourceFile":  "headshot (8).png",
+                          "importedFile":  "driver-portraits/driver-portrait-08.png",
+                          "displayLabel":  "Driver Portrait 08",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-09",
+                          "sourceFile":  "headshot (9).png",
+                          "importedFile":  "driver-portraits/driver-portrait-09.png",
+                          "displayLabel":  "Driver Portrait 09",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-10",
+                          "sourceFile":  "headshot (10).png",
+                          "importedFile":  "driver-portraits/driver-portrait-10.png",
+                          "displayLabel":  "Driver Portrait 10",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-11",
+                          "sourceFile":  "headshot (11).png",
+                          "importedFile":  "driver-portraits/driver-portrait-11.png",
+                          "displayLabel":  "Driver Portrait 11",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-12",
+                          "sourceFile":  "headshot (12).png",
+                          "importedFile":  "driver-portraits/driver-portrait-12.png",
+                          "displayLabel":  "Driver Portrait 12",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-13",
+                          "sourceFile":  "headshot (13).png",
+                          "importedFile":  "driver-portraits/driver-portrait-13.png",
+                          "displayLabel":  "Driver Portrait 13",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-14",
+                          "sourceFile":  "headshot (14).png",
+                          "importedFile":  "driver-portraits/driver-portrait-14.png",
+                          "displayLabel":  "Driver Portrait 14",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-15",
+                          "sourceFile":  "headshot (15).png",
+                          "importedFile":  "driver-portraits/driver-portrait-15.png",
+                          "displayLabel":  "Driver Portrait 15",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-16",
+                          "sourceFile":  "headshot (16).png",
+                          "importedFile":  "driver-portraits/driver-portrait-16.png",
+                          "displayLabel":  "Driver Portrait 16",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-17",
+                          "sourceFile":  "headshot (17).png",
+                          "importedFile":  "driver-portraits/driver-portrait-17.png",
+                          "displayLabel":  "Driver Portrait 17",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-18",
+                          "sourceFile":  "headshot (18).png",
+                          "importedFile":  "driver-portraits/driver-portrait-18.png",
+                          "displayLabel":  "Driver Portrait 18",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-19",
+                          "sourceFile":  "headshot (19).png",
+                          "importedFile":  "driver-portraits/driver-portrait-19.png",
+                          "displayLabel":  "Driver Portrait 19",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-20",
+                          "sourceFile":  "headshot (20).png",
+                          "importedFile":  "driver-portraits/driver-portrait-20.png",
+                          "displayLabel":  "Driver Portrait 20",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-21",
+                          "sourceFile":  "headshot (21).png",
+                          "importedFile":  "driver-portraits/driver-portrait-21.png",
+                          "displayLabel":  "Driver Portrait 21",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-22",
+                          "sourceFile":  "headshot (22).png",
+                          "importedFile":  "driver-portraits/driver-portrait-22.png",
+                          "displayLabel":  "Driver Portrait 22",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-23",
+                          "sourceFile":  "headshot (23).png",
+                          "importedFile":  "driver-portraits/driver-portrait-23.png",
+                          "displayLabel":  "Driver Portrait 23",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-24",
+                          "sourceFile":  "headshot (24).png",
+                          "importedFile":  "driver-portraits/driver-portrait-24.png",
+                          "displayLabel":  "Driver Portrait 24",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-25",
+                          "sourceFile":  "headshot (25).png",
+                          "importedFile":  "driver-portraits/driver-portrait-25.png",
+                          "displayLabel":  "Driver Portrait 25",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-26",
+                          "sourceFile":  "headshot (26).png",
+                          "importedFile":  "driver-portraits/driver-portrait-26.png",
+                          "displayLabel":  "Driver Portrait 26",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-27",
+                          "sourceFile":  "headshot (27).png",
+                          "importedFile":  "driver-portraits/driver-portrait-27.png",
+                          "displayLabel":  "Driver Portrait 27",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-28",
+                          "sourceFile":  "headshot (28).png",
+                          "importedFile":  "driver-portraits/driver-portrait-28.png",
+                          "displayLabel":  "Driver Portrait 28",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-29",
+                          "sourceFile":  "headshot (29).png",
+                          "importedFile":  "driver-portraits/driver-portrait-29.png",
+                          "displayLabel":  "Driver Portrait 29",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-30",
+                          "sourceFile":  "headshot (30).png",
+                          "importedFile":  "driver-portraits/driver-portrait-30.png",
+                          "displayLabel":  "Driver Portrait 30",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-31",
+                          "sourceFile":  "headshot (31).png",
+                          "importedFile":  "driver-portraits/driver-portrait-31.png",
+                          "displayLabel":  "Driver Portrait 31",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-32",
+                          "sourceFile":  "headshot (32).png",
+                          "importedFile":  "driver-portraits/driver-portrait-32.png",
+                          "displayLabel":  "Driver Portrait 32",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      },
+                      {
+                          "id":  "portrait-33",
+                          "sourceFile":  "headshot (33).png",
+                          "importedFile":  "driver-portraits/driver-portrait-33.png",
+                          "displayLabel":  "Driver Portrait 33",
+                          "availability":  "Both",
+                          "tags":  [
+                                       "shared-pack",
+                                       "v1"
+                                   ]
+                      }
+                  ]
+}

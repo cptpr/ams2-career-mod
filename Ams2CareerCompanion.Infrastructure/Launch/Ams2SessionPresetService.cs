@@ -5,6 +5,7 @@ namespace Ams2CareerCompanion.Infrastructure.Launch;
 public sealed class Ams2SessionPresetService
 {
     private const string ChampionshipEditorFileName = "default.championshipeditor.v1.00.sav";
+    private const string CustomChampionshipFileName = "singlechampionshipsave_1_1.sav";
     private readonly string _presetDirectory;
     private readonly string _bundledPresetDirectory;
 
@@ -19,6 +20,7 @@ public sealed class Ams2SessionPresetService
     public string BundledPresetDirectory => _bundledPresetDirectory;
     public string? ProfileDirectory => ResolveProfileDirectory();
     public string ChampionshipEditorFilePath => ChampionshipEditorFileName;
+    public string CustomChampionshipFilePath => CustomChampionshipFileName;
 
     public SessionPresetEnvironmentReport GetEnvironmentReport()
     {
@@ -52,6 +54,42 @@ public sealed class Ams2SessionPresetService
             targetFilePath,
             File.Exists(targetFilePath),
             "AMS2 profile target is ready for prepared event export.",
+            Array.Empty<string>());
+    }
+
+    public SessionPresetEnvironmentReport GetCustomChampionshipEnvironmentReport()
+    {
+        var profileDirectory = ResolveProfileDirectory();
+        if (profileDirectory is null)
+        {
+            return new SessionPresetEnvironmentReport(
+                false,
+                null,
+                null,
+                false,
+                "AMS2 profile directory was not found in Documents.",
+                ["Launch AMS2 once and create or load a profile before applying prepared events."]);
+        }
+
+        var singleChampionshipDirectory = GetSingleChampionshipDirectory(profileDirectory);
+        if (!TryVerifyWritableDirectory(singleChampionshipDirectory, out var writeFailure))
+        {
+            return new SessionPresetEnvironmentReport(
+                false,
+                singleChampionshipDirectory,
+                null,
+                false,
+                "AMS2 custom championship directory is not writable.",
+                [writeFailure ?? "Check Documents folder permissions for the AMS2 custom championship directory."]);
+        }
+
+        var targetFilePath = GetCustomChampionshipTargetFilePath(singleChampionshipDirectory);
+        return new SessionPresetEnvironmentReport(
+            true,
+            singleChampionshipDirectory,
+            targetFilePath,
+            File.Exists(targetFilePath),
+            "AMS2 custom championship slot is ready for prepared event export.",
             Array.Empty<string>());
     }
 
@@ -114,18 +152,28 @@ public sealed class Ams2SessionPresetService
             return new PresetOperationResult(false, environment.Message);
         }
 
-        Directory.CreateDirectory(environment.ProfileDirectory);
-        var targetFile = environment.TargetFilePath;
-        var backupFile = targetFile + ".backup";
+        return ApplyPresetToTarget(preset, environment.TargetFilePath, "local AMS2 profile");
+    }
 
-        if (File.Exists(targetFile))
+    public PresetOperationResult ApplyPresetToCustomChampionship(SessionPresetInfo? preset)
+    {
+        if (preset is null)
         {
-            File.Copy(targetFile, backupFile, overwrite: true);
+            return new PresetOperationResult(false, "Select a preset first.");
         }
 
-        File.Copy(preset.FilePath, targetFile, overwrite: true);
-        var sourceText = preset.Source == SessionPresetSource.Bundled ? "built-in preset" : "saved preset";
-        return new PresetOperationResult(true, $"Applied {sourceText} '{preset.Name}' to the local AMS2 profile.", preset.Name);
+        if (!File.Exists(preset.FilePath))
+        {
+            return new PresetOperationResult(false, $"Preset '{preset.Name}' was not found.");
+        }
+
+        var environment = GetCustomChampionshipEnvironmentReport();
+        if (!environment.IsReady || string.IsNullOrWhiteSpace(environment.ProfileDirectory) || string.IsNullOrWhiteSpace(environment.TargetFilePath))
+        {
+            return new PresetOperationResult(false, environment.Message);
+        }
+
+        return ApplyPresetToTarget(preset, environment.TargetFilePath, "AMS2 custom championship slot");
     }
 
     public PresetOperationResult DeletePreset(SessionPresetInfo? preset)
@@ -170,6 +218,27 @@ public sealed class Ams2SessionPresetService
     private string GetUserPresetFilePath(string presetName)
     {
         return Path.Combine(_presetDirectory, $"{presetName}.sav");
+    }
+
+    private PresetOperationResult ApplyPresetToTarget(SessionPresetInfo preset, string targetFilePath, string targetDescription)
+    {
+        var targetDirectory = Path.GetDirectoryName(targetFilePath);
+        if (string.IsNullOrWhiteSpace(targetDirectory))
+        {
+            return new PresetOperationResult(false, $"Could not resolve the AMS2 {targetDescription} path.");
+        }
+
+        Directory.CreateDirectory(targetDirectory);
+        var backupFile = targetFilePath + ".backup";
+
+        if (File.Exists(targetFilePath))
+        {
+            File.Copy(targetFilePath, backupFile, overwrite: true);
+        }
+
+        File.Copy(preset.FilePath, targetFilePath, overwrite: true);
+        var sourceText = preset.Source == SessionPresetSource.Bundled ? "built-in preset" : "saved preset";
+        return new PresetOperationResult(true, $"Applied {sourceText} '{preset.Name}' to the {targetDescription}.", preset.Name);
     }
 
     private static IReadOnlyList<SessionPresetInfo> ListPresetFiles(string rootDirectory, SessionPresetSource source)
@@ -261,6 +330,33 @@ public sealed class Ams2SessionPresetService
             .ToArray();
 
         return candidates.FirstOrDefault();
+    }
+
+    private static string GetSingleChampionshipDirectory(string profileDirectory)
+    {
+        var profileRoot = Directory.GetParent(profileDirectory)?.FullName;
+        if (string.IsNullOrWhiteSpace(profileRoot))
+        {
+            return profileDirectory;
+        }
+
+        return Path.Combine(profileRoot, "singlechamps");
+    }
+
+    private static string GetCustomChampionshipTargetFilePath(string singleChampionshipDirectory)
+    {
+        if (!Directory.Exists(singleChampionshipDirectory))
+        {
+            Directory.CreateDirectory(singleChampionshipDirectory);
+        }
+
+        var existingSlots = Directory.GetFiles(singleChampionshipDirectory, "singlechampionshipsave_*.sav", SearchOption.TopDirectoryOnly)
+            .OrderByDescending(File.GetLastWriteTimeUtc)
+            .ThenByDescending(path => Path.GetFileName(path), StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return existingSlots.FirstOrDefault()
+               ?? Path.Combine(singleChampionshipDirectory, CustomChampionshipFileName);
     }
 
     private static bool TryVerifyWritableDirectory(string directoryPath, out string? failureReason)
